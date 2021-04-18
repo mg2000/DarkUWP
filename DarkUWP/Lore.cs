@@ -1,0 +1,190 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DarkUWP
+{
+	class Lore
+	{
+		public string Name
+		{
+			get;
+			set;
+		}
+
+		public GenderType Gender
+		{
+			get;
+			set;
+		}
+
+		public int Class
+		{
+			get;
+			set;
+		}
+
+		public int Strength
+		{
+			get;
+			set;
+		}
+
+		public int Mentality
+		{
+			get;
+			set;
+		}
+
+		public int Concentration
+		{
+			get;
+			set;
+		}
+
+		public int Endurance
+		{
+			get;
+			set;
+		}
+
+		public int Resistance
+		{
+			get;
+			set;
+		}
+
+		public int Agility
+		{
+			get;
+			set;
+		}
+
+		public int Accuracy
+		{
+			get;
+			set;
+		}
+
+		public int Luck
+		{
+			get;
+			set;
+		}
+
+		public int Poison
+		{
+			get;
+			set;
+		}
+
+		public int Unconscious
+		{
+			get;
+			set;
+		}
+
+		public int Dead
+		{
+			get;
+			set;
+		}
+
+		public int HP
+		{
+			get;
+			set;
+		}
+
+		public int SP
+		{
+			get;
+			set;
+		}
+
+		public int AC
+		{
+			get;
+			set;
+		}
+
+		public int Level
+		{
+			get;
+			set;
+		}
+
+		public long Experience
+		{
+			get;
+			set;
+
+		}
+
+		public long PotentialExperience
+		{
+			get;
+			set;
+		}
+
+		public int Weapon
+		{
+			get;
+			set;
+		}
+
+		public int Shield
+		{
+			get;
+			set;
+		}
+
+		public int Armor
+		{
+			get;
+			set;
+		}
+
+		public int PotentialAC
+		{
+			get;
+			set;
+		}
+
+		public int WeaPower
+		{
+			get;
+			set;
+		}
+
+		public int ShiPower
+		{
+			get;
+			set;
+		}
+
+		public int ArmPower
+		{
+			get;
+			set;
+		}
+
+		public ClassCategory ClassType {
+			get;
+			set;
+		}
+	}
+
+	public enum GenderType {
+		Male,
+		Female,
+		Neutral
+	}
+
+	public enum ClassCategory {
+		Sword,
+		Magic
+	}
+}
