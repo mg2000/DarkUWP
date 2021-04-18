@@ -282,13 +282,12 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
 					{
-						if (mQuestionIdx < mQuestionList.Count - 1)
-						{
-							mTransData[mQuestionList[mQuestionIdx].TransIdx[mAnswer]]++;
+						mTransData[mQuestionList[mQuestionIdx].TransIdx[mAnswer]]++;
 
-							mQuestionIdx++;
+						mQuestionIdx++;
+
+						if (mQuestionIdx < mQuestionList.Count)
 							ShowQuestion();
-						}
 						else
 						{
 							for (var i = 0; i < 5; i++)
@@ -476,86 +475,12 @@ namespace DarkUWP
 						}
 						else
 						{
-							//mPlayer.Agility = mTransdata[0];
-							//mPlayer.Accuracy = new int[3] { mTransdata[1], 0, 0 };
-							//mPlayer.Luck = mTransdata[2];
+							mPlayer.Agility = mTransData[0];
+							mPlayer.Accuracy = mTransData[1];
+							mPlayer.Luck = mTransData[2];
 
-							//AddStatPanel.Visibility = Visibility.Collapsed;
-
-							//AgilityResultText.Text = mPlayerList[0].Agility.ToString();
-							//AgilityResultLabel.Visibility = Visibility.Visible;
-							//AgilityResultText.Visibility = Visibility.Visible;
-
-							//AccuracyResultText.Text = mPlayerList[0].Accuracy[0].ToString();
-							//AccuracyResultLabel.Visibility = Visibility.Visible;
-							//AccuracyResultText.Visibility = Visibility.Visible;
-
-							//LuckResultText.Text = mPlayerList[0].Luck.ToString();
-							//LuckResultLabel.Visibility = Visibility.Visible;
-							//LuckResultText.Visibility = Visibility.Visible;
-
-							//for (var i = 0; i < 8; i++)
-							//	mTransdata[i] = 0;
-
-							//if (mPlayerList[0].Strength > 13 && mPlayerList[0].Endurance > 13 && mPlayerList[0].Agility > 11 && mPlayerList[0].Accuracy[0] > 11)
-							//{
-							//	ClassKnight.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[0] = 1;
-							//}
-
-							//if (mPlayerList[0].Mentality > 13 && mPlayerList[0].Accuracy[0] > 14)
-							//{
-							//	ClassMagician.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[1] = 1;
-							//}
-
-							//if (mPlayerList[0].Mentality > 10 && mPlayerList[0].Concentration > 13 & mPlayerList[0].Accuracy[0] > 12)
-							//{
-							//	ClassEsper.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[2] = 1;
-							//}
-
-							//if (mPlayerList[0].Strength > 13 && mPlayerList[0].Mentality > 10 && mPlayerList[0].Endurance > 10 && mPlayerList[0].Resistance > 10)
-							//{
-							//	ClassWarrior.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[3] = 1;
-							//}
-
-							//if (mPlayerList[0].Strength > 16 && mPlayerList[0].Agility > 13 && mPlayerList[0].Accuracy[0] > 11)
-							//{
-							//	ClassMonk.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[4] = 1;
-							//}
-
-							//if (mPlayerList[0].Resistance > 16 && mPlayerList[0].Agility > 16 && mPlayerList[0].Luck > 9)
-							//{
-							//	ClassNinja.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[5] = 1;
-							//}
-
-							//if (mPlayerList[0].Accuracy[0] > 18)
-							//{
-							//	ClassHunter.Foreground = new SolidColorBrush(Colors.White);
-							//	mTransdata[6] = 1;
-							//}
-
-							//mTransdata[7] = 1;
-
-							//for (var i = 0; i < 8; i++)
-							//{
-							//	if (mTransdata[i] == 1)
-							//	{
-							//		mClassFocusID = i;
-							//		break;
-							//	}
-							//}
-
-							//UpdateClassFocus();
-
-
-							//SelectClassPanel.Visibility = Visibility.Visible;
-
-							//mFocusItem = FocusItem.SelectClass;
+							Window.Current.CoreWindow.KeyUp -= newGamePageKeyEvent;
+							Frame.Navigate(typeof(ChooseClassPage), mPlayer);
 						}
 					}
 				}

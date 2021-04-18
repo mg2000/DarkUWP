@@ -52,8 +52,8 @@
 			당신이 한 밤중에 공부하고 있을때 밖에서 무슨 소리가 들렸다
 			</TextBlock>
 			<StackPanel Grid.Row="2" HorizontalAlignment="Center">
-				<TextBlock x:Name="Answer1" Foreground="Yellow" FontSize="30" Margin="0, 0, 0, 10">1] 밖으로 나가서 알아본다</TextBlock>
-				<TextBlock x:Name="Answer2" Foreground="#28f3f3" FontSize="30" Margin="0, 0, 0, 10">2] 그 소리가 무엇일까 생각을 한다</TextBlock>
+				<TextBlock x:Name="Answer1" Foreground="Yellow" FontSize="30" Margin="0, 0, 0, 20">1] 밖으로 나가서 알아본다</TextBlock>
+				<TextBlock x:Name="Answer2" Foreground="#28f3f3" FontSize="30" Margin="0, 0, 0, 20">2] 그 소리가 무엇일까 생각을 한다</TextBlock>
 				<TextBlock x:Name="Answer3" Foreground="#28f3f3" FontSize="30">3] 공부에만 열중한다</TextBlock>
 			</StackPanel>
 		</Grid>

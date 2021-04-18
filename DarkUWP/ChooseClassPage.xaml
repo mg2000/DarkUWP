@@ -1,0 +1,66 @@
+﻿<Page
+	x:Class="DarkUWP.ChooseClassPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="using:DarkUWP"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	Background="#3c1465">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="2*"/>
+			<RowDefinition Height="1*"/>
+			<RowDefinition Height="4*"/>
+			<RowDefinition Height="1*"/>
+			<RowDefinition Height="4*"/>
+		</Grid.RowDefinitions>
+		<StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+			<TextBlock x:Name="PlayerNameText" Foreground="#28f3f3" FontSize="30">당신의 이름 :</TextBlock>
+			<TextBlock x:Name="PlayerGenderText" Foreground="#28f3f3" FontSize="30">당신의 성별 :</TextBlock>
+			<TextBlock x:Name="PlayerCategoryText" Foreground="#28f3f3" FontSize="30">당신의 계열 :</TextBlock>
+			<TextBlock x:Name="PlayerClassText" Foreground="#28f3f3" FontSize="30" Visibility="Collapsed">당신의 계급 :</TextBlock>
+		</StackPanel>
+		<Grid Grid.Row="2" Margin="200, 0, 200, 0">
+			<Grid.RowDefinitions>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<TextBlock x:Name="SkillNameText1" Grid.Row="0" Grid.Column="0" Foreground="#f3f328" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText1" Grid.Row="0" Grid.Column="1" Foreground="#f3f328" FontSize="30">──────────</TextBlock>
+
+			<TextBlock x:Name="SkillNameText2" Grid.Row="1" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText2" Grid.Row="1" Grid.Column="1" Foreground="#aaaaaa" FontSize="30">──────────</TextBlock>
+
+			<TextBlock x:Name="SkillNameText3" Grid.Row="2" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText3" Grid.Row="2" Grid.Column="1" Foreground="#aaaaaa" FontSize="30">──────────</TextBlock>
+
+			<TextBlock x:Name="SkillNameText4" Grid.Row="3" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText4" Grid.Row="3" Grid.Column="1" Foreground="#aaaaaa" FontSize="30">──────────</TextBlock>
+
+			<TextBlock x:Name="SkillNameText5" Grid.Row="4" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText5" Grid.Row="4" Grid.Column="1" Foreground="#aaaaaa" FontSize="30">──────────</TextBlock>
+
+			<TextBlock x:Name="SkillNameText6" Grid.Row="5" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">공격 마법 능력 :</TextBlock>
+			<TextBlock x:Name="SkillValueText6" Grid.Row="5" Grid.Column="1" Foreground="#aaaaaa" FontSize="30">──────────</TextBlock>
+		</Grid>
+		<StackPanel Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+			<TextBlock x:Name="ClassNameText1" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">1. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText2" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">2. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText3" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">3. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText4" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">4. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText5" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">5. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText6" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">6. 전사</TextBlock>
+			<TextBlock x:Name="ClassNameText7" Grid.Row="6" Grid.Column="0" Foreground="#aaaaaa" FontSize="30">7. 전사</TextBlock>
+		</StackPanel>
+	</Grid>
+</Page>
