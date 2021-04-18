@@ -15,9 +15,7 @@
 			<RowDefinition Height="1*"/>
 			<RowDefinition Height="1*"/>
 			<RowDefinition Height="3*"/>
-			<RowDefinition Height="2*"/>
-			<RowDefinition Height="2*"/>
-			<RowDefinition Height="3*"/>
+			<RowDefinition Height="7*"/>
 		</Grid.RowDefinitions>
 		<TextBlock Grid.Row="0" Foreground="White" FontSize="30" HorizontalAlignment="Center">당신의 성별을 결정하십시오.</TextBlock>
 		<Grid Grid.Row="1">
@@ -39,17 +37,105 @@
 			<TextBlock Grid.Column="0" x:Name="CategorySword" Foreground="Yellow" FontSize="30" HorizontalAlignment="Right" Margin="0, 0, 10, 0" Visibility="Collapsed">전투사계</TextBlock>
 			<TextBlock Grid.Column="1" x:Name="CategoryMagic" Foreground="White" FontSize="30" HorizontalAlignment="Left" Margin="10, 0, 0, 0" Visibility="Collapsed">마법사계</TextBlock>
 		</Grid>
-		<TextBlock x:Name="QuestionHeader" Grid.Row="5" Foreground="#28f328" FontSize="30" HorizontalAlignment="Center" Visibility="Collapsed">
-		지금 부터는 묻는 말에 대답을 해 주십시오.
-		<LineBreak/>그리고, 자신에게 맞는 답을 소신있게 눌러 주십시오.
-		</TextBlock>
-		<TextBlock x:Name="QuestionTitle" Grid.Row="6" Foreground="#28f3f3" FontSize="30" HorizontalAlignment="Center" Visibility="Collapsed">
-		당신이 한 밤중에 공부하고 있을때 밖에서 무슨 소리가 들렸다
-		</TextBlock>
-		<StackPanel Grid.Row="7" HorizontalAlignment="Center">
-			<TextBlock x:Name="Answer1" Foreground="Yellow" FontSize="30" Margin="0, 0, 0, 10" Visibility="Collapsed">1] 밖으로 나가서 알아본다</TextBlock>
-			<TextBlock x:Name="Answer2" Foreground="#28f3f3" FontSize="30" Margin="0, 0, 0, 10">2] 그 소리가 무엇일까 생각을 한다</TextBlock>
-			<TextBlock x:Name="Answer3" Foreground="#28f3f3" FontSize="30">3] 공부에만 열중한다</TextBlock>
-		</StackPanel>
+		<Grid x:Name="QuestionPanel" Grid.Row="5" Visibility="Collapsed">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="2*"/>
+				<RowDefinition Height="2*"/>
+				<RowDefinition Height="3*"/>
+			</Grid.RowDefinitions>
+
+			<TextBlock Grid.Row="0" Foreground="#28f328" FontSize="30" HorizontalAlignment="Center">
+			지금 부터는 묻는 말에 대답을 해 주십시오.
+			<LineBreak/>그리고, 자신에게 맞는 답을 소신있게 눌러 주십시오.
+			</TextBlock>
+			<TextBlock x:Name="QuestionTitle" Grid.Row="1" Foreground="#28f3f3" FontSize="30" HorizontalAlignment="Center">
+			당신이 한 밤중에 공부하고 있을때 밖에서 무슨 소리가 들렸다
+			</TextBlock>
+			<StackPanel Grid.Row="2" HorizontalAlignment="Center">
+				<TextBlock x:Name="Answer1" Foreground="Yellow" FontSize="30" Margin="0, 0, 0, 10">1] 밖으로 나가서 알아본다</TextBlock>
+				<TextBlock x:Name="Answer2" Foreground="#28f3f3" FontSize="30" Margin="0, 0, 0, 10">2] 그 소리가 무엇일까 생각을 한다</TextBlock>
+				<TextBlock x:Name="Answer3" Foreground="#28f3f3" FontSize="30">3] 공부에만 열중한다</TextBlock>
+			</StackPanel>
+		</Grid>
+		<Grid x:Name="StatPanel" Grid.Row="5" Visibility="Collapsed">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Grid Grid.Column="0" Margin="20, 0, 0, 0">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition/>
+					<ColumnDefinition/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Row="0" Grid.Column="0" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center">○ 체  력 :</TextBlock>
+				<TextBlock x:Name="StrengthText" Grid.Row="0" Grid.Column="1" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="1" Grid.Column="0" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center">○ 정신력 :</TextBlock>
+				<TextBlock x:Name="MentalityText" Grid.Row="1" Grid.Column="1" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="2" Grid.Column="0" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center">○ 집중력 :</TextBlock>
+				<TextBlock x:Name="ConcentrationText" Grid.Row="2" Grid.Column="1" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="3" Grid.Column="0" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center">○ 인내력 :</TextBlock>
+				<TextBlock x:Name="EnduranceText" Grid.Row="3" Grid.Column="1" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="4" Grid.Column="0" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center">○ 저항력 :</TextBlock>
+				<TextBlock x:Name="ResistanceText" Grid.Row="4" Grid.Column="1" Foreground="#28f3f3" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="6" Grid.Column="0" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center">체력   지수 :</TextBlock>
+				<TextBlock x:Name="HPText" Grid.Row="6" Grid.Column="1" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="7" Grid.Column="0" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center">마법   지수 :</TextBlock>
+				<TextBlock x:Name="SPText" Grid.Row="7" Grid.Column="1" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">88</TextBlock>
+
+				<TextBlock Grid.Row="8" Grid.Column="0" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center">레       벨 :</TextBlock>
+				<TextBlock Grid.Row="8" Grid.Column="1" Foreground="#00aaaa" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 300, 0">1</TextBlock>
+			</Grid>
+			<Grid Grid.Column="1" Margin="20, 0, 0, 0">
+				<Grid.RowDefinitions>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+					<RowDefinition/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="4*"/>
+					<ColumnDefinition Width="4*"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Row="0" Grid.Column="1" Foreground="#28f328" FontSize="30" VerticalAlignment="Center">남아있는 지수 :</TextBlock>
+				<TextBlock x:Name="RemainPointText" Grid.Row="0" Grid.Column="2" Foreground="White" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 250, 0">40</TextBlock>
+
+				<TextBlock x:Name="AgilityCursorText" Grid.Row="2" Grid.Column="0" Foreground="White" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center">○</TextBlock>
+				<TextBlock Grid.Row="2" Grid.Column="1" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center">민첩성  ==></TextBlock>
+				<TextBlock x:Name="AgilityText" Grid.Row="2" Grid.Column="2" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 250, 0">0</TextBlock>
+
+				<TextBlock x:Name="AccuracyCursorText" Grid.Row="3" Grid.Column="0" Foreground="White" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">○</TextBlock>
+				<TextBlock Grid.Row="3" Grid.Column="1" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center">정확성  ==></TextBlock>
+				<TextBlock x:Name="AccuracyText" Grid.Row="3" Grid.Column="2" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 250, 0">0</TextBlock>
+
+				<TextBlock x:Name="LuckCursorText" Grid.Row="4" Grid.Column="0" Foreground="White" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">○</TextBlock>
+				<TextBlock Grid.Row="4" Grid.Column="1" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center">행  운  ==></TextBlock>
+				<TextBlock x:Name="LuckText" Grid.Row="4" Grid.Column="2" Foreground="#f3f328" FontSize="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0, 0, 250, 0">0</TextBlock>
+			</Grid>
+		</Grid>
 	</Grid>
 </Page>

@@ -10,7 +10,7 @@
 	PrimaryButtonText="입력"
 	SecondaryButtonText="취소"
 	PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
-	SecondaryButtonClick="ContentDialog_SecondaryButtonClick">
+	SecondaryButtonClick="ContentDialog_SecondaryButtonClick" DefaultButton="Primary">
 
 	<Grid>
 		<TextBox x:Name="PlayerNameText"></TextBox>

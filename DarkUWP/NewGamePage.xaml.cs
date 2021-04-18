@@ -8,6 +8,7 @@ using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -36,6 +37,11 @@ namespace DarkUWP
 		private int mQuestionIdx;
 		private int[] mTransData = new int[5];
 
+		private List<TextBlock> mAssignCursorList = new List<TextBlock>();
+		private List<TextBlock> mAssignValueList = new List<TextBlock>();
+		private int mAssignID = 0;
+		private int mRemainPoint = 40;
+
 		public NewGamePage()
 		{
 			this.InitializeComponent();
@@ -45,6 +51,14 @@ namespace DarkUWP
 			mAnswerList.Add(Answer1);
 			mAnswerList.Add(Answer2);
 			mAnswerList.Add(Answer3);
+
+			mAssignCursorList.Add(AgilityCursorText);
+			mAssignCursorList.Add(AccuracyCursorText);
+			mAssignCursorList.Add(LuckCursorText);
+
+			mAssignValueList.Add(AgilityText);
+			mAssignValueList.Add(AccuracyText);
+			mAssignValueList.Add(LuckText);
 
 			mQuestionList.Add(new QuestionInfo(
 				"당신이 한 밤중에 공부하고 있을때 밖에서 무슨 소리가 들렸다",
@@ -245,11 +259,7 @@ namespace DarkUWP
 						CategorySword.Foreground = new SolidColorBrush(Colors.White);
 						CategoryMagic.Foreground = new SolidColorBrush(Colors.White);
 
-						QuestionHeader.Visibility = Visibility.Visible;
-						QuestionTitle.Visibility = Visibility.Visible;
-						Answer1.Visibility = Visibility.Visible;
-						Answer2.Visibility = Visibility.Visible;
-						Answer3.Visibility = Visibility.Visible;
+						QuestionPanel.Visibility = Visibility.Visible;
 
 						ShowQuestion();
 					}
@@ -272,7 +282,7 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
 					{
-						if (mQuestionIdx < mQuestionList.Count)
+						if (mQuestionIdx < mQuestionList.Count - 1)
 						{
 							mTransData[mQuestionList[mQuestionIdx].TransIdx[mAnswer]]++;
 
@@ -283,122 +293,269 @@ namespace DarkUWP
 						{
 							for (var i = 0; i < 5; i++)
 							{
-								switch (mTransdata[i])
+								switch (mTransData[i])
 								{
 									case 0:
-										mTransdata[i] = 5;
+										mTransData[i] = 5;
 										break;
 									case 1:
-										mTransdata[i] = 7;
+										mTransData[i] = 7;
 										break;
 									case 2:
-										mTransdata[i] = 11;
+										mTransData[i] = 11;
 										break;
 									case 3:
-										mTransdata[i] = 14;
+										mTransData[i] = 14;
 										break;
 									case 4:
-										mTransdata[i] = 17;
+										mTransData[i] = 17;
 										break;
 									case 5:
-										mTransdata[i] = 19;
+										mTransData[i] = 19;
 										break;
 									case 6:
-										mTransdata[i] = 20;
+										mTransData[i] = 20;
 										break;
 									default:
-										mTransdata[i] = 10;
+										mTransData[i] = 10;
 										break;
 								}
 							}
 
-							mPlayerList[0].Strength = mTransdata[0];
-							mPlayerList[0].Mentality = mTransdata[1];
-							mPlayerList[0].Concentration = mTransdata[2];
-							mPlayerList[0].Endurance = mTransdata[3];
-							mPlayerList[0].Resistance = mTransdata[4];
-
-							var offset = 4;
-							if (mPlayerList[0].Gender == "male")
-							{
-								mPlayerList[0].Strength += offset;
-								if (mPlayerList[0].Strength <= 20)
-									offset = 0;
-								else
-								{
-									offset = mPlayerList[0].Strength - 20;
-									mPlayerList[0].Strength = 20;
-								}
-
-								mPlayerList[0].Endurance += offset;
-								if (mPlayerList[0].Endurance <= 20)
-									offset = 0;
-								else
-								{
-									offset = mPlayerList[0].Endurance - 20;
-									mPlayerList[0].Endurance = 20;
-								}
-
-								mPlayerList[0].Resistance += offset;
-								if (mPlayerList[0].Resistance > 20)
-									mPlayerList[0].Resistance = 20;
+							var smallestID = 0;
+							for (var i = 1; i < mTransData.Length; i++) {
+								if (mTransData[i] < mTransData[smallestID])
+									smallestID = i;
 							}
+
+							if (mPlayer.ClassType == ClassCategory.Sword) {
+								var temp = mTransData[smallestID];
+								mTransData[smallestID] = mTransData[1];
+								mTransData[1] = temp;
+							}
+							else {
+								var temp = mTransData[smallestID];
+								mTransData[smallestID] = mTransData[0];
+								mTransData[0] = temp;
+							}
+
+							mPlayer.Strength = mTransData[0];
+							mPlayer.Mentality = mTransData[1];
+							mPlayer.Concentration = mTransData[2];
+							mPlayer.Endurance = mTransData[3];
+							mPlayer.Resistance = mTransData[4];
+
+							var addPoint = 4;
+							if (mPlayer.Gender == GenderType.Male) {
+								mPlayer.Strength += addPoint;
+								if (mPlayer.Strength <= 20)
+									addPoint = 0;
+								else {
+									addPoint = mPlayer.Strength - 20;
+									mPlayer.Strength = 20;
+								}
+
+								mPlayer.Endurance += addPoint;
+								if (mPlayer.Endurance <= 20)
+									addPoint = 0;
+								else
+								{
+									addPoint = mPlayer.Endurance - 20;
+									mPlayer.Endurance = 20;
+								}
+
+								mPlayer.Resistance += addPoint;
+								if (mPlayer.Resistance > 20)
+									mPlayer.Resistance = 20;
+							}
+							else {
+								mPlayer.Mentality += addPoint;
+								if (mPlayer.Mentality <= 20)
+									addPoint = 0;
+								else
+								{
+									addPoint = mPlayer.Mentality - 20;
+									mPlayer.Mentality = 20;
+								}
+
+								mPlayer.Concentration += addPoint;
+								if (mPlayer.Concentration <= 20)
+									addPoint = 0;
+								else
+								{
+									addPoint = mPlayer.Concentration - 20;
+									mPlayer.Endurance = 20;
+								}
+
+								mPlayer.Resistance += addPoint;
+								if (mPlayer.Resistance > 20)
+									mPlayer.Resistance = 20;
+							}
+
+							mPlayer.HP = mPlayer.Endurance * 10;
+							mPlayer.SP = mPlayer.Mentality * 10;
+
+							StrengthText.Text = mPlayer.Strength.ToString();
+							MentalityText.Text = mPlayer.Mentality.ToString();
+							ConcentrationText.Text = mPlayer.Concentration.ToString();
+							EnduranceText.Text = mPlayer.Endurance.ToString();
+							ResistanceText.Text = mPlayer.Resistance.ToString();
+
+							HPText.Text = mPlayer.HP.ToString();
+							if (mPlayer.ClassType == ClassCategory.Magic)
+								SPText.Text = mPlayer.SP.ToString();
 							else
-							{
-								mPlayerList[0].Mentality += offset;
-								if (mPlayerList[0].Mentality <= 20)
-									offset = 0;
-								else
-								{
-									offset = mPlayerList[0].Mentality - 20;
-									mPlayerList[0].Mentality = 20;
-								}
+								SPText.Text = "0";
 
-								mPlayerList[0].Concentration += offset;
-								if (mPlayerList[0].Concentration <= 20)
-									offset = 0;
-								else
-								{
-									offset = mPlayerList[0].Concentration - 20;
-									mPlayerList[0].Concentration = 20;
-								}
-
-								mPlayerList[0].Resistance += offset;
-								if (mPlayerList[0].Resistance > 20)
-									mPlayerList[0].Resistance = 20;
-							}
-
-							DefaultInputGrid.Visibility = Visibility.Collapsed;
-
-							mPlayerList[0].Gender = mFocusGender;
-							var genderKor = mPlayerList[0].Gender == "male" ? "남성" : "여성";
-
-							UserNameFinalText.Text = $"당신의 이름은 {mPlayerList[0].Name}입니다.";
-							UserGenderFinalText.Text = $"당신의 성별은 {genderKor}입니다.";
-
-							StrengthText.Text = mPlayerList[0].Strength.ToString();
-							MentalityText.Text = mPlayerList[0].Mentality.ToString();
-							ConcentrationText.Text = mPlayerList[0].Concentration.ToString();
-							EnduranceText.Text = mPlayerList[0].Endurance.ToString();
-							ResistanceText.Text = mPlayerList[0].Resistance.ToString();
-
-							mPlayerList[0].HP = mPlayerList[0].Endurance;
-							mPlayerList[0].SP = mPlayerList[0].Mentality;
-							mPlayerList[0].ESP = mPlayerList[0].Concentration;
-
-							HPText.Text = mPlayerList[0].HP.ToString();
-							SPText.Text = mPlayerList[0].SP.ToString();
-							ESPText.Text = mPlayerList[0].ESP.ToString();
-
-							RemainPointText.Text = mRemainPoint.ToString();
+							QuestionPanel.Visibility = Visibility.Collapsed;
+							StatPanel.Visibility = Visibility.Visible;
 
 							for (var i = 0; i < 3; i++)
-								mTransdata[i] = 0;
+								mTransData[i] = 0;
 
-							ExtraInputGrid.Visibility = Visibility.Visible;
-
-							mAssignID = 0;
 							mFocusItem = FocusItem.AssignPoint;
+						}
+					}
+				}
+				else if (mFocusItem == FocusItem.AssignPoint) {
+					void UpdateCursor() {
+						for (var i = 0; i < mAssignCursorList.Count; i++) {
+							if (mAssignID == i)
+								mAssignCursorList[i].Visibility = Visibility.Visible;
+							else
+								mAssignCursorList[i].Visibility = Visibility.Collapsed;
+						}
+					}
+
+					void UpdateStat() {
+						RemainPointText.Text = mRemainPoint.ToString();
+
+						mAssignValueList[mAssignID].Text = mTransData[mAssignID].ToString();
+					}
+
+					if (args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft)
+					{
+						if (mTransData[mAssignID] > 0)
+						{
+							mTransData[mAssignID]--;
+							mRemainPoint++;
+
+							UpdateStat();
+						}
+					}
+					else if (args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight)
+					{
+						if (mTransData[mAssignID] < 20 && mRemainPoint > 0)
+						{
+							mTransData[mAssignID]++;
+							mRemainPoint--;
+
+							UpdateStat();
+						}
+					}
+					else if (args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
+					{
+						mAssignID = (mAssignID + 1) % mAssignCursorList.Count;
+
+						UpdateCursor();
+					}
+					else if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp)
+					{
+						if (mAssignID == 0)
+							mAssignID = mAssignCursorList.Count - 1;
+						else
+							mAssignID--;
+
+						UpdateCursor();
+					}
+					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
+					{
+						if (mRemainPoint > 0)
+						{
+							await new MessageDialog("남은 포인트를 모두 할당해 주십시오.", "할당 미완료").ShowAsync();
+						}
+						else
+						{
+							//mPlayer.Agility = mTransdata[0];
+							//mPlayer.Accuracy = new int[3] { mTransdata[1], 0, 0 };
+							//mPlayer.Luck = mTransdata[2];
+
+							//AddStatPanel.Visibility = Visibility.Collapsed;
+
+							//AgilityResultText.Text = mPlayerList[0].Agility.ToString();
+							//AgilityResultLabel.Visibility = Visibility.Visible;
+							//AgilityResultText.Visibility = Visibility.Visible;
+
+							//AccuracyResultText.Text = mPlayerList[0].Accuracy[0].ToString();
+							//AccuracyResultLabel.Visibility = Visibility.Visible;
+							//AccuracyResultText.Visibility = Visibility.Visible;
+
+							//LuckResultText.Text = mPlayerList[0].Luck.ToString();
+							//LuckResultLabel.Visibility = Visibility.Visible;
+							//LuckResultText.Visibility = Visibility.Visible;
+
+							//for (var i = 0; i < 8; i++)
+							//	mTransdata[i] = 0;
+
+							//if (mPlayerList[0].Strength > 13 && mPlayerList[0].Endurance > 13 && mPlayerList[0].Agility > 11 && mPlayerList[0].Accuracy[0] > 11)
+							//{
+							//	ClassKnight.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[0] = 1;
+							//}
+
+							//if (mPlayerList[0].Mentality > 13 && mPlayerList[0].Accuracy[0] > 14)
+							//{
+							//	ClassMagician.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[1] = 1;
+							//}
+
+							//if (mPlayerList[0].Mentality > 10 && mPlayerList[0].Concentration > 13 & mPlayerList[0].Accuracy[0] > 12)
+							//{
+							//	ClassEsper.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[2] = 1;
+							//}
+
+							//if (mPlayerList[0].Strength > 13 && mPlayerList[0].Mentality > 10 && mPlayerList[0].Endurance > 10 && mPlayerList[0].Resistance > 10)
+							//{
+							//	ClassWarrior.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[3] = 1;
+							//}
+
+							//if (mPlayerList[0].Strength > 16 && mPlayerList[0].Agility > 13 && mPlayerList[0].Accuracy[0] > 11)
+							//{
+							//	ClassMonk.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[4] = 1;
+							//}
+
+							//if (mPlayerList[0].Resistance > 16 && mPlayerList[0].Agility > 16 && mPlayerList[0].Luck > 9)
+							//{
+							//	ClassNinja.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[5] = 1;
+							//}
+
+							//if (mPlayerList[0].Accuracy[0] > 18)
+							//{
+							//	ClassHunter.Foreground = new SolidColorBrush(Colors.White);
+							//	mTransdata[6] = 1;
+							//}
+
+							//mTransdata[7] = 1;
+
+							//for (var i = 0; i < 8; i++)
+							//{
+							//	if (mTransdata[i] == 1)
+							//	{
+							//		mClassFocusID = i;
+							//		break;
+							//	}
+							//}
+
+							//UpdateClassFocus();
+
+
+							//SelectClassPanel.Visibility = Visibility.Visible;
+
+							//mFocusItem = FocusItem.SelectClass;
 						}
 					}
 				}
