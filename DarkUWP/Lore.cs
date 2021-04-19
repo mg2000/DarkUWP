@@ -343,6 +343,12 @@ namespace DarkUWP
 				}
 			}
 		}
+
+		public string ClassStr {
+			get {
+				return Common.GetClass(ClassType, Class);
+			}
+		}
 	}
 
 	public enum GenderType {

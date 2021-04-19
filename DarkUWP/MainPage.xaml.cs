@@ -273,7 +273,7 @@ namespace DarkUWP
 						}
 						else if (mFocusItem == 2)
 						{
-							var saveFile = await ApplicationData.Current.LocalFolder.TryGetItemAsync("loreSave.dat");
+							var saveFile = await ApplicationData.Current.LocalFolder.TryGetItemAsync("darkSave.dat");
 							if (saveFile == null)
 							{
 								await new MessageDialog("저장된 게임이 없습니다. 새로운 게임을 시작해 주십시오.", "저장된 게임 없음").ShowAsync();
@@ -281,7 +281,7 @@ namespace DarkUWP
 							else
 							{
 								Window.Current.CoreWindow.KeyUp -= mainPageKeyUpEvent;
-								//Frame.Navigate(typeof(GamePage));
+								Frame.Navigate(typeof(GamePage), null);
 							}
 						}
 						else

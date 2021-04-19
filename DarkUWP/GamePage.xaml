@@ -1,0 +1,302 @@
+﻿<Page
+	x:Class="DarkUWP.GamePage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="using:DarkUWP"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+	mc:Ignorable="d"
+	Background="#515151">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="636"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="636"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<canvas:CanvasAnimatedControl Grid.Column="0" x:Name="canvas" ClearColor="Black" Canvas.Left="0" Canvas.Top="0" Width="576" Height="576" CreateResources="canvas_CreateResources" Draw="canvas_Draw"/>
+			<StackPanel Grid.Column="0" x:Name="BattlePanel" Width="576" Height="576" Background="Black" Visibility="Collapsed">
+				<Border x:Name="EnemyBlock0" Background="Transparent" Margin="60, 50, 30, 0">
+					<TextBlock x:Name="EnemyText0" Foreground="LightGray" FontSize="25">적1</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock1" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText1" Foreground="LightGray" FontSize="25">적2</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock2" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText2" Foreground="LightGray" FontSize="25">적3</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock3" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText3" Foreground="LightGray" FontSize="25">적4</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock4" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText4" Foreground="LightGray" FontSize="25">적5</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock5" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText5" Foreground="LightGray" FontSize="25">적6</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock6" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText6" Foreground="LightGray" FontSize="25">적7</TextBlock>
+				</Border>
+				<Border x:Name="EnemyBlock7" Background="Transparent" Margin="60, 30, 30, 0">
+					<TextBlock x:Name="EnemyText7" Foreground="LightGray" FontSize="25">적8</TextBlock>
+				</Border>
+			</StackPanel>
+			<Grid Grid.Column="1" Height="576" Margin="0, 0, 30, 0">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				<StackPanel Grid.Row="0">
+					<RichTextBlock x:Name="DialogText" FontSize="25" Margin="30, 30, 30, 30" IsTextSelectionEnabled="False"></RichTextBlock>
+					<RichTextBlock x:Name="SpinnerText" FontSize="25" Margin="30, 0, 30, 0" IsTextSelectionEnabled="False" Visibility="Collapsed"></RichTextBlock>
+					<Grid x:Name="StatPanel" Margin="30, 30, 30, 0" Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+						</Grid.RowDefinitions>
+						<Grid Grid.Row="0" Margin="0, 0, 0, 0">
+							<Grid.RowDefinitions>
+								<RowDefinition/>
+								<RowDefinition/>
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="1*"/>
+								<ColumnDefinition Width="5*"/>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="25" Foreground="#aaaaaa"># 이름 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="1" x:Name="StatPlayerName" FontSize="25" Foreground="#aaaaaa">테스트</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="25" Foreground="#aaaaaa"># 성별 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="1" x:Name="StatPlayerGender" FontSize="25" Foreground="#aaaaaa">테스트</TextBlock>
+
+							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="25" Foreground="#aaaaaa"># 계급 :</TextBlock>
+							<TextBlock Grid.Row="2" Grid.Column="1" x:Name="StatPlayerClass" FontSize="25" Foreground="#aaaaaa">테스트</TextBlock>
+						</Grid>
+
+						<Grid Grid.Row="1" Margin="0, 30, 0, 0">
+							<Grid.RowDefinitions>
+								<RowDefinition/>
+								<RowDefinition/>
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="25" Foreground="#00aaaa">체력 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="1" x:Name="StatStrength" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="0" Grid.Column="2" FontSize="25" Foreground="#00aaaa">정신력 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="3" x:Name="StatMentality" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="0" Grid.Column="4" FontSize="25" Foreground="#00aaaa">집중력 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="5" x:Name="StatConcentration" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="0" Grid.Column="6" FontSize="25" Foreground="#00aaaa">인내력 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="7" x:Name="StatEndurance" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="25" Foreground="#00aaaa">저항력 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="1" x:Name="StatResistance" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="2" FontSize="25" Foreground="#00aaaa">민첩성 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="3" x:Name="StatAgility" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="4" FontSize="25" Foreground="#00aaaa">행운 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="5" x:Name="StatLuck" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+						</Grid>
+
+						<Grid Grid.Row="2" Margin="0, 30, 0, 0">
+							<Grid.RowDefinitions>
+								<RowDefinition/>
+								<RowDefinition/>
+								<RowDefinition/>
+
+								<RowDefinition/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Grid.Row="0" Grid.Column="0" FontSize="25" Foreground="#00aaaa">무기의 정확성 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="1" x:Name="StatWeaponAccuracy" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="0" Grid.Column="2" FontSize="25" Foreground="#00aaaa">전투 레벨 :</TextBlock>
+							<TextBlock Grid.Row="0" Grid.Column="3" x:Name="StatAttackLevel" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="0" FontSize="25" Foreground="#00aaaa">정신력의 정확성 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="1" x:Name="StatMagicAccuracy" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="1" Grid.Column="2" FontSize="25" Foreground="#00aaaa">마법 레벨 :</TextBlock>
+							<TextBlock Grid.Row="1" Grid.Column="3" x:Name="StatMagicLevel" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="2" Grid.Column="0" FontSize="25" Foreground="#00aaaa">초감각의 정확성 :</TextBlock>
+							<TextBlock Grid.Row="2" Grid.Column="1" x:Name="StatESPAccuracy" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="2" Grid.Column="2" FontSize="25" Foreground="#00aaaa">초감각 레벨 :</TextBlock>
+							<TextBlock Grid.Row="2" Grid.Column="3" x:Name="StatESPLevel" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 0, 60, 0">0</TextBlock>
+
+							<TextBlock Grid.Row="3" Grid.Column="0" FontSize="25" Foreground="#00aaaa" Margin="0, 30, 0, 0">## 경험치 :</TextBlock>
+							<TextBlock Grid.Row="3" Grid.Column="1" x:Name="StatExp" FontSize="25" Foreground="#00aaaa" HorizontalAlignment="Right" Margin="0, 30, 60, 0">0</TextBlock>
+						</Grid>
+
+						<Grid Grid.Row="3" Margin="0, 30, 0, 0">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Grid.Column="0" FontSize="25" Foreground="#00AA00">사용 무기 -</TextBlock>
+							<TextBlock Grid.Column="1" x:Name="StatWeapon" FontSize="25" Foreground="#00AA00" HorizontalAlignment="Left">없음</TextBlock>
+
+							<TextBlock Grid.Column="2" FontSize="25" Foreground="#00AA00" HorizontalAlignment="Right">방패 -</TextBlock>
+							<TextBlock Grid.Column="3" x:Name="StatShield" FontSize="25" Foreground="#00AA00" HorizontalAlignment="Left">없음</TextBlock>
+
+							<TextBlock Grid.Column="4" FontSize="25" Foreground="#00AA00" HorizontalAlignment="Right">갑옷 -</TextBlock>
+							<TextBlock Grid.Column="5" x:Name="StatArmor" FontSize="25" Foreground="#00AA00" HorizontalAlignment="Left">없음</TextBlock>
+						</Grid>
+					</Grid>
+					<Grid x:Name="StatHealthPanel" Margin="30, 30, 30, 0" Visibility="Collapsed">
+						<Grid.RowDefinitions>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+							<RowDefinition/>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Grid.Row="0" Grid.Column="0" FontSize="25" Foreground="White" HorizontalAlignment="Center">이름</TextBlock>
+						<TextBlock Grid.Row="0" Grid.Column="1" FontSize="25" Foreground="#ff5555" HorizontalAlignment="Center">중독</TextBlock>
+						<TextBlock Grid.Row="0" Grid.Column="2" FontSize="25" Foreground="#ff5555" HorizontalAlignment="Center">의식불명</TextBlock>
+						<TextBlock Grid.Row="0" Grid.Column="3" FontSize="25" Foreground="#ff5555" HorizontalAlignment="Center">죽음</TextBlock>
+
+						<TextBlock Grid.Row="1" Grid.Column="0" x:Name="HealthPlayerName1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름1</TextBlock>
+						<TextBlock Grid.Row="1" Grid.Column="1" x:Name="HealthPoison1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="1" Grid.Column="2" x:Name="HealthUnconscious1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="1" Grid.Column="3" x:Name="HealthDead1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+
+						<TextBlock Grid.Row="2" Grid.Column="0" x:Name="HealthPlayerName2" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름2</TextBlock>
+						<TextBlock Grid.Row="2" Grid.Column="1" x:Name="HealthPoison2" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="2" Grid.Column="2" x:Name="HealthUnconscious2" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="2" Grid.Column="3" x:Name="HealthDead2" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+
+						<TextBlock Grid.Row="3" Grid.Column="0" x:Name="HealthPlayerName3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름3</TextBlock>
+						<TextBlock Grid.Row="3" Grid.Column="1" x:Name="HealthPoison3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="3" Grid.Column="2" x:Name="HealthUnconscious3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="3" Grid.Column="3" x:Name="HealthDead3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+
+						<TextBlock Grid.Row="4" Grid.Column="0" x:Name="HealthPlayerName4" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름4</TextBlock>
+						<TextBlock Grid.Row="4" Grid.Column="1" x:Name="HealthPoison4" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="4" Grid.Column="2" x:Name="HealthUnconscious4" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="4" Grid.Column="3" x:Name="HealthDead4" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+
+						<TextBlock Grid.Row="5" Grid.Column="0" x:Name="HealthPlayerName5" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름5</TextBlock>
+						<TextBlock Grid.Row="5" Grid.Column="1" x:Name="HealthPoison5" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="5" Grid.Column="2" x:Name="HealthUnconscious5" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="5" Grid.Column="3" x:Name="HealthDead5" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+
+						<TextBlock Grid.Row="6" Grid.Column="0" x:Name="HealthPlayerName6" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">이름6</TextBlock>
+						<TextBlock Grid.Row="6" Grid.Column="1" x:Name="HealthPoison6" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="6" Grid.Column="2" x:Name="HealthUnconscious6" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+						<TextBlock Grid.Row="6" Grid.Column="3" x:Name="HealthDead6" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 70, 0">0</TextBlock>
+					</Grid>
+					<TextBlock x:Name="GameMenuText0" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴1</TextBlock>
+					<TextBlock x:Name="GameMenuText1" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴2</TextBlock>
+					<TextBlock x:Name="GameMenuText2" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴3</TextBlock>
+					<TextBlock x:Name="GameMenuText3" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴4</TextBlock>
+					<TextBlock x:Name="GameMenuText4" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴5</TextBlock>
+					<TextBlock x:Name="GameMenuText5" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴6</TextBlock>
+					<TextBlock x:Name="GameMenuText6" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴7</TextBlock>
+					<TextBlock x:Name="GameMenuText7" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴8</TextBlock>
+					<TextBlock x:Name="GameMenuText8" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴9</TextBlock>
+					<TextBlock x:Name="GameMenuText9" Foreground="LightGray" FontSize="25" Margin="30, 0, 30, 0" Visibility="Collapsed">메뉴10</TextBlock>
+				</StackPanel>
+
+				<TextBlock Grid.Row="2" x:Name="ContinueText" FontSize="25" Margin="30,0,30,30" Foreground="Yellow" Visibility="Collapsed">아무키나 누르십시오 ...</TextBlock>
+			</Grid>
+		</Grid>
+		<Grid Grid.Row="1" Margin="30, 30, 30, 30" Padding="30,30,30,30">
+			<Grid.RowDefinitions>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<TextBlock Grid.Row="0" Grid.Column="0" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">이름</TextBlock>
+			<TextBlock Grid.Row="0" Grid.Column="1" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">체력</TextBlock>
+			<TextBlock Grid.Row="0" Grid.Column="2" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">마력</TextBlock>
+			<TextBlock Grid.Row="0" Grid.Column="6" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">상태</TextBlock>
+
+			<TextBlock x:Name="PlayerName0" Grid.Row="1" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP0" Grid.Row="1" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP0" Grid.Row="1" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition0" Grid.Row="1" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+
+			<TextBlock x:Name="PlayerName1" Grid.Row="2" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP1" Grid.Row="2" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP1" Grid.Row="2" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition1" Grid.Row="2" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+
+			<TextBlock x:Name="PlayerName2" Grid.Row="3" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP2" Grid.Row="3" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP2" Grid.Row="3" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition2" Grid.Row="3" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+
+			<TextBlock x:Name="PlayerName3" Grid.Row="4" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP3" Grid.Row="4" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP3" Grid.Row="4" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition3" Grid.Row="4" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+
+			<TextBlock x:Name="PlayerName4" Grid.Row="5" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP4" Grid.Row="5" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP4" Grid.Row="5" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition4" Grid.Row="5" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+
+			<TextBlock x:Name="PlayerName5" Grid.Row="6" Grid.Column="0" Foreground="DarkRed" FontSize="25" VerticalAlignment="Center">빈 슬롯</TextBlock>
+			<TextBlock x:Name="PlayerHP5" Grid.Row="6" Grid.Column="1" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerSP5" Grid.Row="6" Grid.Column="2" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="40, 0, 40, 0"></TextBlock>
+			<TextBlock x:Name="PlayerCondition5" Grid.Row="6" Grid.Column="6" Foreground="White" FontSize="25" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+		</Grid>
+		<MediaElement x:Name="BGMPlayer" Visibility="Collapsed" AutoPlay="True" IsLooping="True"/>
+	</Grid>
+</Page>

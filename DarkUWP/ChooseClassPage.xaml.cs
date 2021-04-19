@@ -161,7 +161,7 @@ namespace DarkUWP
 										mPlayer.AttackMagic--;
 										mExtraPoint++;
 
-										UpdateSkillPoint(mPlayer.FistSkill);
+										UpdateSkillPoint(mPlayer.AttackMagic);
 									}
 									break;
 								case 1:
@@ -284,7 +284,7 @@ namespace DarkUWP
 										mPlayer.AttackMagic++;
 										mExtraPoint--;
 
-										UpdateSkillPoint(mPlayer.FistSkill);
+										UpdateSkillPoint(mPlayer.AttackMagic);
 									}
 									break;
 								case 1:
@@ -379,14 +379,18 @@ namespace DarkUWP
 				}
 				else if (mFocusItem == FocusItem.ChooseClass)
 				{
-					void UpdateClassFocus(int focusID) {
+					void UpdateClassFocus(int focusID)
+					{
 						mFocusID = focusID;
 
-						for (var i = 0; i < mClassTextList.Count; i++) {
+						for (var i = 0; i < mClassTextList.Count; i++)
+						{
 							if (mFocusID == i)
 								mClassTextList[i].Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xf3, 0xf3, 0x28));
-							else
+							else if (mClassAvailableList[i])
 								mClassTextList[i].Foreground = new SolidColorBrush(Colors.White);
+							else
+								mClassTextList[i].Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xaa, 0xaa, 0xaa));
 						}
 					}
 
@@ -415,6 +419,93 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
 					{
+						mPlayer.Class = mFocusID + 1;
+
+						PlayerClassText.Text = $"당신의 계급 : {mPlayer.ClassStr}";
+						PlayerClassText.Visibility = Visibility.Visible;
+
+						SkillPanel.Visibility = Visibility.Collapsed;
+						ClassPanel.Visibility = Visibility.Collapsed;
+
+						PrologText.Visibility = Visibility.Visible;
+						ConfirmPanel.Visibility = Visibility.Visible;
+
+						mFocusItem = FocusItem.Confirm;
+						mFocusID = 0;
+					}
+				}
+				else if (mFocusItem == FocusItem.Confirm)
+				{
+					if (args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft)
+					{
+						mFocusID = 0;
+
+						ConfirmYesText.Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xf3, 0xf3, 0x28));
+						ConfirmNoText.Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xaa, 0xaa, 0xaa));
+					}
+					else if (args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight)
+					{
+						mFocusID = 1;
+
+						ConfirmYesText.Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xaa, 0xaa, 0xaa));
+						ConfirmNoText.Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0xf3, 0xf3, 0x28));
+					}
+					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
+					{
+						Window.Current.CoreWindow.KeyUp -= chooseClassPageKeyEvent;
+
+						if (mFocusID == 0) {
+							if (mPlayer.ClassType == ClassCategory.Sword)
+								mPlayer.PotentialAC = 2;
+							else
+								mPlayer.PotentialAC = 0;
+
+							mPlayer.Level = 1;
+							mPlayer.Poison = 0;
+							mPlayer.Unconscious = 0;
+							mPlayer.Dead = 0;
+							mPlayer.HP = mPlayer.Endurance * mPlayer.Level * 10;
+
+							if (mPlayer.ClassType == ClassCategory.Magic)
+								mPlayer.SP = mPlayer.Mentality * mPlayer.Level * 10;
+							else
+								mPlayer.SP = 0;
+
+							mPlayer.AC = 0;
+							mPlayer.Experience = 0;
+							mPlayer.PotentialExperience = 0;
+							mPlayer.Weapon = 0;
+							mPlayer.Shield = 0;
+							mPlayer.Armor = 0;
+							mPlayer.WeaPower = 2;
+							mPlayer.ShiPower = 0;
+							mPlayer.ArmPower = 0;
+
+							var party = new LorePlayer()
+							{
+								Year = 774,
+								Day = 18,
+								Hour = 10,
+								Min = 10,
+								Map = 6,
+								XAxis = 9,
+								YAxis = 47,
+								Food = 0,
+								Gold = 0,
+								Arrow = 0,
+								Checksum = new int[2],
+								Item = new int[10],
+								Etc = new int[100]
+							};
+
+							Frame.Navigate(typeof(GamePage), new Payload()
+							{
+								Player = mPlayer,
+								Party = party
+							});
+						}
+						else
+							Frame.Navigate(typeof(MainPage));
 					}
 				}
 			};
@@ -485,6 +576,7 @@ namespace DarkUWP
 		private enum FocusItem {
 			SetSkill,
 			ChooseClass,
+			Confirm
 		}
 	}
 }
