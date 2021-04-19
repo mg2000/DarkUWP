@@ -129,8 +129,6 @@ namespace DarkUWP
 
 		private bool mCureBattle = false;
 
-		private volatile bool mMoveEvent = false;
-
 		private Random mRand = new Random();
 
 		//private List<EnemyData> mEnemyDataList = null;
@@ -274,406 +272,406 @@ namespace DarkUWP
 
 			gamePageKeyDownEvent = (sender, args) =>
 			{
-				//if (mLoading || mMoveEvent || mSpecialEvent > 0 || mAnimationEvent != AnimationType.None)
-				//	return;
-				//else if (ContinueText.Visibility == Visibility.Visible)
-				//{
-				//	return;
-				//}
+				if (mLoading || mSpecialEvent > 0 || mAnimationEvent != AnimationType.None || ContinueText.Visibility == Visibility.Visible)
+					return;
 
+				if (mMenuMode == MenuMode.None && mSpinnerType == SpinnerType.None && (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.Right ||
+				 args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight ||
+				 args.VirtualKey == VirtualKey.GamepadDPadUp || args.VirtualKey == VirtualKey.GamepadDPadDown || args.VirtualKey == VirtualKey.GamepadDPadLeft || args.VirtualKey == VirtualKey.GamepadDPadRight))
+				{
+					void MovePlayer(int moveX, int moveY)
+					{
+						mParty.XAxis = moveX;
+						mParty.YAxis = moveY;
 
-				//if (mMenuMode == MenuMode.None && mSpinnerType == SpinnerType.None && (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.Right ||
-				// args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight ||
-				// args.VirtualKey == VirtualKey.GamepadDPadUp || args.VirtualKey == VirtualKey.GamepadDPadDown || args.VirtualKey == VirtualKey.GamepadDPadLeft || args.VirtualKey == VirtualKey.GamepadDPadRight))
-				//{
-				//	void MovePlayer(int moveX, int moveY)
-				//	{
-				//		mParty.XAxis = moveX;
-				//		mParty.YAxis = moveY;
+						bool needUpdateStat = false;
+						foreach (var player in mPlayerList)
+						{
+							if (player.Poison > 0)
+								player.Poison++;
 
-				//		bool needUpdateStat = false;
-				//		mPlayerList.ForEach(delegate (Lore player)
-				//		{
-				//			if (player.Poison > 0)
-				//				player.Poison++;
+							if (player.Poison > 10)
+							{
+								player.Poison = 1;
+								if (0 < player.Dead && player.Dead < 100)
+									player.Dead++;
+								else if (player.Unconscious > 0)
+								{
+									player.Unconscious++;
+									if (player.Unconscious > player.Endurance * player.Level)
+										player.Dead = 1;
+								}
+								else
+								{
+									player.HP--;
+									if (player.HP <= 0)
+										player.Unconscious = 1;
+								}
 
-				//			if (player.Poison > 10)
-				//			{
-				//				player.Poison = 1;
-				//				if (0 < player.Dead && player.Dead < 100)
-				//					player.Dead++;
-				//				else if (player.Unconscious > 0)
-				//				{
-				//					player.Unconscious++;
-				//					if (player.Unconscious > player.Endurance * player.Level)
-				//						player.Dead++;
-				//				}
-				//				else
-				//				{
-				//					player.HP--;
-				//					if (player.HP <= 0)
-				//						player.Unconscious = 1;
-				//				}
+								needUpdateStat = true;
+							}
+						}
 
-				//				needUpdateStat = true;
-				//			}
-				//		});
+						if (needUpdateStat)
+						{
+							DisplayHP();
+							DisplayCondition();
+						}
 
-				//		if (needUpdateStat)
-				//		{
-				//			DisplayHP();
-				//			DisplayCondition();
-				//		}
+						//DetectGameOver();
 
-				//		DetectGameOver();
+						if (mParty.Etc[4] > 0)
+							mParty.Etc[4]--;
 
-				//		if (mParty.Etc[4] > 0)
-				//			mParty.Etc[4]--;
+						//if (!(mMapLayer[moveX + mMapWidth * moveY] == 0 || (mPosition == PositionType.Den && mMapLayer[moveX + mMapWidth * moveY] == 52)) && mRand.Next(mEncounter * 20) == 0)
+						//{
+						//	EncounterEnemy();
+						//	mTriggeredDownEvent = true;
+						//}
 
-				//		if (!(mMapLayer[moveX + mMapWidth * moveY] == 0 || (mPosition == PositionType.Den && mMapLayer[moveX + mMapWidth * moveY] == 52)) && mRand.Next(mEncounter * 20) == 0)
-				//		{
-				//			EncounterEnemy();
-				//			mTriggeredDownEvent = true;
-				//		}
-				//	}
+						if (mPosition == PositionType.Ground)
+							PlusTime(0, 2, 0);
+						else
+							PlusTime(0, 0, 5);
+					}
 
-				//	var x = mParty.XAxis;
-				//	var y = mParty.YAxis;
+					var x = mParty.XAxis;
+					var y = mParty.YAxis;
 
-				//	if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadDPadUp || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp)
-				//	{
-				//		y--;
-				//		if (mPosition == PositionType.Town)
-				//			mFace = 1;
-				//		else
-				//			mFace = 5;
-				//	}
-				//	else if (args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadDPadDown || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown)
-				//	{
-				//		y++;
-				//		if (mPosition == PositionType.Town)
-				//			mFace = 0;
-				//		else
-				//			mFace = 4;
-				//	}
-				//	else if (args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft)
-				//	{
-				//		x--;
-				//		if (mPosition == PositionType.Town)
-				//			mFace = 3;
-				//		else
-				//			mFace = 7;
-				//	}
-				//	else if (args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight)
-				//	{
-				//		x++;
-				//		if (mPosition == PositionType.Town)
-				//			mFace = 2;
-				//		else
-				//			mFace = 6;
-				//	}
+					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadDPadUp || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp)
+					{
+						y--;
+						if (mPosition == PositionType.Town)
+							mFace = 1;
+						else
+							mFace = 5;
+					}
+					else if (args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadDPadDown || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown)
+					{
+						y++;
+						if (mPosition == PositionType.Town)
+							mFace = 0;
+						else
+							mFace = 4;
+					}
+					else if (args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft)
+					{
+						x--;
+						if (mPosition == PositionType.Town)
+							mFace = 3;
+						else
+							mFace = 7;
+					}
+					else if (args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight)
+					{
+						x++;
+						if (mPosition == PositionType.Town)
+							mFace = 2;
+						else
+							mFace = 6;
+					}
 
-				//	if (mParty.Map == 26)
-				//		mFace += 4;
+					if (mParty.Map == 26)
+						mFace += 4;
 
-				//	if (x > 3 && x < mMapWidth - 3 && y > 3 && y < mMapHeight - 3)
-				//	{
-				//		void EnterMap()
-				//		{
-				//			if (mParty.Map == 1)
-				//			{
-				//				if (x == 19 && y == 10)
-				//					ShowEnterMenu(EnterType.CastleLore);
-				//				else if (x == 75 && y == 56)
-				//					ShowEnterMenu(EnterType.LastDitch);
-				//				else if (x == 16 && y == 88)
-				//					ShowEnterMenu(EnterType.Menace);
-				//				else if (x == 19 && y == 5)
-				//					ShowEnterMenu(EnterType.AnotherLore);
-				//			}
-				//			else if (mParty.Map == 2)
-				//			{
-				//				if (x == 18 && y == 25)
-				//					ShowEnterMenu(EnterType.ValiantPeoples);
-				//				else if (x == 30 && y == 81)
-				//					ShowEnterMenu(EnterType.GaiaTerra);
-				//				else if (x == 81 && y == 46)
-				//					ShowEnterMenu(EnterType.Quake);
-				//				else if (x == 43 && y == 6)
-				//					ShowEnterMenu(EnterType.Wivern);
-				//			}
-				//			else if (mParty.Map == 3)
-				//			{
-				//				if (x == 73 && y == 18)
-				//					ShowEnterMenu(EnterType.WaterField);
-				//				else if (x == 22 && y == 61)
-				//					ShowEnterMenu(EnterType.Notice);
-				//				else if (x == 95 && y == 41)
-				//					ShowEnterMenu(EnterType.LockUp);
-				//			}
-				//			else if (mParty.Map == 4)
-				//			{
-				//				if (x == 47 && y == 34)
-				//					ShowEnterMenu(EnterType.SwampKeep);
-				//				else if (x == 47 && y == 56)
-				//					ShowEnterMenu(EnterType.EvilGod);
-				//				else if (x == 81 && y == 15)
-				//					ShowEnterMenu(EnterType.Muddy);
-				//			}
-				//			else if (mParty.Map == 5)
-				//			{
-				//				if (x == 14 && y == 30)
-				//					ShowEnterMenu(EnterType.ImperiumMinor);
-				//				else if (x == 33 && y == 13)
-				//					ShowEnterMenu(EnterType.EvilConcentration);
-				//			}
-				//			else if (mParty.Map == 7)
-				//			{
-				//				ShowEnterMenu(EnterType.Pyramid);
-				//			}
-				//			else if (mParty.Map == 8)
-				//			{
-				//				ShowEnterMenu(EnterType.EvilSeal);
-				//			}
-				//			else if (mParty.Map == 10)
-				//			{
-				//				ShowEnterMenu(EnterType.Wivern);
-				//			}
-				//			else if (mParty.Map == 13)
-				//			{
-				//				ShowEnterMenu(EnterType.SwampKeep);
-				//			}
-				//			else if (mParty.Map == 16)
-				//			{
-				//				ShowEnterMenu(EnterType.WaterField);
-				//			}
-				//			else if (mParty.Map == 21)
-				//			{
-				//				if (y < 6)
-				//					ShowEnterMenu(EnterType.SwampGate);
-				//				else
-				//					ShowEnterMenu(EnterType.ImperiumMinor);
-				//			}
-				//			else if (mParty.Map == 22)
-				//			{
-				//				if (y < 6)
-				//					ShowEnterMenu(EnterType.SwampKeep);
-				//				else
-				//					ShowEnterMenu(EnterType.LastShelter);
-				//			}
-				//			else if (mParty.Map == 23)
-				//			{
-				//				ShowEnterMenu(EnterType.DungeonOfEvil);
-				//			}
-				//			else if (mParty.Map == 25)
-				//			{
-				//				ShowEnterMenu(EnterType.ChamberOfNecromancer);
-				//			}
-				//		}
+					if (x > 3 && x < mMapWidth - 4 && y > 4 && y < mMapHeight - 5)
+					{
+						//void EnterMap()
+						//{
+						//	if (mParty.Map == 1)
+						//	{
+						//		if (x == 19 && y == 10)
+						//			ShowEnterMenu(EnterType.CastleLore);
+						//		else if (x == 75 && y == 56)
+						//			ShowEnterMenu(EnterType.LastDitch);
+						//		else if (x == 16 && y == 88)
+						//			ShowEnterMenu(EnterType.Menace);
+						//		else if (x == 19 && y == 5)
+						//			ShowEnterMenu(EnterType.AnotherLore);
+						//	}
+						//	else if (mParty.Map == 2)
+						//	{
+						//		if (x == 18 && y == 25)
+						//			ShowEnterMenu(EnterType.ValiantPeoples);
+						//		else if (x == 30 && y == 81)
+						//			ShowEnterMenu(EnterType.GaiaTerra);
+						//		else if (x == 81 && y == 46)
+						//			ShowEnterMenu(EnterType.Quake);
+						//		else if (x == 43 && y == 6)
+						//			ShowEnterMenu(EnterType.Wivern);
+						//	}
+						//	else if (mParty.Map == 3)
+						//	{
+						//		if (x == 73 && y == 18)
+						//			ShowEnterMenu(EnterType.WaterField);
+						//		else if (x == 22 && y == 61)
+						//			ShowEnterMenu(EnterType.Notice);
+						//		else if (x == 95 && y == 41)
+						//			ShowEnterMenu(EnterType.LockUp);
+						//	}
+						//	else if (mParty.Map == 4)
+						//	{
+						//		if (x == 47 && y == 34)
+						//			ShowEnterMenu(EnterType.SwampKeep);
+						//		else if (x == 47 && y == 56)
+						//			ShowEnterMenu(EnterType.EvilGod);
+						//		else if (x == 81 && y == 15)
+						//			ShowEnterMenu(EnterType.Muddy);
+						//	}
+						//	else if (mParty.Map == 5)
+						//	{
+						//		if (x == 14 && y == 30)
+						//			ShowEnterMenu(EnterType.ImperiumMinor);
+						//		else if (x == 33 && y == 13)
+						//			ShowEnterMenu(EnterType.EvilConcentration);
+						//	}
+						//	else if (mParty.Map == 7)
+						//	{
+						//		ShowEnterMenu(EnterType.Pyramid);
+						//	}
+						//	else if (mParty.Map == 8)
+						//	{
+						//		ShowEnterMenu(EnterType.EvilSeal);
+						//	}
+						//	else if (mParty.Map == 10)
+						//	{
+						//		ShowEnterMenu(EnterType.Wivern);
+						//	}
+						//	else if (mParty.Map == 13)
+						//	{
+						//		ShowEnterMenu(EnterType.SwampKeep);
+						//	}
+						//	else if (mParty.Map == 16)
+						//	{
+						//		ShowEnterMenu(EnterType.WaterField);
+						//	}
+						//	else if (mParty.Map == 21)
+						//	{
+						//		if (y < 6)
+						//			ShowEnterMenu(EnterType.SwampGate);
+						//		else
+						//			ShowEnterMenu(EnterType.ImperiumMinor);
+						//	}
+						//	else if (mParty.Map == 22)
+						//	{
+						//		if (y < 6)
+						//			ShowEnterMenu(EnterType.SwampKeep);
+						//		else
+						//			ShowEnterMenu(EnterType.LastShelter);
+						//	}
+						//	else if (mParty.Map == 23)
+						//	{
+						//		ShowEnterMenu(EnterType.DungeonOfEvil);
+						//	}
+						//	else if (mParty.Map == 25)
+						//	{
+						//		ShowEnterMenu(EnterType.ChamberOfNecromancer);
+						//	}
+						//}
 
-				//		if (mPosition == PositionType.Town)
-				//		{
-				//			if (mMapLayer[x + mMapWidth * y] == 0)
-				//			{
-				//				var oriX = mParty.XAxis;
-				//				var oriY = mParty.YAxis;
-				//				MovePlayer(x, y);
-				//				InvokeSpecialEvent(oriX, oriY);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 21)
-				//			{
-				//				// Don't Move
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 22)
-				//			{
-				//				EnterMap();
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 23)
-				//			{
-				//				ShowSign(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 24)
-				//			{
-				//				if (EnterWater())
-				//					MovePlayer(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 25)
-				//			{
-				//				EnterSwamp();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 26)
-				//			{
-				//				EnterLava();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (27 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
-				//			{
-				//				// Move Move
-				//				MovePlayer(x, y);
-				//			}
-				//			else
-				//			{
-				//				TalkMode(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//		}
-				//		else if (mPosition == PositionType.Ground)
-				//		{
-				//			if (mMapLayer[x + mMapWidth * y] == 0)
-				//			{
-				//				var oriX = mParty.XAxis;
-				//				var oriY = mParty.YAxis;
-				//				MovePlayer(x, y);
-				//				InvokeSpecialEvent(oriX, oriY);
+						if (mPosition == PositionType.Town)
+						{
+							if (GetTileInfo(x, y) == 0 || GetTileInfo(x, y) == 19)
+							{
+								var oriX = mParty.XAxis;
+								var oriY = mParty.YAxis;
+								MovePlayer(x, y);
+								InvokeSpecialEvent(oriX, oriY);
+								mTriggeredDownEvent = true;
+							}
+							else if (1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 18 || GetTileInfo(x, y) == 20 || GetTileInfo(x, y) == 21)
+							{
+								// Don't Move
+							}
+							else if (GetTileInfo(x, y) == 22)
+							{
+							//	EnterMap();
+							//	mTriggeredDownEvent = true;
+							}
+							else if (GetTileInfo(x, y) == 23)
+							{
+							//	ShowSign(x, y);
+							}
+							else if (GetTileInfo(x, y) == 24)
+							{
+							//	if (EnterWater())
+							//		MovePlayer(x, y);
+							//	mTriggeredDownEvent = true;
+							}
+							else if (GetTileInfo(x, y) == 25)
+							{
+							//	EnterSwamp();
+							//	MovePlayer(x, y);
+							}
+							else if (GetTileInfo(x, y) == 26)
+							{
+							//	EnterLava();
+							//	MovePlayer(x, y);
+							}
+							else if (27 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 47)
+							{
+								// Move Move
+								MovePlayer(x, y);
+							}
+							//else
+							//{
+							//	TalkMode(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+						}
+						else if (mPosition == PositionType.Ground)
+						{
+							//if (mMapLayer[x + mMapWidth * y] == 0)
+							//{
+							//	var oriX = mParty.XAxis;
+							//	var oriY = mParty.YAxis;
+							//	MovePlayer(x, y);
+							//	InvokeSpecialEvent(oriX, oriY);
 
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 21)
-				//			{
-				//				// Don't Move
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 22)
-				//			{
-				//				ShowSign(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 48)
-				//			{
-				//				if (EnterWater())
-				//					MovePlayer(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 23 || mMapLayer[x + mMapWidth * y] == 49)
-				//			{
-				//				EnterSwamp();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 50)
-				//			{
-				//				EnterLava();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (24 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
-				//			{
-				//				// Move Move
-				//				MovePlayer(x, y);
-				//			}
-				//			else
-				//			{
-				//				EnterMap();
-				//				mTriggeredDownEvent = true;
-				//			}
-				//		}
-				//		else if (mPosition == PositionType.Den)
-				//		{
-				//			if (mMapLayer[x + mMapWidth * y] == 0 || mMapLayer[x + mMapWidth * y] == 52)
-				//			{
-				//				var oriX = mParty.XAxis;
-				//				var oriY = mParty.YAxis;
-				//				MovePlayer(x, y);
-				//				InvokeSpecialEvent(oriX, oriY);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 21)
+							//{
+							//	// Don't Move
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 22)
+							//{
+							//	ShowSign(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 48)
+							//{
+							//	if (EnterWater())
+							//		MovePlayer(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 23 || mMapLayer[x + mMapWidth * y] == 49)
+							//{
+							//	EnterSwamp();
+							//	MovePlayer(x, y);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 50)
+							//{
+							//	EnterLava();
+							//	MovePlayer(x, y);
+							//}
+							//else if (24 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
+							//{
+							//	// Move Move
+							//	MovePlayer(x, y);
+							//}
+							//else
+							//{
+							//	EnterMap();
+							//	mTriggeredDownEvent = true;
+							//}
+						}
+						else if (mPosition == PositionType.Den)
+						{
+							//if (mMapLayer[x + mMapWidth * y] == 0 || mMapLayer[x + mMapWidth * y] == 52)
+							//{
+							//	var oriX = mParty.XAxis;
+							//	var oriY = mParty.YAxis;
+							//	MovePlayer(x, y);
+							//	InvokeSpecialEvent(oriX, oriY);
 
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if ((1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 40) || mMapLayer[x + mMapWidth * y] == 51)
-				//			{
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if ((1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 40) || mMapLayer[x + mMapWidth * y] == 51)
+							//{
 
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 53)
-				//			{
-				//				ShowSign(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 48)
-				//			{
-				//				if (EnterWater())
-				//					MovePlayer(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 49)
-				//			{
-				//				EnterSwamp();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 50)
-				//			{
-				//				EnterLava();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 54)
-				//			{
-				//				EnterMap();
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (41 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
-				//			{
-				//				// Move Move
-				//				MovePlayer(x, y);
-				//			}
-				//			else
-				//			{
-				//				TalkMode(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//		}
-				//		else if (mPosition == PositionType.Keep)
-				//		{
-				//			if (mMapLayer[x + mMapWidth * y] == 0 || mMapLayer[x + mMapWidth * y] == 52)
-				//			{
-				//				var oriX = mParty.XAxis;
-				//				var oriY = mParty.YAxis;
-				//				MovePlayer(x, y);
-				//				InvokeSpecialEvent(oriX, oriY);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 53)
+							//{
+							//	ShowSign(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 48)
+							//{
+							//	if (EnterWater())
+							//		MovePlayer(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 49)
+							//{
+							//	EnterSwamp();
+							//	MovePlayer(x, y);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 50)
+							//{
+							//	EnterLava();
+							//	MovePlayer(x, y);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 54)
+							//{
+							//	EnterMap();
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (41 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
+							//{
+							//	// Move Move
+							//	MovePlayer(x, y);
+							//}
+							//else
+							//{
+							//	TalkMode(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+						}
+						else if (mPosition == PositionType.Keep)
+						{
+							//if (mMapLayer[x + mMapWidth * y] == 0 || mMapLayer[x + mMapWidth * y] == 52)
+							//{
+							//	var oriX = mParty.XAxis;
+							//	var oriY = mParty.YAxis;
+							//	MovePlayer(x, y);
+							//	InvokeSpecialEvent(oriX, oriY);
 
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if ((1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 39) || mMapLayer[x + mMapWidth * y] == 51)
-				//			{
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if ((1 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 39) || mMapLayer[x + mMapWidth * y] == 51)
+							//{
 
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 53)
-				//			{
-				//				ShowSign(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 48)
-				//			{
-				//				if (EnterWater())
-				//					MovePlayer(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 49)
-				//			{
-				//				EnterSwamp();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 50)
-				//			{
-				//				EnterLava();
-				//				MovePlayer(x, y);
-				//			}
-				//			else if (mMapLayer[x + mMapWidth * y] == 54)
-				//			{
-				//				EnterMap();
-				//				mTriggeredDownEvent = true;
-				//			}
-				//			else if (40 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
-				//			{
-				//				// Move Move
-				//				MovePlayer(x, y);
-				//			}
-				//			else
-				//			{
-				//				TalkMode(x, y);
-				//				mTriggeredDownEvent = true;
-				//			}
-				//		}
-				//	}
-				//}
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 53)
+							//{
+							//	ShowSign(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 48)
+							//{
+							//	if (EnterWater())
+							//		MovePlayer(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 49)
+							//{
+							//	EnterSwamp();
+							//	MovePlayer(x, y);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 50)
+							//{
+							//	EnterLava();
+							//	MovePlayer(x, y);
+							//}
+							//else if (mMapLayer[x + mMapWidth * y] == 54)
+							//{
+							//	EnterMap();
+							//	mTriggeredDownEvent = true;
+							//}
+							//else if (40 <= mMapLayer[x + mMapWidth * y] && mMapLayer[x + mMapWidth * y] <= 47)
+							//{
+							//	// Move Move
+							//	MovePlayer(x, y);
+							//}
+							//else
+							//{
+							//	TalkMode(x, y);
+							//	mTriggeredDownEvent = true;
+							//}
+						}
+					}
+				}
 			};
 
 			gamePageKeyUpEvent = async (sender, args) =>
@@ -1278,7 +1276,7 @@ namespace DarkUWP
 				//					Talk(resultPart.ToArray());
 				//				}
 
-				if (mMoveEvent || mLoading || (mAnimationEvent != AnimationType.None && ContinueText.Visibility != Visibility.Visible && mMenuMode == MenuMode.None) || mTriggeredDownEvent)
+				if (mLoading || (mAnimationEvent != AnimationType.None && ContinueText.Visibility != Visibility.Visible && mMenuMode == MenuMode.None) || mTriggeredDownEvent)
 				{
 					mTriggeredDownEvent = false;
 					return;
@@ -2439,7 +2437,7 @@ namespace DarkUWP
 				//				}
 				else if (mTalkMode == 0 && mMenuMode == MenuMode.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
 				{
-					AppendText("당신의 명령을 고르시오 ===>");
+					AppendText($"[color={RGB.Red}]당신의 명령을 고르시오 ===>[/color]");
 
 					ShowMenu(MenuMode.Game, new string[]
 					{
@@ -7524,1178 +7522,15 @@ namespace DarkUWP
 		//			});
 		//		}
 
-		//		private async void InvokeSpecialEvent(int prevX, int prevY)
-		//		{
-		//			void FindGold(int gold)
-		//			{
-		//				AppendText(new string[] { $"당신은 금화 {gold}개를 발견했다." });
-
-		//				mParty.Gold += gold;
-		//			}
-
-		//			if (mParty.Map == 1)
-		//			{
-		//				if ((mParty.Etc[31] & (1 << 7)) == 0)
-		//				{
-		//					Talk("일행들은 100 인분의 식량을 발견했다.");
-
-		//					if (mParty.Food > 155)
-		//						mParty.Food = 255;
-		//					else
-		//						mParty.Food += 100;
-
-		//					mParty.Etc[31] |= 1 << 7;
-		//				}
-		//				else
-		//					Talk("우리들은 아무것도 발견할수 없었다.");
-
-
-		//				mParty.XAxis = prevX;
-		//				mParty.YAxis = prevY;
-		//			}
-		//			else if (mParty.Map == 4)
-		//			{
-		//				if (mParty.XAxis == 39 && mParty.YAxis == 17)
-		//				{
-		//					AppendText(new string[] { " 일행은 공간 이동이 되었다" });
-
-		//					mParty.XAxis = 45;
-		//					mParty.YAxis = 40;
-		//				}
-		//				else if (mParty.XAxis == 25 && mParty.YAxis == 15)
-		//				{
-		//					Talk(" 여기는 인간과 드래곤의 중간 종족이며 혼란스런 세상을 피해 은둔하고 있는 드래코니안이란자가 살고 있는 피라미드였다.");
-		//					mSpecialEvent = SpecialEventType.MeetDraconian;
-		//				}
-		//				else if (mParty.XAxis == 19 && mParty.YAxis == 38)
-		//				{
-		//					if ((mParty.Etc[15] & 1) > 0)
-		//					{
-		//						mParty.XAxis = 45;
-		//						mParty.YAxis = 40;
-
-		//						Talk(" 이제는 더 이상 할말이 없소.");
-		//					}
-		//					else
-		//					{
-		//						Talk(new string[] {
-		//							" 나는 에이션트 이블이란 존재이오. 이제 나는 육신은 없는 영이오. 당신은 로드 안을 만나보았겠군요. 그리고 우리들의 운명적인 만남도 역시 예시 받았겠군요.",
-		//							" 사실이야 어떻든 당신에게 이 대륙에서의 할 일을 말해 주겠소."
-		//						});
-
-		//						mSpecialEvent = SpecialEventType.MeetAncientEvil;
-		//					}
-		//				}
-		//			}
-		//			else if (mParty.Map == 6)
-		//			{
-		//				if (mParty.XAxis == 61 && mParty.YAxis == 81)
-		//				{
-		//					AppendText(new string[] { "일행은 상자 속에서 약간의 금을 발견했다." });
-		//					mParty.Gold += 1000;
-		//					mMapLayer[61 + mMapWidth * 81] = 44;
-		//				}
-		//				else if ((mParty.XAxis == 50 && mParty.YAxis == 11) || (mParty.XAxis == 51 && mParty.YAxis == 11))
-		//				{
-		//					if ((mParty.Etc[49] & (1 << 1)) > 0)
-		//					{
-		//						var enemyNumber = 0;
-
-		//						if ((mParty.Etc[49] & (1 << 2)) > 0)
-		//						{
-		//							Talk(new string[] { $" 다시 돌아오다니, {mPlayerList[0].Name}",
-		//								" 이번에는 기어이 네놈들을 해치우고야 말겠다. 나의 친구들도 이번에 거들 것이다."
-		//							});
-
-		//							enemyNumber = 7;
-		//						}
-		//						else
-		//						{
-		//							Talk(new string[] { $" 아니! 당신이 우리들을 배신하고 죄수를 풀어주다니... 그렇다면 우리들은 결투로서 당신들과 승부할 수밖에 없군요."
-		//							});
-
-		//							mParty.Etc[49] |= 1 << 2;
-
-		//							enemyNumber = 2;
-		//						}
-
-		//						mEncounterEnemyList.Clear();
-		//						for (var i = 0; i < enemyNumber; i++)
-		//						{
-		//							var enemy = JoinEnemy(25);
-		//							enemy.Name = $"병사{i + 1}";
-		//							enemy.Special = 0;
-		//							enemy.CastLevel = 0;
-		//							enemy.ENumber = 0;
-		//						}
-
-		//						HideMap();
-		//						DisplayEnemy();
-
-		//						mSpecialEvent = SpecialEventType.BattlePrison;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 40 && mParty.YAxis == 78)
-		//				{
-		//					if ((mParty.Etc[49] & (1 << 3)) == 0)
-		//					{
-		//						mParty.Etc[49] |= (1 << 3);
-
-		//						mMapLayer[40 + mMapWidth * 78] = 44;
-
-		//						mMoveEvent = true;
-
-		//						for (var i = 0; i < 3; i++)
-		//						{
-		//							Task.Delay(500).Wait();
-		//							mParty.XAxis--;
-		//						}
-
-		//						AppendText(new string[] { $" 일행은 가장 기본적인 무기로 모두 무장을 하였다." });
-
-		//						mPlayerList.ForEach(delegate (Lore player)
-		//						{
-		//							if (player.Weapon == 0 && player.Class != 5)
-		//							{
-		//								player.Weapon = 1;
-		//								player.WeaPower = 5;
-		//							}
-		//						});
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mMoveEvent = false;
-		//					}
-		//				}
-		//				else
-		//					ShowExitMenu();
-		//			}
-		//			else if (mParty.Map == 7)
-		//			{
-		//				if (mParty.XAxis == 49)
-		//				{
-		//					ShowEnterMenu(EnterType.GroundGate);
-		//				}
-		//				else if (mParty.XAxis == 29 || mParty.XAxis == 31)
-		//				{
-		//					mMapLayer[30 + mMapWidth * mParty.YAxis] = 45;
-		//				}
-		//				else if (mParty.YAxis == 70)
-		//				{
-		//					ShowExitMenu();
-		//				}
-		//			}
-		//			else if (mParty.Map == 8)
-		//			{
-		//				if (mParty.XAxis == 49)
-		//				{
-		//					ShowEnterMenu(EnterType.GroundGate);
-		//				}
-		//				else if (mParty.YAxis == 70)
-		//					ShowExitMenu();
-		//			}
-		//			else if (mParty.Map == 9)
-		//			{
-		//				if ((mParty.XAxis == 9 && mParty.YAxis == 24) && (mParty.Etc[34] & 1) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[34] |= 1;
-		//				}
-		//				else if ((mParty.XAxis == 11 && mParty.YAxis == 25) && (mParty.Etc[34] & (1 << 1)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[34] |= (1 << 1);
-		//				}
-		//				else if ((mParty.XAxis == 14 && mParty.YAxis == 24) && (mParty.Etc[34] & (1 << 2)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[34] |= (1 << 2);
-		//				}
-		//				else if ((mParty.XAxis == 15 && mParty.YAxis == 22) && (mParty.Etc[34] & (1 << 3)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[34] |= (1 << 3);
-		//				}
-		//				else if ((mParty.XAxis == 17 && mParty.YAxis == 26) && (mParty.Etc[34] & (1 << 4)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[34] |= (1 << 4);
-		//				}
-		//				else if (mParty.YAxis == 9 && mParty.Etc[14] < 5)
-		//				{
-		//					AppendText(new string[] { "알 수 없는 힘이 당신을 배척합니다." });
-		//					mParty.YAxis++;
-		//				}
-		//				else if (mParty.YAxis == 4)
-		//				{
-		//					ShowEnterMenu(EnterType.SwampGate);
-		//				}
-		//				else if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//			}
-		//			else if (mParty.Map == 10)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					mParty.YAxis = 49;
-		//				else if (mParty.YAxis == 48)
-		//					mParty.YAxis = 44;
-		//				else if (mParty.YAxis == 70)
-		//					ShowExitMenu();
-		//			}
-		//			else if (mParty.Map == 11)
-		//			{
-		//				if (mParty.XAxis == 19 && mParty.YAxis == 29 && (mParty.Etc[32] & 1) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= 1;
-		//				}
-		//				else if (mParty.XAxis == 17 && mParty.YAxis == 35 && (mParty.Etc[32] & (1 << 1)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 1);
-		//				}
-		//				else if (mParty.XAxis == 34 && mParty.YAxis == 31 && (mParty.Etc[32] & (1 << 2)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 2);
-		//				}
-		//				else if (mParty.XAxis == 32 && mParty.YAxis == 35 && (mParty.Etc[32] & (1 << 3)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 3);
-		//				}
-		//				else if (mParty.XAxis == 34 && mParty.YAxis == 13 && (mParty.Etc[32] & (1 << 4)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 4);
-		//				}
-		//				else if (mParty.XAxis == 13 && mParty.YAxis == 15 && (mParty.Etc[32] & (1 << 5)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 5);
-		//				}
-		//				else if (mParty.XAxis == 36 && mParty.YAxis == 11 && (mParty.Etc[32] & (1 << 6)) == 0)
-		//				{
-		//					FindGold(5000);
-		//					mParty.Etc[32] |= (1 << 6);
-		//				}
-		//				else if (mParty.YAxis == 43 && (mParty.Etc[32] & (1 << 7)) == 0)
-		//				{
-		//					Talk("당신은 어떤 창을 발견했다.");
-		//					mSpecialEvent = SpecialEventType.FindOedipusSpear;
-		//				}
-		//				else if (mParty.YAxis == 45)
-		//				{
-		//					ShowExitMenu();
-		//				}
-		//				else if (mParty.YAxis == 23 && mParty.Etc[12] == 1)
-		//				{
-		//					Talk($"[color={RGB.LightCyan}]당신은 미이라의 방을 발견했다.[/color]");
-
-		//					mSpecialEvent = SpecialEventType.MajorMummyRoom;
-		//				}
-		//			}
-		//			else if (mParty.Map == 12)
-		//			{
-		//				if (mParty.YAxis == 70)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 49 && (mParty.YAxis - prevY) != 1)
-		//				{
-		//					if (mParty.XAxis == 32)
-		//					{
-		//						AppendText(new string[] { "여기는 옳은 문이었다." });
-		//						mMapLayer[32 + mMapWidth * 48] = 0;
-		//					}
-		//					else
-		//					{
-		//						AppendText(new string[] { "당신은 바보군요, 다시 생각하십시오." });
-		//						mParty.XAxis = 24;
-		//						mParty.YAxis = 69;
-		//					}
-		//				}
-		//				else if (mParty.YAxis == 9 && mParty.Etc[13] < 2)
-		//				{
-		//					if (mParty.XAxis == 17)
-		//					{
-		//						mMapLayer[17 + mMapWidth * 8] = 0;
-		//						mParty.Etc[13] = 2;
-
-		//						Talk(new string[] {
-		//						$"[color={RGB.Yellow}]당신은 황금의 봉인을 찾았다 !![/color]",
-		//						$"[color={RGB.White}]그러므로 당신의 임무는 성공했다.[/color]",
-		//						$"[color={RGB.White}]이제는 가이아 테라로 돌아가라.[/color]"
-		//						});
-		//					}
-		//					else
-		//					{
-		//						for (var y = 9; y < 23; y++)
-		//							mMapLayer[mParty.XAxis + mMapWidth * y] = 49;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 11 && mParty.YAxis == 47 && (mParty.Etc[30] & (1 << 1)) == 0)
-		//				{
-		//					Talk(" 일행들은 심한 부상 때문에 거의 몸을 가누지 못하는 한 남자와 마주쳤다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetRigel;
-		//				}
-		//				else if (mParty.Etc[3] == 0 && !(mParty.XAxis == 11 && mParty.YAxis == 47))
-		//				{
-		//					AppendText("일행들은 절벽으로 떨어질뻔 했다.");
-
-		//					mParty.XAxis = prevX;
-		//					mParty.YAxis = prevY;
-		//				}
-		//			}
-		//			else if (mParty.Map == 13)
-		//			{
-		//				if (mParty.YAxis == 95)
-		//				{
-		//					ShowExitMenu();
-		//				}
-		//				else if (75 <= mParty.XAxis && mParty.YAxis <= 85 && 70 <= mParty.YAxis && mParty.YAxis <= 80)
-		//				{
-		//					AppendText($"[color={RGB.White}]알 수 없는 힘이 당신을 당기는걸 느꼈다[/color]");
-
-		//					for (var y = 70; y < 81; y++)
-		//					{
-		//						for (var x = 75; x < 86; x++)
-		//						{
-		//							if (mMapLayer[x + mMapWidth * y] == 52)
-		//								mMapLayer[x + mMapWidth * y] = 44;
-		//							else if (mMapLayer[x + mMapWidth * y] == 40 || mMapLayer[x + mMapWidth * y] == 51)
-		//								mMapLayer[x + mMapWidth * y] = 42;
-		//						}
-		//					}
-
-		//					InvokeAnimation(AnimationType.SwampGatePyramid);
-		//				}
-		//				else if (mParty.YAxis == 67 && (mParty.Etc[37] & (1 << 4)) == 0)
-		//				{
-		//					mEncounterEnemyList.Clear();
-		//					for (var i = 49; i < 52; i++)
-		//					{
-		//						var enemy = JoinEnemy(i);
-		//						enemy.ENumber = 0;
-		//					}
-
-		//					HideMap();
-		//					DisplayEnemy();
-
-		//					Talk($"[color={RGB.LightMagenta}]우리들의 영역을 침범하는 자는 가만두지 않겠다!!![/color]");
-
-		//					mSpecialEvent = SpecialEventType.BattleExitSwampGate;
-		//				}
-		//			}
-		//			else if (mParty.Map == 14)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//				{
-		//					ShowExitMenu();
-		//				}
-		//				else if (((mParty.XAxis == 24 && mParty.YAxis == 7) || (mParty.XAxis == 25 && mParty.YAxis == 7)) && mParty.Etc[9] == 3)
-		//				{
-		//					AppendText(new string[] {
-		//						$"여기가 '메나스'의 중심이다.",
-		//						$"[color={RGB.White}]당신의 탐험은 성공적이었다.[/color]",
-		//						$"[color={RGB.White}]이제 로드 안에게 돌아가는 일만 남았다.[/color]"
-		//					});
-
-		//					mParty.Etc[9]++;
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if ((mParty.XAxis == 5 && mParty.YAxis == 5) && (mParty.Etc[31] & 1) == 0)
-		//				{
-		//					FindGold(1000);
-		//					mParty.Etc[31] |= 1;
-		//				}
-		//				else if ((mParty.XAxis == 17 && mParty.YAxis == 9) && (mParty.Etc[31] & (1 << 1)) == 0)
-		//				{
-		//					FindGold(2500);
-		//					mParty.Etc[31] |= (1 << 1);
-		//				}
-		//				else if ((mParty.XAxis == 5 && mParty.YAxis == 43) && (mParty.Etc[31] & (1 << 2)) == 0)
-		//				{
-		//					FindGold(400);
-		//					mParty.Etc[31] |= (1 << 2);
-		//				}
-		//				else if ((mParty.XAxis == 30 && mParty.YAxis == 29) && (mParty.Etc[31] & (1 << 3)) == 0)
-		//				{
-		//					FindGold(600);
-		//					mParty.Etc[31] |= (1 << 3);
-		//				}
-		//				else if ((mParty.XAxis == 30 && mParty.YAxis == 7) && (mParty.Etc[31] & (1 << 4)) == 0)
-		//				{
-		//					FindGold(1500);
-		//					mParty.Etc[31] |= (1 << 4);
-		//				}
-		//				else if ((mParty.XAxis == 13 && mParty.YAxis == 27) && (mParty.Etc[31] & (1 << 5)) == 0)
-		//				{
-		//					FindGold(1000);
-		//					mParty.Etc[31] |= (1 << 5);
-		//				}
-		//				else if ((mParty.XAxis == 15 && mParty.YAxis == 19) && (mParty.Etc[31] & (1 << 6)) == 0)
-		//				{
-		//					AppendText(new string[] {
-		//						$"[color={RGB.White}]당신은 황금의 방패를 발견했다.[/color]",
-		//						$"[color={RGB.LightCyan}]누가 이 황금의 방패를 장착 하겠습니까 ?[/color]"
-		//					});
-
-		//					ShowCharacterMenu(MenuMode.ChooseGoldShield);
-		//				}
-		//			}
-		//			else if (mParty.Map == 15)
-		//			{
-		//				if (mParty.YAxis == 70)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 17 && (mParty.XAxis == 9 || mParty.XAxis == 10 || mParty.XAxis == 39 || mParty.XAxis == 40))
-		//				{
-		//					if ((mParty.Etc[35] & (1 << 1)) == 0)
-		//					{
-		//						if ((mParty.Etc[35] & 1) == 0)
-		//						{
-		//							mParty.Etc[35] |= 1;
-		//							FindGold(6000);
-		//						}
-		//						else
-		//						{
-		//							mParty.Etc[35] |= 1 << 1;
-		//							FindGold(4000);
-		//						}
-
-		//						mMapLayer[mParty.XAxis + mMapWidth * 47] = 44;
-		//						mMapLayer[mParty.XAxis + mMapWidth * 46] = 44;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 13 && mParty.YAxis == 6 && (mParty.Etc[36] & (1 << 2)) == 0)
-		//				{
-		//					Talk($"[color={RGB.White}]당신은 황금의 방패를 발견했다.[/color]");
-
-		//					mSpecialEvent = SpecialEventType.FindGoldenShield;
-		//				}
-		//				else if (mParty.XAxis == 44 && mParty.YAxis == 18 && (mParty.Etc[36] & (1 << 3)) == 0)
-		//				{
-		//					Talk($"[color={RGB.White}]당신은 황금의 갑옷을 발견했다.[/color]");
-
-		//					mSpecialEvent = SpecialEventType.FindGoldenArmor;
-		//				}
-		//				else if (mParty.YAxis == 26 && mParty.Etc[13] == 4)
-		//				{
-		//					Talk($"[color={RGB.LightCyan}]당신은 아키가고일과 두 마리의 좀비를 발견했다.[/color]");
-
-		//					mSpecialEvent = SpecialEventType.BattleArchiGagoyle;
-		//				}
-		//			}
-		//			else if (mParty.Map == 16)
-		//			{
-		//				if (mParty.YAxis == 35)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 9)
-		//				{
-		//					if (mParty.Etc[36] < 3)
-		//					{
-		//						string wivernCountStr;
-		//						switch (mParty.Etc[36])
-		//						{
-		//							case 2:
-		//								wivernCountStr = "한";
-		//								break;
-		//							case 1:
-		//								wivernCountStr = "두";
-		//								break;
-		//							default:
-		//								wivernCountStr = "세";
-		//								break;
-		//						}
-
-		//						Talk($"[color={RGB.LightCyan}]당신은 {wivernCountStr} 마리의 와이번과 마주쳤다.[/color]");
-		//						mSpecialEvent = SpecialEventType.BattleWivern;
-		//					}
-		//					else
-		//						AppendText(new string[] { $"[color={RGB.White}]여기에는 와이번의 시체만이 있다.[/color]" });
-		//				}
-		//			}
-		//			else if (mParty.Map == 17)
-		//			{
-		//				if (mParty.YAxis == 94)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 79)
-		//					mParty.YAxis = 5;
-		//				else if (mParty.YAxis == 43)
-		//				{
-		//					for (var x = 66; x < 69; x++)
-		//					{
-		//						mMapLayer[x + mMapWidth * 43] = 44;
-		//						mMapLayer[x + mMapWidth * 37] = 52;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 74 && mParty.YAxis == 51)
-		//				{
-		//					if ((mParty.Etc[37] & (1 << 1)) == 1)
-		//						return;
-		//					else if ((mParty.Etc[37] & 1) == 1 && mParty.Etc[4] > 0)
-		//					{
-		//						AppendText(new string[] {
-		//							" 다시 생각해 보니 나도 직접 네크로맨서에 도전하고픈 마음이 생겼소. 비록 육체적인 힘은 전혀 없는 영이지만 당신들과 같이 모험을 하고 싶소." +
-		//							" 당신들의 생각은 어떻소."
-		//						});
-
-		//						ShowMenu(MenuMode.JoinRedAntares, new string[] {
-		//							"당신의 제의을 받아 들이겠소",
-		//							"당신이 전해준 마법만으로도 족하오"
-		//						});
-		//					}
-		//					else if ((mParty.Etc[37] & 1) == 1 && (mParty.Etc[37] & (1 << 1)) == 0)
-		//						Talk("나는 다시 영혼의 세계로 돌아가야 겠소.");
-		//					else if ((mParty.Etc[37] & 1) == 0)
-		//					{
-		//						for (var y = 46; y < 57; y++)
-		//						{
-		//							for (var x = 70; x < 82; x++)
-		//							{
-		//								if (mMapLayer[x + mMapWidth * y] == 40)
-		//									mMapLayer[x + mMapWidth * y] = 50;
-		//							}
-
-		//							Talk("갑자기 주위가 용암으로 변하면서 한 영혼이 당신 앞에 나타났다.");
-		//							mSpecialEvent = SpecialEventType.MeetRedAntares;
-		//						}
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 71)
-		//				{
-		//					for (var y = 18; y < 21; y++)
-		//						mMapLayer[71 + mMapWidth * y] = 44;
-		//					mParty.YAxis -= 7;
-		//				}
-		//				else if (mParty.YAxis == 37)
-		//				{
-		//					for (var x = 67; x < 69; x++)
-		//					{
-		//						mMapLayer[x + mMapWidth * 37] = 44;
-		//						mMapLayer[x + mMapWidth * 43] = 52;
-		//					}
-
-		//					mParty.XAxis = 55;
-		//					mParty.YAxis = 92;
-		//				}
-		//				else if (mParty.XAxis == 21 && mParty.Etc[14] < 2)
-		//				{
-		//					if (mParty.Etc[0] == 0)
-		//					{
-		//						mParty.Etc[0] = 1;
-		//						ShowMap();
-		//					}
-
-		//					AppendText(new string[] { $"[color={RGB.LightCyan}]당신은 보스인 히드라를 만났다.[/color]" });
-
-		//					InvokeAnimation(AnimationType.Hydra);
-		//				}
-		//			}
-		//			else if (mParty.Map == 18)
-		//			{
-		//				if (mParty.YAxis == 94)
-		//					ShowExitMenu();
-		//				else if (mParty.XAxis == 21 && mParty.YAxis == 40)
-		//				{
-		//					mMapLayer[21 + mMapWidth * 40] = 44;
-		//					mMapLayer[20 + mMapWidth * 40] = 52;
-		//				}
-		//				else if (mParty.XAxis == 20 && mParty.YAxis == 40)
-		//				{
-		//					if ((mParty.Etc[38] & (1 << 2)) == 0)
-		//					{
-		//						if (mParty.Etc[0] == 0)
-		//						{
-		//							mParty.Etc[0] = 1;
-		//							ShowMap();
-		//						}
-
-		//						AppendText($"[color={RGB.LightCyan}]미로속에서 소를 닮은 괴물이 나타났다[/color]");
-
-		//						InvokeAnimation(AnimationType.Minotaur);
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 36 && mParty.YAxis == 30)
-		//				{
-		//					if ((mParty.Etc[38] & (1 << 1)) > 0)
-		//						return;
-		//					else if ((mParty.Etc[38] & 1) > 0)
-		//					{
-		//						if (mParty.Etc[4] > 0)
-		//						{
-		//							var espLevel = 0;
-		//							foreach (var player in mPlayerList)
-		//							{
-		//								if (player.Level[2] > espLevel)
-		//									espLevel = player.Level[2];
-		//							}
-
-		//							if (espLevel < 5)
-		//								Talk(" 당신이 나의 마음을 읽으려 하지만 아직 당신의 능력으로는 나의 마음을 끌어낼 수는 없습니다.");
-		//							else
-		//							{
-		//								AppendText(new string[] { " 갑자기 네크로맨서에게 대항 하고픈 결의가 생기는군요. 나도 당신들을 도와 그를 무찌르겠습니다." });
-
-		//								ShowMenu(MenuMode.JoinSpica, new string[] {
-		//									"저도 원했던 바입니다",
-		//									"말씀은 고맙지만 사양하겠습니다"
-		//								});
-		//							}
-		//						}
-		//						else
-		//						{
-		//							Talk(" 지체할 시간이 없습니다. 신속히 행동을 취하십시오.");
-		//						}
-		//					}
-		//					else if ((mParty.Etc[38] & 1) == 0)
-		//					{
-		//						Talk($"[color={RGB.LightCyan}]여기에는 어떤 여자가 수도하고 있었다[/color]");
-		//						mSpecialEvent = SpecialEventType.MeetSpica;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 30 && mParty.Etc[14] < 4)
-		//				{
-		//					AppendText(new string[] { "당신은 여기가 거대 드래곤의 거처임을 느꼈다" });
-
-		//					InvokeAnimation(AnimationType.HugeDragon);
-		//				}
-		//			}
-		//			else if (mParty.Map == 19)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//				else if (mParty.XAxis == 10 && mParty.YAxis == 39)
-		//				{
-		//					if (mParty.Etc[2] > 0)
-		//						Talk(" 늪 아래를 보니 무언가 반짝이는 물체가 있었다. 하지만 늪 위를 걷는 마법 때문에 늪 속으로 들어갈수가 없다.");
-		//					else
-		//					{
-		//						Talk(" 일행은 독을 무릅쓰고 늪 속에 빠져있는 레버를 당겼다. 순간 동굴 중심부에서 굉음이 들렸다.");
-
-		//						mMapLayer[10 + mMapWidth * 39] = 49;
-		//						mMapLayer[40 + mMapWidth * 38] = 0;
-		//					}
-		//				}
-		//				else if (mParty.XAxis == 40 && mParty.YAxis == 38)
-		//				{
-		//					if (mParty.Etc[2] > 0)
-		//						Talk(" 늪 아래를 보니 무언가 반짝이는 물체가 있었다. 하지만 늪 위를 걷는 마법 때문에 늪 속으로 들어갈수가 없다.");
-		//					else
-		//					{
-		//						Talk(" 일행은 독을 무릅쓰고 늪 속에 빠져있는 레버를 당겼다. 순간 동굴 중심부에서 조금 전 보다 더 큰 굉음이 들렸다.");
-
-		//						mMapLayer[40 + mMapWidth * 38] = 49;
-
-		//						if (mParty.Etc[39] % 2 == 0)
-		//						{
-		//							for (var y = 26; y < 36; y++)
-		//							{
-		//								mMapLayer[23 + mMapWidth * y] = 25;
-		//								mMapLayer[27 + mMapWidth * y] = 23;
-		//							}
-
-		//							mMapLayer[23 + mMapWidth * 36] = 17;
-		//							mMapLayer[27 + mMapWidth * 36] = 19;
-
-		//							for (var y = 26; y < 37; y++)
-		//							{
-		//								for (var x = 24; x < 27; x++)
-		//									mMapLayer[x + mMapWidth * y] = 44;
-		//							}
-
-		//							mParty.Etc[39] = (mRand.Next(7) + 1) << 1;
-		//						}
-		//					}
-		//				}
-		//				else if (7 <= mParty.YAxis && mParty.YAxis <= 11 && mParty.Etc[39] % 2 == 0)
-		//				{
-		//					mEncounterEnemyList.Clear();
-		//					for (var i = 0; i < mRand.Next(3) + 3; i++)
-		//					{
-		//						var enemy = JoinEnemy(58);
-		//						enemy.HP = 210;
-		//						enemy.Level = 7;
-		//						enemy.ENumber = 24;
-		//					}
-
-		//					mBattleEvent = 9;
-
-		//					HideMap();
-		//					DisplayEnemy();
-
-		//					StartBattle(false);
-		//				}
-		//				else if (mParty.YAxis == 5 && mParty.Etc[39] % 2 == 0)
-		//				{
-		//					mMapLayer[mParty.XAxis + mMapWidth * (mParty.YAxis - 1)] = 49;
-
-		//					var foundEnemy = mParty.Etc[39] >> 1;
-		//					if (foundEnemy != (mParty.XAxis - 9) / 4)
-		//					{
-		//						Talk("여기에는 봉인이 발견되지 않았다");
-		//						mMapLayer[mParty.XAxis + mMapWidth * (mParty.YAxis)] = 49;
-		//					}
-		//					else
-		//					{
-		//						for (var i = 0; i < 3; i++)
-		//							JoinEnemy(58);
-		//						for (var i = 0; i < 4; i++)
-		//						{
-		//							var enemy = JoinEnemy(58);
-		//							enemy.ENumber = 24;
-		//							enemy.HP = 210;
-		//							enemy.Level = 7;
-		//						}
-
-		//						HideMap();
-		//						DisplayEnemy();
-
-		//						Talk("나는 이블 갓의 봉인을 지키고 있는 크랩 갓의 왕이다. 크랩 갓 족의 명예를 걸고 절대로 너희 같은 자들에게 봉인을 넘겨주지 않겠다!!");
-		//						mSpecialEvent = SpecialEventType.BattleCrabGod;
-		//					}
-		//				}
-		//			}
-		//			else if (mParty.Map == 20)
-		//			{
-		//				if (mParty.YAxis == 95)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 87)
-		//				{
-		//					if (mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] == 0)
-		//						mParty.YAxis = 79;
-		//					else
-		//					{
-		//						mParty.Map = 4;
-		//						mParty.XAxis = 81;
-		//						mParty.YAxis = 16;
-
-		//						await RefreshGame();
-		//					}
-		//				}
-		//				else if (mParty.YAxis == 70)
-		//				{
-		//					if (mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] == 0)
-		//						mParty.YAxis = 62;
-		//					else
-		//					{
-		//						mParty.Map = 4;
-		//						mParty.XAxis = 81;
-		//						mParty.YAxis = 16;
-
-		//						await RefreshGame();
-		//					}
-		//				}
-		//				else if (mParty.YAxis == 90)
-		//				{
-		//					AppendText(new string[] {
-		//						$" [color={RGB.White}]다음 물음이 맞다면 왼쪽길로, 아니면 오른쪽길로 가시오.[/color]",
-		//						""
-		//					});
-
-		//					var question = mRand.Next(8);
-		//					switch (question)
-		//					{
-		//						case 0:
-		//							AppendText(new string[] { "문> CONFIG.SYS가 없으면 부팅이 안된다" }, true);
-		//							break;
-		//						case 1:
-		//							AppendText(new string[] { "문> Quick-BASIC은 인터프리터어 이다" }, true);
-		//							break;
-		//						case 2:
-		//							AppendText(new string[] { "문> Super VGA는 호환이 잘된다" }, true);
-		//							break;
-		//						case 3:
-		//							AppendText(new string[] { "문> 8-bit APPLE의 CPU는 Z - 80 이다" }, true);
-		//							break;
-		//						case 4:
-		//							AppendText(new string[] { "문> COMMAND.COM 안에 도스 명령이 들어있다" }, true);
-		//							break;
-		//						case 5:
-		//							AppendText(new string[] { "문> AdLib 카드는 9 채널이다" }, true);
-		//							break;
-		//						case 6:
-		//							AppendText(new string[] { "문> Ultima의 제작자는 리차드 게리오트이다" }, true);
-		//							break;
-		//						case 7:
-		//							AppendText(new string[] { "문> 당신의 컴퓨터는 IBM 계열이다" }, true);
-		//							break;
-		//					}
-
-		//					for (var x = 22; x < 26; x++)
-		//						mMapLayer[x + mMapWidth * mParty.YAxis] = 44;
-
-		//					if (question < 4)
-		//					{
-		//						mMapLayer[7 + mMapWidth * 87] = 52;
-		//						mMapLayer[42 + mMapWidth * 87] = 0;
-		//					}
-		//					else
-		//					{
-		//						mMapLayer[7 + mMapWidth * 87] = 0;
-		//						mMapLayer[42 + mMapWidth * 87] = 52;
-		//					}
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (mParty.YAxis == 74)
-		//				{
-		//					AppendText(new string[] {
-		//						$" [color={RGB.White}]다음 물음이 맞다면 왼쪽길로, 아니면 오른쪽길로 가시오.[/color]",
-		//						""
-		//					});
-
-		//					var question = mRand.Next(8);
-		//					switch (question)
-		//					{
-		//						case 0:
-		//							AppendText(new string[] { "문> 태양계의 제 4 혹성은 지구이다" }, true);
-		//							break;
-		//						case 1:
-		//							AppendText(new string[] { "문> 북극성이 가장 밝은 별이다" }, true);
-		//							break;
-		//						case 2:
-		//							AppendText(new string[] { "문> 1월의 수호성좌는 1월에 볼수있다" }, true);
-		//							break;
-		//						case 3:
-		//							AppendText(new string[] { "문> 빛보다 빠른 입자는 실험상 없었다" }, true);
-		//							break;
-		//						case 4:
-		//							AppendText(new string[] { "문> 달이 지구보다 먼저 생겨났다" }, true);
-		//							break;
-		//						case 5:
-		//							AppendText(new string[] { "문> 시그너스 X1은 블랙홀이다" }, true);
-		//							break;
-		//						case 6:
-		//							AppendText(new string[] { "문> 과거로의 타임머신은 불가능하다" }, true);
-		//							break;
-		//						case 7:
-		//							AppendText(new string[] { "문> 북극성은 주기적으로 달라진다" }, true);
-		//							break;
-		//					}
-
-		//					for (var x = 22; x < 26; x++)
-		//						mMapLayer[x + mMapWidth * mParty.YAxis] = 44;
-
-		//					if (question < 4)
-		//					{
-		//						mMapLayer[7 + mMapWidth * 70] = 52;
-		//						mMapLayer[42 + mMapWidth * 70] = 0;
-		//					}
-		//					else
-		//					{
-		//						mMapLayer[7 + mMapWidth * 70] = 0;
-		//						mMapLayer[42 + mMapWidth * 70] = 52;
-		//					}
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (mParty.YAxis == 53)
-		//				{
-		//					AppendText(new string[] {
-		//						$" [color={RGB.White}]<< 다음의 옳고 그름을 가리시오 >>[/color]",
-		//						""
-		//					});
-
-		//					mQuestionID = mRand.Next(8);
-		//					switch (mQuestionID)
-		//					{
-		//						case 0:
-		//							AppendText(new string[] { "문> 이 게임의 배경은 4개의 대륙이다" }, true);
-		//							break;
-		//						case 1:
-		//							AppendText(new string[] { "문> 에이션트 이블은 응징되어야 한다" }, true);
-		//							break;
-		//						case 2:
-		//							AppendText(new string[] { "문> 로드 안만이 유일한 반신반인이다" }, true);
-		//							break;
-		//						case 3:
-		//							AppendText(new string[] { "문> 이 세계의 모든 악은 응징되어야 한다" }, true);
-		//							break;
-		//						case 4:
-		//							AppendText(new string[] { "문> 이 게임의 제작자는 안 영기이다" }, true);
-		//							break;
-		//						case 5:
-		//							AppendText(new string[] { "문> 게임속의 인물은 거의 별의 이름을 가졌다" }, true);
-		//							break;
-		//						case 6:
-		//							AppendText(new string[] { "문> 네크로맨서는 신의 경지에 이르렀다" }, true);
-		//							break;
-		//						case 7:
-		//							AppendText(new string[] { "문> 네크로맨서는 이 세계의 존재가 아니었다" }, true);
-		//							break;
-		//					}
-
-		//					ShowMenu(MenuMode.QnA, new string[] {
-		//						"위의 말은 옳다",
-		//						"위의 말은 잘못되었다"
-		//					});
-		//				}
-		//				else if (7 <= mParty.XAxis && mParty.XAxis <= 41 && 18 <= mParty.YAxis && mParty.YAxis <= 42)
-		//				{
-		//					if (mParty.Etc[0] > 0)
-		//						mParty.Etc[0]--;
-
-		//					ShowMap();
-		//				}
-		//				else if (mParty.YAxis == 17)
-		//				{
-		//					mParty.Etc[0] = 1;
-		//					ShowMap();
-		//				}
-		//				else if (mParty.YAxis == 47 && (mParty.Etc[40] & (1 << 3)) == 0)
-		//				{
-		//					if (mParty.Etc[0] == 0)
-		//					{
-		//						mParty.Etc[0] = 1;
-		//						ShowMap();
-		//					}
-
-		//					AppendText(new string[] { $"[color={RGB.LightCyan}]미로속에서 소를 닮은 괴물이 나타났다[/color]" });
-
-		//					InvokeAnimation(AnimationType.Minotaur2);
-		//				}
-		//				else if (mParty.YAxis == 12)
-		//				{
-		//					await CheckMuddyFinalBattle();
-		//				}
-		//			}
-		//			else if (mParty.Map == 21)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//				else if (mParty.XAxis == 24 && mParty.YAxis == 19)
-		//				{
-		//					if (mParty.Etc[39] % 2 == 0 || mParty.Etc[40] % 2 == 0)
-		//					{
-		//						Talk(new string[] {
-		//							$"[color={RGB.LightCyan}] 당신은 아직 라바 게이트를 열수가 없다",
-		//							"",
-		//							"아직 당신은 이 대륙의 동굴 속에 존재하는 2개의 봉인을 풀지 못했기 때문이다."
-		//						});
-
-		//						mParty.YAxis++;
-		//					}
-		//				}
-		//				else
-		//				{
-		//					mEncounterEnemyList.Clear();
-
-		//					var enemyCount = mRand.Next(4) + 3;
-		//					for (var i = 0; i < enemyCount; i++)
-		//						JoinEnemy(57);
-
-		//					HideMap();
-		//					DisplayEnemy();
-
-		//					mBattleEvent = 16;
-
-		//					StartBattle(false);
-		//				}
-		//			}
-		//			else if (mParty.Map == 22)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//				else if (mParty.XAxis == 24 && mParty.YAxis == 17)
-		//				{
-		//					if ((mParty.Etc[42] & (1 << 1)) == 0)
-		//					{
-		//						var boss = false;
-		//						for (var i = 0; i < 6; i++)
-		//						{
-		//							if (!boss)
-		//							{
-		//								if (mRand.Next(2) == 0)
-		//								{
-		//									JoinEnemy(62);
-		//									boss = true;
-		//								}
-		//							}
-		//							else
-		//								JoinEnemy(59);
-		//						}
-
-		//						HideMap();
-		//						DisplayEnemy();
-
-		//						Talk($"[color={RGB.LightCyan}] 나는 이 요새의 유령을 조종하는 죽음의 기사이다. 나에게 도전하다니 가소로운 것들. 으하하....");
-
-		//						mSpecialEvent = SpecialEventType.BattleDeathKnight;
-		//					}
-		//				}
-		//				else if (mParty.YAxis == 24 && 23 <= mParty.XAxis && mParty.XAxis <= 25)
-		//				{
-		//					if ((mParty.Etc[42] & 1) == 0)
-		//					{
-		//						mEncounterEnemyList.Clear();
-
-		//						JoinEnemy(60);
-		//						JoinEnemy(57);
-		//						JoinEnemy(55);
-		//						JoinEnemy(54);
-		//						JoinEnemy(59);
-
-		//						mBattleEvent = 19;
-
-		//						HideMap();
-		//						DisplayEnemy();
-
-		//						StartBattle(false);
-		//					}
-		//				}
-		//				else if ((mParty.Etc[42] & (1 << 1)) == 0)
-		//				{
-		//					for (var i = 0; i < 5; i++)
-		//						JoinEnemy(59);
-
-		//					mBattleEvent = 20;
-
-		//					HideMap();
-		//					DisplayEnemy();
-
-		//					StartBattle(false);
-		//				}
-		//			}
-		//			else if (mParty.Map == 23)
-		//			{
-		//				if (mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] == 0)
-		//					return;
-		//				else if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 25)
-		//				{
-		//					mEncounterEnemyList.Clear();
-
-		//					var enemy = JoinEnemy(69);
-		//					enemy.Name = "네크로맨서";
-		//					enemy.ENumber = 0;
-
-		//					HideMap();
-		//					DisplayEnemy();
-
-		//					Talk(new string[] {
-		//						$"[color={RGB.LightCyan}] 잘도 여기까지 찾아왔구나 {mPlayerList[0].Name}.",
-		//						$"[color={RGB.LightCyan}] 네가 찾던 그 네크로맨서가 바로 나다. 드디어 너의 실력을 보게 되겠구나. 하지만 분명히 나보다는 떨어지겠지만. 으하하하."
-		//					});
-
-		//					mSpecialEvent = SpecialEventType.MeetFaceNecromancer;
-		//				}
-		//				else if (mParty.XAxis == 24 && mParty.YAxis == 26)
-		//				{
-		//					mMapLayer[24 + mMapWidth * 26] = 46;
-		//					mMapLayer[28 + mMapWidth * 42] = 44;
-
-		//					for (var y = 6; y < 34; y++)
-		//					{
-		//						for (var x = 11; x < 39; x++)
-		//						{
-		//							if (mMapLayer[x + mMapWidth * y] == 0)
-		//								mMapLayer[x + mMapWidth * y] = 39;
-		//						}
-		//					}
-
-		//					for (var x = 24; x < 26; x++)
-		//						mMapLayer[x + mMapWidth * 11] = 54;
-
-		//					Talk(" 푯말에 쓰여 있는 대로 이곳의 레버를 당겼더니 굉음과 함께 감추어져 있었던 성이 지하로부터 떠올랐다.");
-		//				}
-		//			}
-		//			else if (mParty.Map == 24)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//			}
-		//			else if (mParty.Map == 25)
-		//			{
-		//				if (mParty.YAxis == 45)
-		//					ShowExitMenu();
-		//				else if (mParty.YAxis == 42)
-		//				{
-		//					if (mParty.Etc[0] == 0)
-		//					{
-		//						mParty.Etc[0] = 1;
-		//						ShowMap();
-		//					}
-
-		//					AppendText(new string[] { $" [color={RGB.White}]금속으로 된 어떤 적이 나타났다.[/color]" });
-
-		//					InvokeAnimation(AnimationType.PanzerViper);
-		//				}
-		//				else if (mParty.XAxis == 14 && mParty.YAxis == 33)
-		//				{
-		//					mMapLayer[14 + mMapWidth * 33] = 41;
-		//					for (var x = 10; x < 14; x++)
-		//					{
-		//						mMapLayer[x + mMapWidth * 32] = 24;
-		//						mMapLayer[x + mMapWidth * 34] = 26;
-		//						mMapLayer[x + mMapWidth * 33] = 42;
-		//					}
-		//					mMapLayer[13 + mMapWidth * 32] = 17;
-		//					mMapLayer[13 + mMapWidth * 34] = 18;
-		//				}
-		//				else if (mParty.XAxis == 35 && mParty.YAxis == 33)
-		//				{
-		//					mMapLayer[35 + mMapWidth * 33] = 41;
-		//					for (var x = 36; x < 40; x++)
-		//					{
-		//						mMapLayer[x + mMapWidth * 32] = 24;
-		//						mMapLayer[x + mMapWidth * 34] = 26;
-		//						mMapLayer[x + mMapWidth * 33] = 42;
-		//					}
-		//					mMapLayer[36 + mMapWidth * 32] = 19;
-		//					mMapLayer[36 + mMapWidth * 34] = 22;
-		//				}
-		//				else if (mParty.XAxis == 4 && mParty.YAxis == 33)
-		//				{
-		//					mParty.Etc[44] |= 1 << 6;
-
-		//					string[] message;
-		//					if ((mParty.Etc[44] & (1 << 6)) > 0 && (mParty.Etc[44] & (1 << 7)) > 0)
-		//					{
-		//						mMapLayer[24 + mMapWidth * 26] = 54;
-		//						mMapLayer[25 + mMapWidth * 26] = 54;
-
-		//						message = new string[2];
-		//						message[1] = " 곧 이어 기계 작동하는 큰 소리가 들렸다.";
-		//					}
-		//					else
-		//						message = new string[1];
-
-		//					message[0] = " 당신이 레버를 당기자 철컥하는 소리가 동굴에 울려 퍼졌다.";
-
-		//					Talk(message);
-		//				}
-		//				else if (mParty.XAxis == 45 && mParty.YAxis == 33)
-		//				{
-		//					mParty.Etc[44] |= 1 << 7;
-
-		//					string[] message;
-		//					if ((mParty.Etc[44] & (1 << 6)) > 0 && (mParty.Etc[44] & (1 << 7)) > 0)
-		//					{
-		//						mMapLayer[24 + mMapWidth * 26] = 54;
-		//						mMapLayer[25 + mMapWidth * 26] = 54;
-
-		//						message = new string[2];
-		//						message[1] = " 곧 이어 기계 작동하는 큰 소리가 들렸다.";
-		//					}
-		//					else
-		//						message = new string[1];
-
-		//					message[0] = " 당신이 레버를 당기자 철컥하는 소리가 동굴에 울려 퍼졌다.";
-
-		//					Talk(message);
-		//				}
-		//			}
-		//			else if (mParty.Map == 26)
-		//			{
-		//				InvokeAnimation(AnimationType.FinalBattle);
-		//			}
-		//			else if (mParty.Map == 27)
-		//			{
-		//				ShowExitMenu();
-		//			}
-		//		}
+		private async void InvokeSpecialEvent(int prevX, int prevY)
+		{
+			if (mParty.Map == 6) {
+				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0) {
+					
+					InvokeAnimation(AnimationType.LordAhnCall);
+				}
+			}
+		}
 
 		//		private async Task CheckMuddyFinalBattle()
 		//		{
@@ -9001,7 +7836,7 @@ namespace DarkUWP
 			for (var i = 0; i < mMenuCount; i++)
 			{
 				if (i == mMenuFocusID)
-					mMenuList[i].Foreground = new SolidColorBrush(GetColor(RGB.Yellow));
+					mMenuList[i].Foreground = new SolidColorBrush(GetColor(RGB.White));
 				else
 					mMenuList[i].Foreground = new SolidColorBrush(GetColor(RGB.LightGray));
 			}
@@ -10121,355 +8956,32 @@ namespace DarkUWP
 		//			await RefreshGame();
 		//		}
 
-		//		private async void InvokeAnimation(AnimationType animationEvent, int aniX = 0, int aniY = 0)
-		//		{
-		//			void RestRemains(int x, int y)
-		//			{
-		//				for (var i = 1; i <= 30; i++)
-		//				{
-		//					Task.Delay(i * 2).Wait();
-		//					mMapLayer[x + mMapWidth * y] = 48;
-		//					Task.Delay((31 - i) * 2).Wait();
-		//					mMapLayer[x + mMapWidth * y] = 35;
-		//				}
+		private async void InvokeAnimation(AnimationType animationEvent, int aniX = 0, int aniY = 0)
+		{
+			mAnimationEvent = animationEvent;
 
-		//				mMapLayer[x + mMapWidth * y] = 35;
-		//			}
+			var animationTask = Task.Run(() =>
+			{
+				if (mAnimationEvent == AnimationType.LordAhnCall)
+				{
+					for (var i = 1; i <= 4 + Math.Abs(mParty.YAxis - 48); i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(500).Wait();
+					}
+				}
+			});
 
-		//			mAnimationEvent = animationEvent;
+			await animationTask;
 
-		//			var animationTask = Task.Run(() =>
-		//			{
-		//				if (mAnimationEvent == AnimationType.MeetSkeleton)
-		//				{
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 4)
-		//							Task.Delay(500).Wait();
-		//					}
-		//				}
-		//				if (mAnimationEvent == AnimationType.Remains1)
-		//					RestRemains(9, 13);
-		//				else if (mAnimationEvent == AnimationType.Remains2)
-		//					RestRemains(9, 17);
-		//				else if (mAnimationEvent == AnimationType.Remains3)
-		//					RestRemains(9, 29);
-		//				else if (mAnimationEvent == AnimationType.Remains4)
-		//					RestRemains(20, 31);
-		//				else if (mAnimationEvent == AnimationType.Remains5)
-		//					RestRemains(20, 21);
-		//				else if (mAnimationEvent == AnimationType.Remains6)
-		//					RestRemains(20, 11);
-		//				else if (mAnimationEvent == AnimationType.Remains7)
-		//					RestRemains(aniX, aniY);
-		//				else if (mAnimationEvent == AnimationType.Hydra)
-		//				{
-		//					for (var i = 1; i <= 2; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						Task.Delay(1000).Wait();
-		//					}
-
-		//					for (var i = 3; i <= 5; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						Task.Delay(700).Wait();
-		//					}
-
-		//					mAnimationFrame = 6;
-		//				}
-		//				else if (mAnimationEvent == AnimationType.Minotaur || mAnimationEvent == AnimationType.Minotaur2)
-		//				{
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						Task.Delay(1000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.HugeDragon)
-		//				{
-		//					mFace = 6;
-		//					for (var x = 0; x < 6; x++)
-		//					{
-		//						mParty.XAxis++;
-		//						Task.Delay(200).Wait();
-		//					}
-
-		//					mFace = 4;
-		//					for (var y = mParty.YAxis + 1; y < 13; y++)
-		//					{
-		//						mParty.YAxis = y;
-		//						Task.Delay(200).Wait();
-		//					}
-
-		//					mFace = 5;
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 4)
-		//							Task.Delay(2000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.HugeDragon)
-		//				{
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 4)
-		//							Task.Delay(2000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.Dragon3)
-		//				{
-		//					for (var i = 1; i <= 6; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 6)
-		//							Task.Delay(2000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.EnterSwampGate)
-		//				{
-		//					for (var i = 1; i < 6; i++)
-		//					{
-		//						Task.Delay(1000).Wait();
-		//						mAnimationFrame = i;
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.SwampGatePyramid)
-		//				{
-		//					while (mParty.XAxis != 80)
-		//					{
-		//						Task.Delay(1500).Wait();
-		//						if (mParty.XAxis > 80)
-		//						{
-		//							mFace = 7;
-		//							mParty.XAxis--;
-		//						}
-		//						else if (mParty.XAxis < 80)
-		//						{
-		//							mFace = 6;
-		//							mParty.XAxis++;
-		//						}
-		//					}
-
-		//					while (mParty.YAxis != 76)
-		//					{
-		//						Task.Delay(1500).Wait();
-		//						if (mParty.YAxis > 76)
-		//						{
-		//							mFace = 5;
-		//							mParty.YAxis--;
-		//						}
-		//						else if (mParty.YAxis < 76)
-		//						{
-		//							mFace = 4;
-		//							mParty.YAxis++;
-		//						}
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.AstralMud)
-		//				{
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 4)
-		//							Task.Delay(1500).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.PanzerViper)
-		//				{
-		//					for (var i = 1; i <= 4; i++)
-		//					{
-		//						mAnimationFrame = i;
-		//						if (i < 4)
-		//							Task.Delay(2000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.BlackKnight)
-		//				{
-		//					for (var i = 1; i <= 10; i++)
-		//					{
-		//						mAnimationFrame = i;
-
-		//						if (mAnimationFrame == 10)
-		//						{
-		//							xEnemyOffset = 0;
-		//							yEnemyOffset = -1;
-		//						}
-		//						else
-		//						{
-		//							xEnemyOffset = mRand.Next(9) - 4;
-		//							yEnemyOffset = mRand.Next(9) - 4;
-
-		//							if (xEnemyOffset == 0 && yEnemyOffset == 0)
-		//								yEnemyOffset = -1;
-		//						}
-
-		//						if (i < 10)
-		//							Task.Delay(1000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.EnterChamberOfNecromancer)
-		//				{
-		//					for (var i = 1; i <= 5; i++)
-		//					{
-		//						mAnimationFrame = i;
-
-		//						Task.Delay(1000).Wait();
-		//					}
-		//				}
-		//				else if (mAnimationEvent == AnimationType.FinalBattle)
-		//				{
-		//					mFace = 5;
-		//					Task.Delay(1500).Wait();
-		//					for (var i = 0; i < 3; i++)
-		//					{
-		//						mParty.YAxis--;
-		//						Task.Delay(1500).Wait();
-		//					}
-
-		//					mFace = 6;
-		//					while (mParty.XAxis < 25)
-		//					{
-		//						mParty.XAxis++;
-		//						Task.Delay(1500).Wait();
-		//					}
-
-		//					mFace = 5;
-
-		//					for (var i = 1; i <= 11; i++)
-		//					{
-		//						mAnimationFrame = i;
-
-		//						if (i < 11)
-		//						{
-		//							if (i > 6)
-		//								Task.Delay(2000).Wait();
-		//							else
-		//								Task.Delay(1000).Wait();
-		//						}
-		//					}
-		//				}
-		//			});
-
-		//			await animationTask;
-
-		//			if (mAnimationEvent == AnimationType.MeetSkeleton)
-		//			{
-		//				AppendText(new string[] { $" 나는 스켈레톤이라 불리는 종족의 사람이오.",
-		//						" 우리 종족의 사람들은 나를 제외하고는 모두 네크로맨서에게 굴복하여 그의 부하가 되었지만 나는 그렇지 않소." +
-		//						" 나는 네크로맨서의 영향을 피해서 이곳 로어 성으로 왔지만 나의 혐오스러운 생김새 때문에 이곳 사람들에게 배척되어서 지금은 어디로도 갈 수 없는 존재가 되었소." +
-		//						" 이제 나에게 남은 것은 네크로맨서의 타도밖에 없소. 그래서 당신들의 일행에 끼고 싶소."
-		//					});
-
-		//				ShowMenu(MenuMode.JoinSkeleton, new string[] {
-		//						"당신을 환영하오.",
-		//						"미안하지만 안되겠소."
-		//					});
-		//			}
-		//			else if (mAnimationEvent == AnimationType.Hydra)
-		//			{
-		//				ContinueText.Visibility = Visibility.Visible;
-		//				mSpecialEvent = SpecialEventType.BattleHydra;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.Minotaur)
-		//			{
-		//				ContinueText.Visibility = Visibility.Visible;
-		//				mSpecialEvent = SpecialEventType.BattleMinotaur;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.Minotaur2)
-		//			{
-		//				ContinueText.Visibility = Visibility.Visible;
-		//				mSpecialEvent = SpecialEventType.BattleMinotaur2;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.HugeDragon)
-		//			{
-		//				ContinueText.Visibility = Visibility.Visible;
-		//				mSpecialEvent = SpecialEventType.BattleHugeDragon;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.Dragon3)
-		//			{
-		//				ContinueText.Visibility = Visibility.Visible;
-		//				mSpecialEvent = SpecialEventType.BattleThreeDragon;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.EnterSwampGate)
-		//			{
-		//				if ((mParty.Etc[34] & (1 << 5)) == 0)
-		//				{
-		//					Talk($"[color={RGB.White}] 스왐프 게이트로 들어가고 있는 당신에게 허공에서 갑자가 누군가가 말을 꺼낸다[/color]");
-		//					mSpecialEvent = SpecialEventType.EnterSwampGate;
-		//				}
-		//				else
-		//					await EnterSwampGate();
-		//			}
-		//			else if (mAnimationEvent == AnimationType.SwampGatePyramid)
-		//			{
-		//				for (var y = 70; y < 81; y++)
-		//				{
-		//					for (var x = 75; x < 86; x++)
-		//					{
-		//						if (mMapLayer[x + mMapWidth * y] == 42)
-		//							mMapLayer[x + mMapWidth * y] = 51;
-		//					}
-		//				}
-
-		//				mFace = 5;
-
-		//				Talk($"[color={RGB.LightCyan}] 여기에는 기묘한 피라미드가 있었다[/color]");
-		//				mSpecialEvent = SpecialEventType.SwampGatePyramid;
-
-		//				mAnimationEvent = AnimationType.None;
-		//				mAnimationFrame = 0;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.AstralMud)
-		//			{
-		//				Talk($" [color={RGB.LightMagenta}]나는 네크로맨서 와 함께 다른 차원에서 내려온 아스트랄 머드 이다. 여기는 그가 세운 최고의 동굴이자 너가 마지막으로 거칠 동굴이다." +
-		//				" 나를 만만하게 보지 마라. 다른 차원의 능력들을 너가 맛볼 기회를 가진다는 것에 대해 고맙게 생각하기 바란다. 하하하 ...[/color]");
-
-		//				mSpecialEvent = SpecialEventType.BattleAstralMud;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.PanzerViper)
-		//			{
-		//				Talk(new string[] { $" [color={RGB.LightMagenta}] 여기까지 잘도 왔구나. 나의 임무는 너희 같은 쓰레기들 때문에 네크로맨서 님이 수고하시지 않도록 미리 처단해 버리는 것이다.[/color]" });
-
-		//				mSpecialEvent = SpecialEventType.BattlePanzerViper;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.BlackKnight)
-		//			{
-		//				Talk(new string[] { $" 두말이 필요 없다. 덤벼라!![/color]" });
-
-		//				mSpecialEvent = SpecialEventType.BattleBlackKnight;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.EnterChamberOfNecromancer)
-		//			{
-		//				for (var y = 15; y < 19; y++)
-		//				{
-		//					for (var x = 23; x < 26; x++)
-		//						mMapLayer[x + mMapWidth * y] = 16;
-		//				}
-
-		//				mAnimationEvent = AnimationType.None;
-		//				mAnimationFrame = 0;
-		//			}
-		//			else if (mAnimationEvent == AnimationType.FinalBattle)
-		//			{
-		//				Talk(new string[] {
-		//					" 당신들이 나를 없애겠다고 온 자들인가?",
-		//					" 그럼 예의를 갖추고 소개를 하지. 당신의 오른쪽의 사람은 아키몽크라고 하며 맨손을 사용하는 무예의 일인자로 통하지." +
-		//					" 그리고 당신의 정면의 사람은 아키메이지라고 하는 마법사 중의 마법사이라네. 당신들은 우리 셋보다도 숫자가 많군." +
-		//					" 그렇다면 나도 그것에 대비를 해야겠지. 내가 여기서 약간의 인원을 늘린다고 너무 섭섭하게 생각말게. 그렇다면 이제 서로의 실력을 겨뤄볼 시간이 다 되었나 보군." +
-		//					" 당신의 행운을 빌겠네."
-		//				});
-
-		//				mSpecialEvent = SpecialEventType.BattleNecromancer;
-		//			}
-		//			else
-		//			{
-		//				mAnimationEvent = AnimationType.None;
-		//			}
-		//		}
+			if (mAnimationEvent == AnimationType.LordAhnCall)
+			{
+			}
+			else
+			{
+				mAnimationEvent = AnimationType.None;
+			}
+		}
 
 		private void canvas_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
 		{
@@ -10485,8 +8997,8 @@ namespace DarkUWP
 		{
 			try
 			{
-				mMapTiles = await SpriteSheet.LoadAsync(device, new Uri("ms-appx:///Assets/lore_tile.png"), new Vector2(64, 64), Vector2.Zero);
-				mCharacterTiles = await SpriteSheet.LoadAsync(device, new Uri("ms-appx:///Assets/lore_sprite.png"), new Vector2(64, 64), Vector2.Zero);
+				mMapTiles = await SpriteSheet.LoadAsync(device, new Uri("ms-appx:///Assets/lore_tile.png"), new Vector2(52, 52), Vector2.Zero);
+				mCharacterTiles = await SpriteSheet.LoadAsync(device, new Uri("ms-appx:///Assets/lore_sprite.png"), new Vector2(52, 52), Vector2.Zero);
 
 				//await LoadEnemyData();
 			
@@ -10528,7 +9040,7 @@ namespace DarkUWP
 					yOffset = mTelescopePeriod - Math.Abs(mTelescopeYCount);
 			}
 
-			var transform = Matrix3x2.Identity * Matrix3x2.CreateTranslation(-new Vector2(64 * (mParty.XAxis - 4 + xOffset), 64 * (mParty.YAxis - 4 + yOffset)));
+			var transform = Matrix3x2.Identity * Matrix3x2.CreateTranslation(-new Vector2(52 * (mParty.XAxis - 4 + xOffset), 52 * (mParty.YAxis - 5 + yOffset)));
 			args.DrawingSession.Transform = transform;
 
 			var size = sender.Size.ToVector2();
@@ -10569,7 +9081,7 @@ namespace DarkUWP
 			Vector4 tint = Vector4.One;
 
 			if (mMapTiles != null)
-			{
+			{	
 				var mapIdx = 56;
 
 				if (mPosition == PositionType.Town)
@@ -10677,7 +9189,33 @@ namespace DarkUWP
 					}
 				}
 
-				mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+				if (mAnimationEvent == AnimationType.LordAhnCall) {
+					if (row == 48 && 1 <= mAnimationFrame && mAnimationFrame <= 4) {
+						if (column == 23 - mAnimationFrame)
+							mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+						else
+							mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+					}
+					else if (mAnimationFrame >= 5) {
+						if (column == 19) {
+							if (mParty.YAxis > 48 && row == 44 + mAnimationFrame) {
+								mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+							}
+							else if (mParty.YAxis < 48 && row == mParty.YAxis - (mAnimationFrame - 4))
+							{
+								mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+							}
+							else
+								mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+						}
+						else
+							mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+					}
+					else
+						mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+				}
+				else
+					mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 			}
 		}
 
@@ -11589,6 +10127,32 @@ namespace DarkUWP
 		//			}
 		//		}
 
+		private void PlusTime(int hour, int min, int sec) {
+			mParty.Hour += hour;
+			mParty.Min += min;
+			mParty.Sec += sec;
+
+			while (mParty.Sec > 59) {
+				mParty.Sec -= 60;
+				mParty.Min++;
+			}
+
+			while (mParty.Min > 59) {
+				mParty.Min -= 60;
+				mParty.Hour++;
+			}
+
+			while (mParty.Hour > 23) {
+				mParty.Hour -= 24;
+				mParty.Day++;
+			}
+
+			while (mParty.Day > 360) {
+				mParty.Day -= 360;
+				mParty.Year++;
+			}
+		}
+
 		private enum PositionType
 		{
 			Town,
@@ -11696,26 +10260,7 @@ namespace DarkUWP
 		private enum AnimationType
 		{
 			None,
-			MeetSkeleton,
-			Remains1,
-			Remains2,
-			Remains3,
-			Remains4,
-			Remains5,
-			Remains6,
-			Remains7,
-			Hydra,
-			Minotaur,
-			Minotaur2,
-			HugeDragon,
-			EnterSwampGate,
-			SwampGatePyramid,
-			Dragon3,
-			AstralMud,
-			PanzerViper,
-			BlackKnight,
-			EnterChamberOfNecromancer,
-			FinalBattle,
+			LordAhnCall
 		}
 
 		private enum SpecialEventType
