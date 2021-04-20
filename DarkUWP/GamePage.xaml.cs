@@ -26,8 +26,6 @@ namespace DarkUWP
 	/// </summary>
 	public sealed partial class GamePage : Page
 	{
-		private bool mSpriteBatchSupported;
-
 		private int mMapWidth = 0;
 		private int mMapHeight = 0;
 
@@ -856,9 +854,9 @@ namespace DarkUWP
 				//							Talk(new string[] { " 역시 당신들은 나의 예상대로 마지막 대륙까지 무난하게 왔군요. 이번에 가게될 라바 대륙은 이 세계에 있는 모든 대륙중에서 가장 작은 대륙이오." +
 				//							" 적의 요새도 또한 2개 밖에 없는 곳이오. 하지만 이번에 도착할 임페리움 마이너나 마지막으로 거칠 이블 컨센츄레이션 은 말 그대로 악의 집결지인 것이오." +
 				//							" 거기에는 최강의 괴물들과 네크로맨서 의 심복들로 가득차있는 곳이지만 임페리움 마이너의 지하에는 마지막으로 살아남은 사람들의 도시가 있소." +
-				//							" 원래 거기는 에이션트 이블이 전에 세운 악의 동굴이었지만 네크로맨서의 침략으로 지상의 도시가 함락되자 그 곳의 사람들은 모두 거기로 피난 했던 것이고" +
-				//							" 거기는 에이션트 이블의 영적인 힘으로 보호되고 있어서 적들이 침략을 하지 못하는 이유가 되지요. 그러므로 모든 도움과 물자는 거기서 받도록 하시오.",
-				//							" 그러면, 나는 당신이 네크로맨서와 상대하게 될 때 다시 에이션트 이블과 같이 나타나겠소."});
+				//							" 원래 거기는 에인션트 이블이 전에 세운 악의 동굴이었지만 네크로맨서의 침략으로 지상의 도시가 함락되자 그 곳의 사람들은 모두 거기로 피난 했던 것이고" +
+				//							" 거기는 에인션트 이블의 영적인 힘으로 보호되고 있어서 적들이 침략을 하지 못하는 이유가 되지요. 그러므로 모든 도움과 물자는 거기서 받도록 하시오.",
+				//							" 그러면, 나는 당신이 네크로맨서와 상대하게 될 때 다시 에인션트 이블과 같이 나타나겠소."});
 
 				//							mSpecialEvent = SpecialEventType.EnterImperiumMinor;
 				//						}
@@ -1300,7 +1298,7 @@ namespace DarkUWP
 						}
 						else if (mSpecialEvent == SpecialEventType.ViewGeniusKieLetter2)
 						{
-							Talk(new string[] {
+							AppendText(new string[] {
 								$" 로어성까지는 소문이 미치지 않았는지는 모르겠지만 로어 대륙의 남동쪽에는 알 수 없는 피라미드가 땅 속으로 부터 솟아 올랐다네." +
 								"  나와 로어 헌터 둘이서 그 곳을 탐험 했었지. 그 곳에는 다시 두개의 동굴이 있었고 그 두곳은 지하 세계와 연결 되어 있었다네." +
 								"  그 곳에 대해서는 지금 이 메모의 여백이 좁아서 말하기 어렵다네." +
@@ -1319,7 +1317,7 @@ namespace DarkUWP
 							" 하지만 더욱 이상한것은 로드 안 자신도 그에 대한 사실을 인정하면서도  왜 우리에게는 그를 배격하도록만 교육시키는 가를  알고 싶을뿐입니다." +
 							" 로드 안께서는 나를 이해한다고 하셨지만 사회 혼란을 방지하기 위해 나를 이렇게 밖에 할수 없다고 말씀하시더군요." +
 							" 그리고 이것은 선을 대표하는 자기로서는 이 방법 밖에는 없다고 하시더군요.",
-							" 하지만 로드 안의 마음은 사실 이렇지 않다는걸 알수 있었습니다.  에이션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알수가 있었기 때문입니다."
+							" 하지만 로드 안의 마음은 사실 이렇지 않다는걸 알수 있었습니다.  에인션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알수가 있었기 때문입니다."
 							});
 
 							mSpecialEvent = SpecialEventType.None;
@@ -1430,7 +1428,82 @@ namespace DarkUWP
 						}
 						else if (mSpecialEvent == SpecialEventType.SleepLoreCastle)
 						{
+							InvokeAnimation(AnimationType.SleepLoreCastle);
 
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn8) {
+							InvokeAnimation(AnimationType.TalkLordAhn);
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn9) {
+							mAnimationEvent = AnimationType.None;
+							mAnimationFrame = 0;
+
+							var eclipseDay = mParty.Day + 15;
+							var eclipseYear = mParty.Year;
+
+							if (eclipseDay > 360)
+							{
+								eclipseYear++;
+								eclipseDay %= 360;
+							}
+
+							AppendText(new string[] {
+								" 자네 말을 들어 보니 정말 큰일이군.  이러다간 정말 알비레오의 예언처럼 되어 버리겠는데." +
+								" 자네가 지하 세계에 내려간 후 이 곳에도 많은 변화가 있었네.  갑자기 달의 운행이  빨라졌다네." +
+								" 원래는 월식이 일어날 수 있는 보름달이 29.5일에 한번이었는데. 이제는 훨씬 더 빨라졌다네." +
+								"  달의 운행이 빨라져서 달은 원심력이 증가했고  달을 붙잡아 두기 위해서 지구의 중력장이 증가 했다네." +
+								" 지금은 거의 문제가 안될 정도이지만 이 상황이 점점 악화 된다면 지구는 백색 왜성이나 블랙홀처럼 스스로의 중력에 의해 파괴될 지도 모른다네.",
+								$" 그리고 다음 월식이 일어날 날짜가 계산 되었다네. 날짜는 15일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일로 예정 되어 있다네." +
+								" 그때까지 스스로를 단련 시키게. 그때 역시 잘 부탁하네."
+							});
+
+							mParty.Etc[36] = eclipseDay / 256;
+							mParty.Etc[35] = eclipseDay % 256;
+							mParty.Etc[38] = eclipseYear / 256;
+							mParty.Etc[37] = eclipseYear % 256;
+
+							mParty.Etc[9]++;
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn10)
+						{
+							InvokeAnimation(AnimationType.TalkLordAhn2);
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn11) {
+							mAnimationEvent = AnimationType.None;
+							mAnimationFrame = 0;
+
+							var eclipseDay = mParty.Day + 5;
+							var eclipseYear = mParty.Year;
+
+							if (eclipseDay > 360)
+							{
+								eclipseYear++;
+								eclipseDay %= 360;
+							}
+
+							AppendText(new string[] {
+								" 음... 자네 말을 들어보니  정말 고생이 많았었군. 그리고 악의 추종자 두명을 처단한 일도 정말 수고했네." +
+								" 하지만 벌써 마지막 세번째 월식 날짜가 임박했네. 사실 걱정은 바로 이것이네." +
+								" 알비레오의 예언에 나오는 다크 메이지 실리안 카미너스가  부활하게 되는 시간은  바로 이번 월식이 일어나는 때라네. 아마 이번이 마지막 파견인것 같군. 그럼 날짜를 알려주지.",
+								$" 마지막 세번째 월식은  바로 5 일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 이라네." +
+								" 자네가 만약 성공한다면 다시 로어의 세계는 평화가 올 것이지만 만약 실패한다면 우리가 이렇게 만나는 것도 마지막이 된다네."
+							});
+
+							mParty.Etc[36] = eclipseDay / 256;
+							mParty.Etc[35] = eclipseDay % 256;
+							mParty.Etc[38] = eclipseYear / 256;
+							mParty.Etc[37] = eclipseYear % 256;
+
+							mParty.Etc[9]++;
+
+							mSpecialEvent = SpecialEventType.None;
 						}
 					}
 
@@ -7350,7 +7423,7 @@ namespace DarkUWP
 						" 이름은 지니어스 기라고 하던데, 옛날에 들어본 이름 같기도 하고..."
 					});
 				}
-				else if (moveX == 66 && moveY == 77)
+				else if (moveX == 66 && moveY == 75)
 				{
 					Talk(new string[] {
 						"묘비에 쓰여 있기를 ...",
@@ -7381,8 +7454,8 @@ namespace DarkUWP
 				{
 					Talk(" 나는 이곳의 기사로서  이 세계의 모든 대륙을 탐험하고 돌아왔었습니다." +
 					" 내가 마지막 대륙을 돌았을때  나는 새로운 존재를 발견했습니다." +
-					" 그는 바로 예전까지도 로드 안과 대립하던 에이션트 이블이라는 존재였습니다." +
-					" 지금 우리의 성에서는 철저하게 배격하도록 어릴때부터 가르침 받아온 그 에이션트 이블이었습니다." +
+					" 그는 바로 예전까지도 로드 안과 대립하던 에인션트 이블이라는 존재였습니다." +
+					" 지금 우리의 성에서는 철저하게 배격하도록 어릴때부터 가르침 받아온 그 에인션트 이블이었습니다." +
 					"  하지만 그곳에서 본 그는 우리가 알고있는 그와는 전혀 다른 인간미를 가진  말 그대로  신과같은 존재였습니다." +
 					"  내가 그의 신앙 아래 있는 어느 도시를 돌면서 내가 느낀것은 정말 로드 안에게서는 찾아볼수가 없는 그런 자애와 따뜻한 정이었습니다." +
 					"  그리고 여태껏 내가 알고 있는 그에 대한 지식이  정말 잘못되었다는 것과  이런 사실을 다른 사람에게도 알려주고 싶다는 이유로  그의 사상을 퍼뜨리다 이렇게 잡히게 된것입니다.");
@@ -7606,6 +7679,127 @@ namespace DarkUWP
 
 						mSpecialEvent = SpecialEventType.MeetLordAhn6;
 					}
+					else if (mParty.Etc[9] == 7) {
+						var eclipseDay = mParty.Day + 20;
+						var eclipseYear = mParty.Year;
+
+						if (eclipseDay > 360) {
+							eclipseYear++;
+							eclipseDay %= 360;
+						}
+
+						AppendText(new string[] {
+							$" 어서오게, {mPlayerList[0].Name}.",
+							" 어제 해독하지 못 했던 석판에서 아주 중요한 것을 알아 내었다네. 에인션트 이블이 물론 해독해 주었다네.",
+							" 이 석판은 어제 해독한 실리안 카미너스란 존재가 나타나 있는 석판의 내용을  더욱 보강해 주더군. 그리고 새로운 사실을 알았다네." +
+							" 바로 지하 세계와 지상 세계가 연결되는 시기를  알려 주더군. 그것은 바로 월식이 일어나는 시기를 알면 된다네." +
+							" 석판의 고대어에 의하면 월식이 일어난 후 위협의 동굴에 지하 세계와의 통로가 생기게 된다네." +
+							" 여기서 \"위협의 동굴\" 이란 바로 메너스(MENACE)를 뜻하는 말이된다네." +
+							$" 그리고, 점성가를 통해서  다음 월식이 일어날 때를 알아보니  바로 20일 후인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일이 될거라고 하더군. 그때 메너스에 가보게." +
+							" 그리고 조심하게. 아직 남은 20일 동안 체력도 보강 시키도록하게. 그럼 행운을 빌겠네.",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 100000 ][/color]"
+						});
+
+						mParty.Gold += 100000;
+						mParty.Etc[36] = eclipseDay / 256;
+						mParty.Etc[35] = eclipseDay % 256;
+						mParty.Etc[38] = eclipseYear / 256;
+						mParty.Etc[37] = eclipseYear % 256;
+
+						mParty.Etc[9]++;
+					}
+					else if (mParty.Etc[9] == 8) {
+						var eclipseDay = mParty.Etc[36] * 256 + mParty.Etc[35];
+						var eclipseYear = mParty.Etc[38] * 256 + mParty.Etc[37];
+
+						if (mParty.Year > eclipseYear || (mParty.Year == eclipseYear && mParty.Day > eclipseDay)) {
+							mParty.Etc[9]++;
+							TalkMode(moveX, moveY, key);
+						}
+						else {
+							AppendText(new string[] {
+								" 메너스에 지하 세계로의 통로가  열리게 되는 첫번째 월식때 까지 기다리게.",
+								" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 그때를 위해 열심히 훈련하도록 하게나."
+							});
+						}
+					}
+					else if (mParty.Etc[9] == 9)
+						AppendText(" 드디어 우리가 기다리던 월식은 일어났네. 자네는 한시바삐 메너스를 통해 지하세계로 가도록 하게. 이제 이 세계의 운명은 자네의 두 손에 달려있다네.");
+					else if (mParty.Etc[9] == 10) {
+						Talk(new string[] {
+							" 자네 드디어 돌아왔군. 그래, 지하 세계에 대해서 좀 말 해주게나.",
+							"",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 500000 ] [[ 황금 + 100000 ][/color]"
+						});
+
+						foreach (var player in mPlayerList) {
+							player.Experience += 500000;
+						}
+						mParty.Gold += 100000;
+
+						mSpecialEvent = SpecialEventType.MeetLordAhn8;
+					}
+					else if (mParty.Etc[9] == 11) {
+						var eclipseDay = mParty.Etc[36] * 256 + mParty.Etc[35];
+						var eclipseYear = mParty.Etc[38] * 256 + mParty.Etc[37];
+
+						if (mParty.Year > eclipseYear || (mParty.Year == eclipseYear && mParty.Day > eclipseDay))
+						{
+							mParty.Etc[9]++;
+							TalkMode(moveX, moveY, key);
+						}
+						else
+						{
+							AppendText(new string[] {
+								" 메너스에 지하 세계로의 통로가  열리게 되는 두번째 월식때 까지 기다리게.",
+								$" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 이번에는 치열한 전투도 각오해야 할 걸세. 열심히 단련하게나."
+							});
+						}
+					}
+					else if (mParty.Etc[9] == 12) {
+						AppendText(" 드디어 우리가 기다리던 월식은 일어났네. 자네는 한시바삐 메너스를 통해 지하세계로 가도록 하게. 이제 이 세계의 운명은 자네의 두 손에 달려있다네." +
+						"  언제나 자네에게 이런일을 시켜서 미안하게 됐네. 자네 앞에 언제나 행운이 따르기를 빌어 주겠네.");
+					}
+					else if (mParty.Etc[9] == 13) {
+						Talk(new string[] {
+							" 돌아왔군. 정말 수고 했네. 그동안 있었던 일을 나에게 모두 이야기 해주게.",
+							"",
+							$"[color={RGB.LightCyan}] [ 경험치 + 1000000 ] [ 황금 + 500000 ][/color]"
+						});
+
+						foreach (var player in mPlayerList)
+						{
+							player.Experience += 1000000;
+						}
+						mParty.Gold += 500000;
+
+						mSpecialEvent = SpecialEventType.MeetLordAhn10;
+					}
+					else if (mParty.Etc[9] == 14) {
+						var eclipseDay = mParty.Etc[36] * 256 + mParty.Etc[35];
+						var eclipseYear = mParty.Etc[38] * 256 + mParty.Etc[37];
+
+						if (mParty.Year > eclipseYear || (mParty.Year == eclipseYear && mParty.Day > eclipseDay))
+						{
+							mParty.Etc[9]++;
+							TalkMode(moveX, moveY, key);
+						}
+						else
+						{
+							AppendText(new string[] {
+								$" 운명의 세번째 월식이  바로 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤에 일어나게 된다네." +
+								" 아마 자네의 마지막 결전이 될 걸세. 각오를 단단히 하게. 운명의 시간은 점점 우리에게 다가오고 있다네."
+							});
+
+							mParty.Etc[8] = 0;
+						}
+					}
+					else if (mParty.Etc[9] == 15) {
+						AppendText(new string[] {
+							" 드디어 우리가 기다리던  마지막 세번째 월식이 일어났네. 정말 이번에는 단단한 각오를 해야 할 걸세." +
+							"  월식이 일어나던 밤에 메너스 쪽에서 큰 지진이 있었다네.  아마 이건 다크 메이지가 부활이 거의 다 끝나간다는 것을  말해주고 있는 것 같네."
+						});
+					}
 				}
 
 			}
@@ -7643,6 +7837,85 @@ namespace DarkUWP
 						Task.Delay(500).Wait();
 					}
 				}
+				else if (mAnimationEvent == AnimationType.SleepLoreCastle) {
+					var i = 0;
+					while (true)
+					{
+						i++;
+						mAnimationFrame = i;
+						if (i <= 59)
+							Task.Delay(5).Wait();
+						else if (i == 60) {
+							mFace = 3;
+							mParty.YAxis = 49;
+							mParty.XAxis = 15;
+							Task.Delay(500).Wait();
+						}
+						else if (61 <= i && i <= 65) {
+							mParty.XAxis--;
+							Task.Delay(500).Wait();
+						}
+						else if (i == 66) {
+							mFace = 1;
+							Task.Delay(1000).Wait();
+						}
+						else if (i == 67) {
+							mParty.Etc[0] = 0;
+							Task.Delay(1000).Wait();
+							AppendText(" 당신은 다음날 아침까지 여기서 자기로 했다.");
+							mParty.Min = 0;
+						}
+						else if (i >= 68 && mParty.Hour != 9) {
+							PlusTime(0, 20, 0);
+
+							foreach (var player in mPlayerList) {
+								if (player.Dead == 0 && player.Unconscious == 0) {
+									if (player.Poison == 0)
+									{
+										player.HP += player.Level;
+										if (player.HP > player.Endurance * player.Level * 10)
+											player.HP = player.Endurance * player.Level * 10;
+									}
+									else {
+										player.HP--;
+										if (player.HP <= 0)
+											player.Unconscious = 1;
+									}								
+								}
+								else if (player.Dead == 0 && player.Unconscious > 0) {
+									if (player.Poison == 0) {
+										if (player.Unconscious - player.Level > 0)
+											player.Unconscious = player.Unconscious + player.Level;
+										else {
+											player.Unconscious = 0;
+											player.HP = 1;
+										}
+									}
+									else {
+										player.Unconscious++;
+										if (player.Unconscious > player.Endurance * player.Level)
+											player.Dead = 1;
+									}
+								}
+							}
+
+							UpdatePlayersStat();
+						}
+						else {
+							mParty.XAxis++;
+							mFace = 2;
+
+							break;
+						}
+					}
+				}
+				else if (mAnimationEvent == AnimationType.TalkLordAhn ||
+					mAnimationEvent == AnimationType.TalkLordAhn2) {
+					for (var i = 1; i <= 59; i++) {
+						mAnimationFrame = i;
+						Task.Delay(5).Wait();
+					}
+				}
 			});
 
 			await animationTask;
@@ -7665,20 +7938,29 @@ namespace DarkUWP
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 			}
+			else if (mAnimationEvent == AnimationType.SleepLoreCastle) {
+				AppendText($"[color={RGB.White}] 아침이 밝았다.[/color]");
+
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
+			}
+			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn) {
+				Talk(" 한참후 ...");
+
+				if (mAnimationEvent == AnimationType.TalkLordAhn)
+					mSpecialEvent = SpecialEventType.MeetLordAhn9;
+				else
+					mSpecialEvent = SpecialEventType.MeetLordAhn11;
+			}
 			else
 			{
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 			}
-		}
+}
 
 		private void canvas_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
 		{
-			mSpriteBatchSupported = CanvasSpriteBatch.IsSupported(sender.Device);
-
-			if (!mSpriteBatchSupported)
-				return;
-
 			args.TrackAsyncAction(LoadImages(sender.Device).AsAsyncAction());
 		}
 
@@ -7700,17 +7982,6 @@ namespace DarkUWP
 
 		private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
 		{
-			if (!mSpriteBatchSupported)
-			{
-				args.DrawingSession.DrawText("This version of Windows does not support sprite batch, so this example is not available.",
-					new Rect(new Point(0, 0), sender.Size), Colors.White, new CanvasTextFormat()
-					{
-						HorizontalAlignment = CanvasHorizontalAlignment.Center,
-						VerticalAlignment = CanvasVerticalAlignment.Center
-					});
-				return;
-			}
-
 			var playerX = mParty.XAxis;
 			var playerY = mParty.YAxis;
 
@@ -7757,6 +8028,9 @@ namespace DarkUWP
 					mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY), Vector4.One);
 				}
 			}
+
+			//for (var i = 0; i < 117; i++)
+			//	args.DrawingSession.FillRectangle(new Rect((playerX - 4)* 52 + (i * 4), (playerY - 5) * 52, 2, 52 * 11), Colors.Black);
 		}
 
 		void DrawTile(CanvasSpriteBatch sb, byte[] layer, int index, int playerX, int playerY)
@@ -8159,13 +8433,12 @@ namespace DarkUWP
 			DisplayCondition();
 		}
 
-		//		private void UpdatePlayersStat()
-		//		{
-		//			DisplayHP();
-		//			DisplaySP();
-		//			DisplayESP();
-		//			DisplayCondition();
-		//		}
+		private void UpdatePlayersStat()
+		{
+			DisplayHP();
+			DisplaySP();
+			DisplayCondition();
+		}
 
 		private void DisplayHP()
 		{
@@ -9080,7 +9353,10 @@ namespace DarkUWP
 		{
 			None,
 			LordAhnCall,
-			LeaveSoldier
+			LeaveSoldier,
+			SleepLoreCastle,
+			TalkLordAhn,
+			TalkLordAhn2,
 		}
 
 		private enum SpecialEventType
@@ -9099,6 +9375,10 @@ namespace DarkUWP
 			MeetLordAhn6,
 			MeetLordAhn7,
 			SleepLoreCastle,
+			MeetLordAhn8,
+			MeetLordAhn9,
+			MeetLordAhn10,
+			MeetLordAhn11
 		}
 
 		private class HealthTextBlock
