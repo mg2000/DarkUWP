@@ -4,23 +4,16 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
@@ -43,6 +36,9 @@ namespace DarkUWP
 		private byte[] mMapLayer = null;
 		private readonly object mapLock = new object();
 
+		private int mXWide; // 시야 범위
+		private int mYWide; // 시야 범위
+
 		bool ClampToSourceRect = true;
 
 		private LorePlayer mParty;
@@ -53,7 +49,6 @@ namespace DarkUWP
 		private int mEncounter = 0;
 		private int mMaxEnemy = 0;
 
-		private int mTalkMode = 0;
 		private bool mTriggeredDownEvent = false;
 		private int mTalkX = 0;
 		private int mTalkY = 0;
@@ -170,7 +165,7 @@ namespace DarkUWP
 		private const int DIALOG_MAX_LINES = 13;
 
 		private readonly List<string> mCureResult = new List<string>();
-		private readonly List<string> mRemainBattleResult = new List<string>();
+		private readonly List<string> mRemainDialog = new List<string>();
 
 
 		public GamePage()
@@ -513,11 +508,11 @@ namespace DarkUWP
 								// Move Move
 								MovePlayer(x, y);
 							}
-							//else
-							//{
-							//	TalkMode(x, y);
-							//	mTriggeredDownEvent = true;
-							//}
+							else
+							{
+								TalkMode(x, y);
+								mTriggeredDownEvent = true;
+							}
 						}
 						else if (mPosition == PositionType.Ground)
 						{
@@ -1281,1161 +1276,297 @@ namespace DarkUWP
 					mTriggeredDownEvent = false;
 					return;
 				}
-				//				else if (mSpecialEvent == SpecialEventType.RefuseJoinSkeleton)
-				//				{
-				//					mSpecialEvent = SpecialEventType.None;
-
-				//					mAnimationEvent = AnimationType.None;
-				//					mAnimationFrame = 0;
-
-				//					await ExitCastleLore();
-				//				}
-				//				else if (mSpecialEvent == SpecialEventType.StartGame)
-				//				{
-				//					TalkMode(mTalkX, mTalkY, args.VirtualKey);
-				//				}
-				//				else if (ContinueText.Visibility == Visibility.Visible)
-				//				{
-				//					async Task InvokeSpecialEventLaterPart()
-				//					{
-				//						if (mSpecialEvent == SpecialEventType.MeetLoreSolider)
-				//						{
-				//							mParty.Etc[49] |= 1 << 4;
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetSkeleton)
-				//						{
-				//							InvokeAnimation(AnimationType.MeetSkeleton);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetDraconian)
-				//						{
-				//							if ((mParty.Etc[15] & (1 << 1)) > 0)
-				//							{
-				//								AppendText(new string[] { "그러나, 아무도 살고 있지 않았다." });
-
-				//								mSpecialEvent = SpecialEventType.None;
-				//							}
-				//							else if (mParty.Etc[4] == 0)
-				//							{
-				//								Talk(new string[] {
-				//									" 나는 드래코니안이라고 하오. 이런 곳까지 사람이 찾아오리라고는 생각하지 못했는데 참 의외로군요. 나는 숨어 지내는 오랜 세월 동안에 여러 가지 학문을 연구하고 있었소." +
-				//									" 특히 천문학에 대해서는 특별히 전념하여 다루었소. 내가 그동안 알아낸 지식들은 다음과 같은 것이오.",
-				//									" 지금 우리가 살고 있는 지구는 태양계에서 세 번째로 위치한 행성인데 이상하게도 위성인 달이 지구보다도 더 오래되었다는 사실이 연구되었소." +
-				//									" 또한 이 지구가 세차운동에 의해 2 등성이었던 북극성이 다른 별로 바뀐다는 걸 알았소",
-				//									" 물리학에서 알아낸 것은, 중수 반응에서 매질의 차이로 빛이 속도가 느려진 틈을 이용해 빛 보다 빠른 입자가 생겨났소. 하지만 절대적인 빛의 속도에는 미치지 못했지만 말이오." +
-				//									" 이것을 잘만 이용하면 미래로의 타임머신이 가능하다는 걸 입증할 수가 있소.",
-				//									" 사실 이런 것은 당신에게는 별 의미가 없는 것일지도 모르오. 하지만 마지막으로 알아낸 것은 바로 당신이 응징하고자 하는 네크로맨서의 출처에 관한 것이오." +
-				//									" 당신은 시그너스 X1과 같은 블랙홀에 대해서 알고 있을 것이오. 이런 물리학적인 패러독스에 의해 그는 생겨났던 것이오."
-				//								});
-
-				//								mSpecialEvent = SpecialEventType.MeetDraconian2;
-				//							}
-				//							else
-				//							{
-				//								AppendText(new string[] { " 나의 운명을 생각해 보니 나 역시 당신들을 필연적으로 만나 네크로맨서를 물리쳐야 한다는 걸 깨달았소." +
-				//								" 당신들 일행의 제일 뒤에서 도와주고 싶소. 어떻소." });
-
-				//								ShowMenu(MenuMode.JoinDraconian, new string[] {
-				//									"저도 바라던 차입니다",
-				//									"별로 좋지는 않군요"
-				//								});
-
-				//								mSpecialEvent = SpecialEventType.None;
-				//							}
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetDraconian2)
-				//						{
-				//							Talk(new string[] {
-				//								" 지금 우리가 있는 3차원 위에 또 다른 차원이 있다고 생각하오? 생각은 하더라도 눈으로 확인은 못해 봤을 것이오. 우리는 2차원을 인식할 수가 있소." +
-				//								" 하지만 실제로 2차원에 살고 있는 생물은 자신의 차원은 인식해도 우리가 살고 있는 3차원은 인식할 수가 없는 것이오." +
-				//								" 그의 차원에는 우리의 차원이 존재하지 않기 때문에 개념을 잡을 수가 없는 것이오. 마찬가지로 우리 또한 지금의 차원보다 한 차원 높은 4 차원을 개념을 잡기가 어려운 것이오.",
-				//								" 어떤 이는 4차원은 시간의 축이 보태어진다고 하는 이론을 세우더군요. 하지만 나의 이론은 시간은 모든 차원의 기준이며 4차원에 국한되지는 않는다는 생각이오." +
-				//								" 3차원에서는 동시간대에 무한한 2차원을 포함하듯이 4차원에서는 동시간대에 무한한 3차원을 포함하고 있다는 이론이 성립되오." +
-				//								" 말이 조금은 빗나갔지만 이 이론으로 네크로맨서의 출처를 해명해 보겠소",
-				//								" 방금 말했듯이 3차원은 이 공간만이 존재하는 것은 아니오. 동시대를 살아가는 다른 공간도 인정해야 한다는 말이오. 그 공간들을 이어주는 것이 바로 블랙홀이란 것이지요." +
-				//								" 그는 원래 그가 있던 공간에서 블랙홀을 통해서 다른 공간으로 가려고 시도를 했고 웜홀을 통해 시공간을 가로질러 오래전 우리의 공간에 화이트홀이 생기는 틈을 이용하여 내려왔던 것이오."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetDraconian3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetDraconian3)
-				//						{
-				//							Talk(new string[] {
-				//								" 하지만 3차원에 사는 나로서는 그가 전에 있던 공간에서 왜 이쪽으로 왔는지 알 수가 없었지요. 그래서 그와 같이 이 공간으로 들어왔던 심복들을 통해 그 사정을 알게 되었소.",
-				//								" 네크로맨서는 저쪽의 공간에서도 지금과 마찬가지로 차원을 통해 그 공간에 도달했소. 역시 거기서도 악을 뿌리며 거기의 생명체들을 위협했소." +
-				//								" 하지만 어떤 선택된 6인의 용사들에 의해 쫓겨겨나서 여기로 온 것이오. 지금의 당신들과 비슷하다고 생각되지 않소? 그렇소." +
-				//								" 다른 공간의 당신들에게 쫓겨난 후 다시 여기서 당신들을 또 만나게 된 것이오. 네크로맨서와 당신들의 운명은 언제까지나 쫓고 쫓기며 대립하여야하 하는 운명으로 탄생되었던 것이오." +
-				//								" 이런 이유에서 당신은 그를 반드시 무찌를 수가 있다는 근거가 되는 것이오.",
-				//								" 당신들의 건투를 빌어주겠소."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAncientEvil)
-				//						{
-				//							mParty.XAxis = 47;
-				//							mParty.YAxis = 56;
-
-				//							Talk(" 여기는 이블 갓이라는 동굴이오. 여기의 보스는 크랩 갓인데 적 자체는 별거 아니지만 떼를 지어서 다니기 때문에 약간의 애를 먹을 것이오." +
-				//							" 7갈래의 길 중에서 한 곳에 봉인이 숨겨져 있을 것이오.");
-
-				//							mSpecialEvent = SpecialEventType.MeetAncientEvil2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAncientEvil2)
-				//						{
-				//							mParty.XAxis = 81;
-				//							mParty.YAxis = 15;
-
-				//							Talk(" 여기는 머디라는 동굴이오. 여기의 보스는 아스트랄 머드라는 자인데 그리 실력이 있다고는 볼 수가 없소." +
-				//							" 다만 동굴 자체가 어려운 미로라는 것과 시야가 좁아지는 불편 등은 감수해야만 할 것이오." +
-				//							" 그리고 마지막에 3마리의 드래곤과 7마리의 진흙 인간을 거쳐야만 그가 나타나기 때문에 약간 까다로울 것이오.");
-
-				//							mSpecialEvent = SpecialEventType.MeetAncientEvil3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAncientEvil3)
-				//						{
-				//							mParty.XAxis = 15;
-				//							mParty.YAxis = 14;
-
-				//							Talk(" 여기는 이 대륙의 외진 곳이오. 여기서는 어떤 만남이 기다리고 있을 것이오.");
-
-				//							mParty.Etc[15] |= 1;
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterSwampGate)
-				//						{
-				//							Talk(new string[] {
-				//								$" 나는 로어 성의 성주 [color={RGB.LightCyan}]로드 안[/color]이오.",
-				//								" 역시 내가 예상한 대로 당신들은 훌륭한 용사로 성장해 나가고 있소. 여태까지는 모험이 순조롭게 진행되었지만 이제부터는 완전한 적들의 소굴이오." +
-				//								" 그래서 나도 직접적인 도움은 못 주더라도 여러 가지 조언을 해주겠소."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.EnterSwampGate2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterSwampGate2)
-				//						{
-				//							Talk(" 당신들은 식량을 많이 가지고 있소? 이 식량은 당신들을 회복시키기 위해 필요한 것이니 절대 바닥나게 해서는 안 되오." +
-				//							" 왜냐하면 이 이후에 전개되는 모험에서는 식량을 파는 곳이 거의 없다고 생각해도 될 만큼 식량이 귀중하므로 낭패를 보는 일이 없도록 하시오.");
-
-				//							mSpecialEvent = SpecialEventType.EnterSwampGate3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterSwampGate3)
-				//						{
-				//							Talk(new string[] {
-				//								" 스왐프의 대륙에서의 할 일을 요약하면 이렇소.",
-				//								" 스왐프 게이트와 통하는 스왐프 킵에는 많은 강한 괴물들이 버티고 있소." +
-				//								" 하지만 이전에 그 대륙에 있는 2개의 동굴 요새를 점령한 뒤에야 스왐프 킵의 중앙에 있는 라바 게이트를 작동시킬 수 있을 것이오." +
-				//								" 그곳의 괴물들은 매우 힘든 상대일 것이오. 하지만 당신들의 능력이라면 충분히 가능할 것이오. 나는 당신들이 라바 게이트를 통과하려 할 때 다시 조언을 해주겠소.",
-				//								" 그때까지 건투를 비는 바이오."
-				//							});
-
-				//							mParty.Etc[34] |= 1 << 5;
-				//							mSpecialEvent = SpecialEventType.EnterSwampGate4;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterSwampGate4)
-				//						{
-				//							await EnterSwampGate();
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FindOedipusSpear)
-				//						{
-				//							Talk(new string[] {
-				//								"그 창의 손잡이에 쓰인 문구를 따르면..",
-				//								"",
-				//								$"        [color={RGB.LightCyan}]이것은 오이디푸스의 창[/color]",
-				//								$"   [color={RGB.LightCyan}]이것으로 전에 스핑크스를 무찌르다[/color]"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.FindOedipusSpear2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FindOedipusSpear2)
-				//						{
-				//							AppendText($"[color={RGB.LightCyan}]누가 오이디푸스의 창을 다루겠습니까 ?[/color]");
-
-				//							ShowCharacterMenu(MenuMode.ChooseOedipusSpear);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MajorMummyRoom)
-				//						{
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 2; i++)
-				//							{
-				//								var enemy = JoinEnemy(34);
-				//								enemy.Name = $"스핑크스";
-				//								enemy.Level = 4;
-				//								enemy.Special = 0;
-				//								enemy.ENumber = 19;
-				//							}
-
-				//							var majorMummy = JoinEnemy(25);
-				//							majorMummy.Name = "미이라 장군";
-				//							majorMummy.AC = 1;
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 2;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetRigel)
-				//						{
-				//							AppendText(new string[] {
-				//							$" 나는 배리안트 피플즈의 용사였던 [color={RGB.LightCyan}]리겔[/color]이오." +
-				//							" 내가 동굴 속에서 적들을 막아내는 동안 지각변동으로 인해 이런 절벽이 군데군데 생겼소." +
-				//							" 나는 이제 너무 지치고 많은 상처를 입어서 혼자 힘으로는 이곳을 빠져나갈 수가 없소.",
-				//							" 나를 도와주시오."
-				//							});
-
-				//							ShowMenu(MenuMode.JoinRigel, new string[] {
-				//								"좋소, 같이 모험을 합시다",
-				//								"식량과 치료는 해결해 주겠소",
-				//								"당신을 도와줄 시간이 없소"
-				//							});
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterEvilConcentration)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-
-				//							mBattleEvent = 3;
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FindGoldenShield)
-				//						{
-				//							AppendText($"[color={RGB.LightCyan}]누가 이 황금의 방패를 장착하겠습니까?[/color]", true);
-
-				//							ShowCharacterMenu(MenuMode.ChooseGoldShield2);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FindGoldenArmor)
-				//						{
-				//							AppendText($"[color={RGB.LightCyan}]누가 이 황금의 방패를 장착하겠습니까?[/color]", true);
-
-				//							ShowCharacterMenu(MenuMode.ChooseGoldArmor);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleArchiGagoyle)
-				//						{
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 2; i++)
-				//							{
-				//								var enemy = JoinEnemy(35);
-				//								enemy.Name = $"좀비";
-				//							}
-
-				//							var majorMummy = JoinEnemy(41);
-				//							majorMummy.Name = "아키가고일";
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 4;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleWivern)
-				//						{
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 3 - mParty.Etc[36]; i++)
-				//								JoinEnemy(42);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 5;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetRedAntares)
-				//						{
-				//							Talk(new string[] {
-				//								$"나는 고대의 강력한 마법사였던 [color={RGB.LightCyan}]레드 안타레스[/color]의 영이오.",
-				//								" 한때, 나는 이 세계의 모든 지역을 통괄하는 마법을 가지고 이 세계를 통치했지만 내가 죽고 난 뒤로는 여러 지역으로 나의 마법이 분산되어 제대로 힘을 발휘하지 못하는 것 같소." +
-				//								" 당신들이 네크로맨서에 대항하려 한다는 걸 알고 있소. 나는 그가 이 동굴을 요새화 시킬 때 이미 그의 마법 능력을 지켜보았기 때문에 그의 능력을 알 수 있었소." +
-				//								" 그러나 그의 능력에 비교해 볼 때 당신들의 마법 능력은 상당히 저조하오. 그래서 당신들을 위해 나의 마법 중 \"간접 공격\"이란 기법을 전해 주겠소.",
-				//								" 만약 당신들의 마법 능력이 도달한다면 다음의 마법을 사용할 수 있을 것이오."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetRedAntares2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetRedAntares2)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}]1.     독      - 적을 중독 시킴[/color]",
-				//								$"[color={RGB.White}]2. 기술 무력화 - 적의 특수 공격 능력 제거[/color]",
-				//								$"[color={RGB.White}]3. 방어 무력화 - 적의 방어력 감소[/color]",
-				//								$"[color={RGB.White}]4. 능력   저하 - 적의 모든 능력 감소[/color]",
-				//								$"[color={RGB.White}]5. 마법   불능 - 적의 마법 능력 제거[/color]",
-				//								$"[color={RGB.White}]6. 탈   초인화 - 적의 초자연력 제거[/color]"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetRedAntares3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetRedAntares3)
-				//						{
-				//							Talk(new string[] {
-				//								" 이 여섯 가지의 마법은 사용하기 까다롭고 직접적인 공격은 아니지만 큰 도움을 줄 것이오.",
-				//								"하지만, 사실 이 마법들을 모두 동원하더라도 네크로맨서를 만나기조차 어려울 것이오. 그래서 당신들은 초자연력 또한 익혀야만 그에게 대항할 수 있을 것이오."
-				//							});
-
-				//							mParty.Etc[37] |= 1;
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleHydra)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 3; i++)
-				//							{
-				//								var enemy = JoinEnemy(48);
-				//								enemy.Name = $"히드라의 머리 {i + 1}";
-				//								enemy.Level = 8;
-				//								enemy.ENumber = 33;
-				//							}
-
-				//							mEncounterEnemyList[2].Level = 10;
-				//							mEncounterEnemyList[2].ENumber = 38;
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 6;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle();
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.AfterBattleHydra)
-				//						{
-				//							mParty.XAxis = 55;
-				//							mParty.YAxis = 92;
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleMinotaur)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							JoinEnemy(52);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 7;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetSpica)
-				//						{
-				//							Talk(new string[] {
-				//								" 나는 이곳 락업이 적들에게 점령되기 전부터 여기서 수도하고 있는 스피카란 사람입니다.",
-				//								" 오랜 수도 끝에 나는 초자연력의 존재와 사용법을 알게 되었습니다. 대충 요약하면 이렇습니다.",
-				//								"",
-				//								$"[color={RGB.White}]투  시 : 변화의 여지가 있는 지역을 탐지[/color]",
-				//								$"[color={RGB.White}]예  언 : 다음의 할 일을 알아냄[/color]",
-				//								$"[color={RGB.White}]독  심 : 남의 마음을 자기 쪽으로 끌어들임[/color]",
-				//								$"[color={RGB.White}]천리안 : 능력에 따라 먼곳의 광경을 봄[/color]",
-				//								$"[color={RGB.White}]염  력 : 주위 환경 조절에 의한 공격[/color]",
-				//								"",
-				//								" 이것으로 네크로맨서에게 도전하십시오. 또한, 그도 초자연력의 존재를 알고 있고 사용할 줄 안다는 걸 염두에 두고 사용하십시오."
-				//							});
-
-				//							mParty.Etc[38] |= 1;
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleHugeDragon)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							var enemy = JoinEnemy(53);
-				//							enemy.Name = "거대 드래곤";
-				//							var enemyTail = JoinEnemy(38);
-				//							enemyTail.Name = $"드래곤의 꼬리";
-				//							for (var i = 0; i < 5; i++)
-				//							{
-				//								JoinEnemy(mRand.Next(3) + 29);
-				//							}
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 8;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleCrabGod)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 10;
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleMinotaur2)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							JoinEnemy(52);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 11;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleThreeDragon)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 3; i++)
-				//								JoinEnemy(53);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 12;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleAstralMud)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 6; i++)
-				//								JoinEnemy(30);
-				//							JoinEnemy(56);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 14;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.ExitImperiumMinor)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 17;
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleDeathKnight)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 18;
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetFaceNecromancer)
-				//						{
-				//							Talk(new string[] {
-				//								$" [color={RGB.LightMagenta}]너희들은 곧 환상에 빠져들게 될 것이다.[/color]",
-				//								$" [color={RGB.LightMagenta}]나는 벌써 너희들의 약점을 파악했지. 너희 일행들은 항상 자신을 너무 신뢰하고 믿고 있더군. 그러나 그 착각은 곧 깨어질 것이다.[/color]",
-				//								$" [color={RGB.White}]어둠의 신이여, 당신의 힘으로 이들을 환상에 빠져들게 하소서. 인 쿠아스 젠 ~~[/color]"
-				//							});
-
-				//							mEncounterEnemyList.Clear();
-
-				//							for (var i = 0; i < 6; i++)
-				//							{
-				//								BattleEnemyData enemy;
-				//								if (mPlayerList.Count < i)
-				//									enemy = JoinEnemy(59);
-				//								else
-				//									enemy = TurnMind(mPlayerList[i]);
-				//								enemy.ENumber = 1;
-				//							}
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							mSpecialEvent = SpecialEventType.BattleDual;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleDual)
-				//						{
-				//							mBattleEvent = 21;
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FailRunawayBattleFakeNecromancer)
-				//						{
-				//							mBattleEvent = 21;
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleFackNecromancer)
-				//						{
-				//							mBattleEvent = 22;
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.AfterBattleFakeNecromancer)
-				//						{
-				//							Talk(" 그는 숨이 끊어졌고 주위의 기둥도 그와 함께 사라져 버렸다.");
-
-				//							mMapLayer[28 + mMapWidth * 26] = 53;
-
-				//							for (var y = 24; y < 27; y++)
-				//							{
-				//								for (var x = 23; x < 27; x++)
-				//									mMapLayer[x + mMapWidth * y] = 46;
-				//							}
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattlePanzerViper)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 4; i++)
-				//								JoinEnemy(65);
-				//							JoinEnemy(70);
-
-				//							mBattleEvent = 23;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.AfterBattlePanzerViper)
-				//						{
-				//							mEncounterEnemyList.Clear();
-				//							JoinEnemy(67);
-				//							JoinEnemy(66);
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							Talk(new string[] {
-				//								$" 매우 수고하시는군요. {mPlayerList[0].Name}",
-				//								" 당신이 네크로맨서에게 가기 전에 한 가지 일러 두고자 하오.",
-				//								" 이곳에는 비밀스러운 문이 두 군데 있소. 지금은 보이지가 않지만 양쪽의 벽을 살피다 보면 숨겨진 문안에 레버가 각각 하나씩 있소." +
-				//								" 그걸 모두 작동시키면 용암의 중앙에서 네크로맨서의 방으로 통하는 입구가 보일 것이오. 여기까지만 내가 알려줄 수가 있는 부분이오. 마지막으로 당신의 건투를 빌겠소."
-				//							});
-
-				//							foreach (var player in mPlayerList)
-				//							{
-				//								player.Class = 10;
-				//								player.Level[1] = player.Level[0];
-				//								player.Level[2] = player.Level[0];
-				//							}
-
-				//							mSpecialEvent = SpecialEventType.AfterLordAhnAndAncientEvil;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.AfterLordAhnAndAncientEvil)
-				//						{
-				//							mEncounterEnemyList.Clear();
-
-				//							ShowMap();
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleBlackKnight)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 5; i++)
-				//								JoinEnemy(62);
-				//							JoinEnemy(71);
-
-				//							mBattleEvent = 28;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(true);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleNecromancer)
-				//						{
-				//							mAnimationEvent = AnimationType.None;
-				//							mAnimationFrame = 0;
-
-				//							mEncounterEnemyList.Clear();
-				//							for (var i = 0; i < 7; i++)
-				//							{
-				//								JoinEnemy(68 + i);
-				//							}
-
-				//							mBattleEvent = 24;
-
-				//							HideMap();
-				//							DisplayEnemy();
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.FailRunawayBattleNecromancer)
-				//						{
-				//							mBattleEvent = 24;
-
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.Ending)
-				//						{
-				//							Window.Current.CoreWindow.KeyDown -= gamePageKeyDownEvent;
-				//							Window.Current.CoreWindow.KeyUp -= gamePageKeyUpEvent;
-				//							Frame.Navigate(typeof(Ending), mPlayerList[0].Name);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAhnInLastShelter)
-				//						{
-				//							mParty.Etc[42] |= 1 << 3;
-				//							mMapLayer[32 + mMapWidth * 9] = 47;
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAhnInAnotherLore)
-				//						{
-				//							Talk(new string[] {
-				//								" 당신과는 초면이 아니지요? 로어 성에서도 봤으니까 말이죠." +
-				//								" 당신은 나의 정체가 어떨지 궁금하기도 하겠지만 나중에 밝혀질 일이이까 천천히 알아보기로 하고 먼저 이 피라미드에 대해서 말하기로 하지요.",
-				//								" 이 피라미드는 네크로맨서와 함께 저편의 공간에서 퉁겨져 나왔지요. 이곳은 육신은 죽고 의지만 남은 사람들의 안식처라고도 할 수 있죠.",
-				//								" 여기의 '의지'들 중에서 당신과 관계가 없는 의지는 모두 재가 되어버릴 거요." +
-				//								" 여기서 얻은 정보는 모두 당신의 운명을 더욱더 모질게 만들어 버릴 것들이지만, 만약 당신이 알지 못한다면 더더욱 더 당신을 힘겹게 하는 것들만 있지요." +
-				//								" 당신의 현명한 판단에 모든 걸 맡기도록 하지요." });
-
-				//							mSpecialEvent = SpecialEventType.MeetAhnInAnotherLore2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetAhnInAnotherLore2)
-				//						{
-				//							mMapLayer[14 + mMapWidth * 5] = 52;
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb)
-				//						{
-				//							Talk(new string[] {
-				//								" 오! 당신이 나의 잠을 깨웠나?",
-				//								$" 실로 몇 천년 만에 보는 세상이군. 나는 당신의 운명적인 만남을 관장하는 [color={RGB.LightRed}]데네브의 의지[/color]라고 불리고 있지." +
-				//								" 당신이 만나게 될 사람들은 이미 자네가 세상에 나기 전부터 정해져 있었다네." +
-				//								" 만약 그 사람들을 만나지 않고 지나쳐 버린다거나 못 만나는 경우가 생긴다면 절대로 네크로맨서를 물리치지 못할걸세. 그렇다면 당신이 꼭 만나야 할 사람들을 말해 보겠네."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfDeneb2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb2)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}] 레드 안타레스[/color]",
-				//								" 그는 이미 죽은 지가 수 천년이 지났지만 그의 의지는 아직 노티스란 동굴속에 잠들어 있네.",
-				//								" 그는 과거 최강의 마법사로서 이 땅을 통치하였고 다시 세계가 혼미스러울 때 새로이 나타나겠노라고 말하며 홀로 그 동굴에서 살다가 죽었지." +
-				//								" 하지만 지금이 그가 말한 때라는 걸 그의 영혼이 알 수 있게 만 한다면, 그는 다시금 최강의 마법사로 부활해서 당신들을 도와주게 되는 사람이지."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfDeneb3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb3)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}] 스피카[/color]",
-				//								" 지금 초자연력에 대해 알고 있고 사용할 수 있는 사람은 몇 명 되지 않는데, 그중의 한 사람이 네크로맨서이고 또 지금 말하는 스피카라네.",
-				//								" 자네가 이 기술을 그녀에게 배우지 않는다면 네크로맨서를 만나기 위한 도중에 무릎을 꿇고 말 것이며 설령 그와 대결하게 된다 해도 자네들은 참패를 하게 될걸세." +
-				//								" 이 기술로 자연을 조작하고 인간의 마음을 읽으며 시공간을 넘겨 볼 수만 있다면 분명 당신은 세계 최강의 전사가 되어있을 걸세." +
-				//								" 그리고, 그녀가 있는 곳은 바로 물로 덮인 대륙의 드래곤이 사는 동굴의 어느 깊숙한 곳이라네."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfDeneb4;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb4)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}] 에이션트 이블[/color]",
-				//								" 그는 지금, 늪의 대륙의 서쪽 바다 건너 작은 섬에 살고 있다네." +
-				//								" 그가 사는 섬을 찾기는 무척 어렵겠지만 초자연력으로 공간을 넘겨 보아 위치를 파악한후 텔리포트 마법을 통해 이동하면 다다를수 있을 걸세." +
-				//								" 그는 당신의 미래를 쉽게 풀어주고, 또 새로운 만남을 이어주게 될걸세."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfDeneb5;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb5)
-				//						{
-				//							Talk(new string[] {
-				//								$" 이 외에도 폴라리스, 주니어 안타레스, 로어 헌터, 리겔 등등의 사람들을 수도 없이 만나게 되겠지만 반드시 당신에게 도움을 주지만은 않을 것이며," +
-				//								"만약 당신이 남을 도와준다면 반드시 그도 당신에게 보이지 않는 도움을 주게 될 거라는 말을 끝으로 나는 다시 몇천 년의 잠으로 빠져들어야겠네. 그럼 안녕히 ..."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfDeneb6;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfDeneb6)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains1);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfSirius)
-				//						{
-				//							Talk(new string[] {
-				//								" 당신과 나의 만남은 이렇듯 운명적이네. 나는 당신이 이때쯤 나를 찾아오리라고 내가 잠들기 전 몇 천년 전에 이미 알고 있었다네.",
-				//								$" 소개하지. 나는 당신의 순회적 운명을 관장하는 [color={RGB.LightRed}]시리우스의 의지[/color]라고 하네." +
-				//								" 당신은 나를 처음 봤겠지만 나는 원래 당신의 또 다른 분신으로서 당신은 결코 나에게는 낯설지가 않다네." +
-				//								"당신은 어느 순간에도 당신이 단지 이 세계에서만 당신의 삶이 존재한다고 생각하는가? 분명 지금 현재로서는 그렇게 밖에 생각을 못 하지만 실제는 그렇지 않지." +
-				//								" 당신은 분명 이 순간에도 다른 공간에서는 또 다른 삶을 살고 있다네. 하지만 ... '또 다른 삶'이라고 내가 말했지만 결국은 한 운명을 가지고 계속 윤회하는 것일 뿐이지." +
-				//								" 나는 이렇게 당신이 찾아오는 것만도 헤아릴 수 없이 겪었지. 언제나 당신은 정해진 운명 때문에 어쩔 수 없이 나를 계속 찾아오게 되는 거라네." +
-				//								" 이해가 가지 않을 거라고 나도 생각하면서도 달리 설명할 방도가 없어서 이런 애매한 말만 되풀이할 뿐이네."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfSirius2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfSirius2)
-				//						{
-				//							Talk(new string[] {
-				//								" 더 자세한 운명을 알고 싶다면 스왐프 게이트에 있는 피라미드의 예언서를 읽어 보게나. 그러면 더 이해가 빠를걸세.",
-				//								" 그래도 잘 이해가 안 된다면 '늪의 대륙'의 외딴섬에 은둔하고 있는 드래코니안을 만나 보도록 하게." +
-				//								" 그는 네크로맨서가 이전의 공간에서 이 공간으로 온 이유를 알고 있기 때문이라네.",
-				//								" 그럼 우리의 만남은 다음 공간의 또 다른 운명에 의해 다시 시작될걸세. 그럼 그때까지 안녕히!"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfSirius3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfSirius3)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains2);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfAlbireo)
-				//						{
-				//							Talk(new string[] {
-				//								$" 나는 이 세계의 운명을 담당하는 [color={RGB.LightRed}]알비레오의 의지[/color]라고 하오." +
-				//								" 나는 이 세상이 생기면서부터 늘 이런 모습으로 여기서 지내왔소. 나는 이제껏 세상의 많은 위기들을 보아왔소." +
-				//								" 하지만 지금과 같은 공간을 뛰어넘은 침입자에 의한 위기는 처음이라고 기억되오. 나는 이곳에서도 이 세상 모든 것을 볼 수있소." +
-				//								" 그리고 여태껏 당신의 자라온 모습과 여기에 서 있는 이유도 알고 있소. 또한 네크로맨서가 이 세상에 온 이후로부터의 그의 행동도 보아왔소." +
-				//								" 그리고 결국은 ... ... 당신과 그의 미래도 나에게는 보이고 있소. 나는 이 자리에서 미래의 일을 말할 수는 없소." +
-				//								" 당신이 그 결말을 알고 싶다면 '늪의 대륙'에 있는 드래코니안을 만나 보는 게 좋을 거요. 그전에 에이션트 이블도 역시 만나게 될 것이오. 그리고 한 가지를 명심하시오.",
-				//								$" [color={RGB.White}]당신이 옳다고 생각하는 게 항상 옳은 것은 아니오. 남들이 증오하는 것이 항상 당신에게 그릇되게 작용하지는 않을 것이오." +
-				//								" 또한, 현재의 증오가 미래의 증오가 되지도 않을 것이오. 그리고 결국에는 네크로맨서를 용서하시오.[/color]"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfAlbireo2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfAlbireo2)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains3);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfCanopus)
-				//						{
-				//							Talk(new string[] {
-				//								$" 안녕하시오. 나는 네크로맨서의 운명을 관장하고 있는 [color={RGB.LightRed}]카노푸스의 의지[/color]라고 하오." +
-				//								" 이 공간뿐만 아니라 다른 공간에서 존재하고 있는 네크로맨서의 운명 또한 내가 담당하는 범주에 들어간다오." +
-				//								" 하지만 그는 그의 운명을 따르는 존재일 뿐 그 이상의 의미는 없소. 그는 수도없는 저편의 공간에서 지워진 운명을 다해갔소." +
-				//								" 그리고 또 여기서 다시 그의 운명을 시작하려 하고 있소. 이 공간 하나 밖에 인식하지 못하는 인간의 사고로는 별 가치가 없는 일이지만," +
-				//								" 운명을 따르기 위해 다음 공간에서도 같은 운명을 반복해야 한다는 그 금단의 이치는 분명 그도 따르고 싶지 않았을 것이오." +
-				//								" 하지만 그는 그 자신도 그것이 절대 바뀔 수 없는 패러독스라는 걸 알고 있을게요. 네크로맨서 그 자신은 정말 불행한 존재라오." +
-				//								" 스스로의 운명을 등에 지고 힘겹게 차원을 쫓기어 다니는 힘없는 짐승일 뿐이오."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfCanopus2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfCanopus2)
-				//						{
-				//							Talk(new string[] {
-				//								" 당신이 마지막의 그에게 받을 수 있는 느낌은 진정한 마음에서 우러나오는 동정일 것이오. 당신은 저번 공간에서도 역시 그것을 느꼈소." +
-				//								" 하지만 그때의 기억은 당신이 이 세계에 그를 물리치려는 운명을 지니고 다시 태어났을 때 이미 사라져 버렸소. 당신은 내 말을 이해하지 못하겠지만 그것은 사실이오." +
-				//								" 지금은 그를 증오로서 맞이하려 하겠지만 그 증오는 다시 다음 공간으로 이어지려 하오. 당신이 그를 물리친다고 하여도 다시 다음 공간에서도 지금과 같은 대립을 반복할 뿐이오." +
-				//								" 당신과 그와의 대립은 이 우주가 생기기 시작할 때 부터 지금까지 수도 없이 반복했고 그 이후로도 이 우주가 사라질 때까지 영원히 반복될 것이오. 그리고 마지막으로 내가 하고 싶은 말은 이런것이오.",
-				//								$"[color={RGB.White}] 당신은 결국 네크로맨서를 동정할지 모르오. 하지만 결코 그만이 동정의 대상이 아니오. 결국은 그와 연관되어 운명이 결정지워진 당신도 예외가 될수는 없소.[/color]"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfCanopus3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfCanopus3)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains4);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfArcturus)
-				//						{
-				//							Talk(new string[] {
-				//								$" 당신 앞의 유골은 바로 나의 것이오. 나를 소개하자면 [color={RGB.LightRed}]아크투루스의 의지[/color]라고 불리는 존재로서 에이션트 이블의 운명을 관장하고 있소." +
-				//								" 이름에서 알 수 있듯이 그를 수호하는 의지는 목자의 성격을 갖고 있소. 하지만 그의 이름이나 평판으로 볼 때는 전혀 그런 성격을 알지 못하게 되고 마는 게 보통이오." +
-				//								" 그는 로드 안과 대립하는 운명을 지니고 세상에 존재하게 되었소. 마치 당신과 네크로맨서와 같이 말이오." +
-				//								" 로드 안과의 대립 관계란 운명 때문에 그는 그의 모든 성격을 포기한 채 로드 안을 위하여 악의 편에 서게 되었던 것이오." +
-				//								" 그때, 둘 중에 누구 하나가 악의 대표가 되지 않으면 안 되었고 로드 안은 결코 세인의 지탄을 받는 악을 대표하려고 하지 않음으로 해서 그가 직접 악의 대표가 되기로 하였던 것이오." +
-				//								" 하지만 원래 그의 마음은 극도의 선에 있었기 때문에 결국 그의 악이란 악의 대표 정도 밖에는 될 수 없었던 것이오."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfArcturus2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfArcturus2)
-				//						{
-				//							Talk(new string[] {
-				//							" 하지만 반대로 로드 안의 입장에서는 그를 계속 비판하며 사람들에게 선의 개념을 심어주려 하였으므로 결국은 그에 대한 철저한 조작으로 위장해서 그를 비하 시키고 자신을 부각 시켜," +
-				//								" 어릴 때부터 선과 악의 개념을 구분 시키고 악을 배척하는 생활을 하여 사회를 순탄하게 이끌어 나가려고 하였소. 물론 로드 안의 생각이 틀렸다고는 할 수 없소." +
-				//								" 그게 로드 안의 운명이라 할 수 있기 때문이오. 항상 로드 안의 마음도 편하지 않다는 걸 알고 있소. 절친한 동반자인 그를 적으로 돌려버린 것도 그의 운명을 벗어날 수 없었기 때문이오." +
-				//								" 그리고 그들의 경지는 반신반인이라는 최고의 경지에 올랐소. 당신 역시 네크로맨서에게 도전하고자 한다면 그 경지에 다다라야 하오. 분명 그들 둘의 능력으로는 당신과 당신 일행들을 반신반인으로 만들어 줄 수 있을 것이오."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.MeetWillOfArcturus3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.MeetWillOfArcturus3)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains5);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.ReadScroll)
-				//						{
-				//							InvokeAnimation(AnimationType.Remains6);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid)
-				//						{
-				//							mMapLayer[80 + mMapWidth * 75] = 48;
-				//							Talk($"[color={RGB.LightCyan}] 갑자기 피라미드가 아래로 가라앉기 시작했다[/color]");
-
-				//							mSpecialEvent = SpecialEventType.SwampGatePyramid2;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid2)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}] 그 물속에서 당신은 한 시대의 운명을 바라다 보고있었다[/color]",
-				//								$"[color={RGB.White}] 당신은 왜 하필이면 당신이 이 세계에 뛰어들어 단신으로 악과 싸워야 하는 이유를 아는가 ?[/color]",
-				//								$"[color={RGB.White}] 여기서 당신은 로드 안, 에이션트 이블, 네크로맨서의 관계를 기술한 예언서를 발견하여 읽기 시작했다.[/color]"
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.SwampGatePyramid3;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid3)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}]CHAPTER 1[/color]",
-				//								$"",
-				//								" 이 세상에는 두 개의 개념이 필요하다.",
-				//								" 그것은 바로 선과 악이다.",
-				//								" 전자의 상징은 로드 안이고, 후자의 상징은 에이션트 이블이다."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.SwampGatePyramid4;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid4)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}]CHAPTER 2[/color]",
-				//								$"",
-				//								" 만약 당신이 황야에서 에이션트 이블을 만나더라도 두려워하지 말라. 그는 비록 악의 표상이지만 네크로맨서 가 행하는 악과는 다른 표현임을 명심하라." +
-				//								" 만약 세상이 \"선\"만이 있고 이런 \"악\"은 존재하지 않는다면 누구도 선의 중요성을 인식하지 못한 채 보편적인 진리로만 인식되어가는 시대가 올 것이며" +
-				//								" 선으로 둘러쌓여진 생활에 대한 고마움을 망각하는 시대가 우리 앞에 도래하는 때가 결국 올 것이다." +
-				//								" 그런 때가 오기 전에 사람들이 이런 선의 소중함을 느끼고 스스로 지키려고 노력하게 만들 하나의 개념이 필요하게 되었는데 이것이 바로 태초에 생겨난 악의 개념이었다." +
-				//								" 하지만 일부러 뭇사람들에게 비난을 사면서까지 악을 대표해 줄 만한 자는 나타나지 않았다." +
-				//								" 이에 스스로를 악의 집대성으로 불러주기를 요구하는 한 현자가 있었으니 본명은 알 수 없지만 그가 바로 에이션트 이블이라고 칭하는 자였다." +
-				//								" 선에 의해 보호되어 너무나도 평화로운 생활을 해왔던 사람들은 이제 새로운 마음을 갖고 그에게 대항하는 자세를 취하게 되었다." +
-				//								" 하지만 그는 실지로 사람들에게 해를 입히지 않았으며 그의 본심은 선에 있다는 걸 알아두기 바란다."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.SwampGatePyramid5;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid5)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}]CHAPTER 3[/color]",
-				//								$"",
-				//								" 위에서 기술한 에이션트 이블이 의미하는 악과는 달리 네크로맨서는 진정한 악의 의미를 알지 못한다. 그것으로 인해 에이션트 이블은 그를 벌하려 하는 것이다." +
-				//								" 하지만 육체가 없어진 에이션트 이블의 능력으로는 그에게 대항하기가 어렵다고 단정하고는 그의 강력한 마력으로 미래의 역사를 뒤틀어 운명적으로 네크로맨서에" +
-				//								"대항하여야 하는 한 희생물을 창조해 냈으니..",
-				//								".. 그는 바로 당신인 것이다."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.SwampGatePyramid6;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.SwampGatePyramid6)
-				//						{
-				//							Talk(new string[] {
-				//								$"[color={RGB.White}]CHAPTER 4[/color]",
-				//								$"",
-				//								" 네크로맨서에게 대항할 수 있는 단 두 명의 존재는 바로 로드 안과 그의 대립자이며 깊은 관계를 가진 에이션트 이블이다.",
-				//								" 그들은 모두 반신반인이라는 계급의 인물들이며 보통의 사람들은 상대하기조차 어려운 인물들이며 능력 또한 인간을 초월하는 것뿐이다." +
-				//								" 그러므로 만약 당신이 네크로맨서를 응징하려고 한다면 먼저 당신 자신이 반신반인이 되어야만 될 것이다."
-				//							});
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattleExitSwampGate)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 25;
-
-				//							StartBattle(true);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.DefeatAstralMud)
-				//						{
-				//							mParty.Etc[40] |= 1;
-
-				//							mParty.Map = 4;
-				//							mParty.XAxis = 81;
-				//							mParty.YAxis = 16;
-
-				//							await RefreshGame();
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterImperiumMinor)
-				//						{
-				//							AppendText("");
-
-				//							mParty.Etc[41] |= 1 << 6;
-
-				//							await RefreshGame();
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.EnterDungeonOfEvil)
-				//						{
-				//							var hasDraconian = false;
-				//							foreach (var player in mPlayerList)
-				//							{
-				//								if (player.Name == "드라코니안")
-				//								{
-				//									Talk(new string[] {
-				//										" 아키드라코니안은 마지막에 있는 드래코니안을 발견했다.",
-				//										$"[color={RGB.LightMagenta}] 아니 너는 누구냐! 감히 드래코니안 족이면서 네크로맨서님에게 반기를 들다니... 그것은 바로 죽음이다. 받아랏!![/color]"
-				//									});
-
-				//									player.HP = 0;
-				//									player.Unconscious = 1;
-				//									player.Dead = 30000;
-
-				//									UpdatePlayersStat();
-
-				//									mSpecialEvent = SpecialEventType.KillDraconian;
-
-				//									hasDraconian = true;
-				//									break;
-				//								}
-				//							}
-
-				//							if (!hasDraconian)
-				//							{
-				//								mSpecialEvent = SpecialEventType.None;
-				//								mBattleEvent = 27;
-
-				//								StartBattle(true);
-				//							}
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.KillDraconian)
-				//						{
-				//							mSpecialEvent = SpecialEventType.None;
-				//							mBattleEvent = 27;
-
-				//							StartBattle(false);
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.BattlePrison)
-				//						{
-				//							mBattleEvent = 1;
-
-				//							var hasMadJoe = false;
-				//							foreach (var player in mPlayerList)
-				//							{
-				//								if (player.Name == "미친 조")
-				//								{
-				//									Talk(new string[] { " 우리들 뒤에 있던 미친 조가 전투가 일어나자마자 도망을 가버렸다." });
-				//									mPlayerList.Remove(player);
-				//									DisplayPlayerInfo();
-
-				//									hasMadJoe = true;
-				//									break;
-				//								}
-				//							}
-
-				//							if (!hasMadJoe)
-				//							{
-				//								mSpecialEvent = SpecialEventType.None;
-				//								StartBattle(false);
-				//							}
-				//							else
-				//								mSpecialEvent = SpecialEventType.RunawayMadJoe;
-				//						}
-				//						else if (mSpecialEvent == SpecialEventType.RunawayMadJoe)
-				//						{
-				//							StartBattle(false);
-
-				//							mSpecialEvent = SpecialEventType.None;
-				//						}
-				//					}
-
-				//					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
-				//						args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft ||
-				//						args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight ||
-				//						args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
-				//						return;
-
-				//					if (StatPanel.Visibility == Visibility.Visible)
-				//						StatPanel.Visibility = Visibility.Collapsed;
-
-				//					if (StatHealthPanel.Visibility == Visibility.Visible)
-				//						StatHealthPanel.Visibility = Visibility.Collapsed;
-
-				//					if (DialogText.Visibility == Visibility.Collapsed)
-				//						DialogText.Visibility = Visibility.Visible;
-
-				//					ContinueText.Visibility = Visibility.Collapsed;
-
-				//					if (mBattleTurn == BattleTurn.None)
-				//					{
-				//						DialogText.Blocks.Clear();
-				//						DialogText.TextHighlighters.Clear();
-				//					}
-
-				//					if (mCureResult.Count > 0)
-				//						ShowCureResult();
-				//					else if (mRemainBattleResult.Count > 0)
-				//					{
-				//						DialogText.Blocks.Clear();
-				//						DialogText.TextHighlighters.Clear();
-
-				//						var added = true;
-				//						while (added && mRemainBattleResult.Count > 0)
-				//						{
-				//							added = AppendText(mRemainBattleResult[0], true);
-				//							if (added)
-				//								mRemainBattleResult.RemoveAt(0);
-				//						}
-
-				//						ContinueText.Visibility = Visibility.Visible;
-				//					}
-				//					else if (mSpecialEvent > 0)
-				//						await InvokeSpecialEventLaterPart();
-				//					else if (mCureBattle)
-				//					{
-				//						mCureBattle = false;
-				//						AddBattleCommand(true);
-				//					}
-				//					else if (mPenetration == true)
-				//					{
-				//						mPenetration = false;
-				//					}
-				//					else if (mTelescopeXCount != 0 || mTelescopeYCount != 0)
-				//					{
-				//						if ((mTelescopeXCount != 0 && (mParty.XAxis + mTelescopeXCount <= 4 || mParty.XAxis + mTelescopeXCount >= mMapWidth - 3)) ||
-				//							(mTelescopeXCount != 0 && (mParty.YAxis + mTelescopeYCount <= 4 || mParty.YAxis + mTelescopeYCount >= mMapHeight - 3)))
-				//						{
-				//							mTelescopeXCount = 0;
-				//							mTelescopeYCount = 0;
-				//							return;
-				//						}
-
-				//						if (mTelescopeXCount < 0)
-				//							mTelescopeXCount++;
-
-				//						if (mTelescopeXCount > 0)
-				//							mTelescopeXCount--;
-
-				//						if (mTelescopeYCount < 0)
-				//							mTelescopeYCount++;
-
-				//						if (mTelescopeYCount > 0)
-				//							mTelescopeYCount--;
-
-				//						if (mTelescopeXCount != 0 || mTelescopeYCount != 0)
-				//							Talk($"[color={RGB.White}]천리안 사용중 ...[/color]");
-				//					}
-				//					else if (mTalkMode > 0)
-				//					{
-				//						if (mSpecialEvent == 0)
-				//							TalkMode(mTalkX, mTalkY, args.VirtualKey);
-				//					}
-				//					else if (mBattleTurn == BattleTurn.Player)
-				//					{
-				//						if (mBattleCommandQueue.Count == 0)
-				//						{
-				//							var allUnavailable = true;
-				//							foreach (var enemy in mEncounterEnemyList)
-				//							{
-				//								if (!enemy.Dead && !enemy.Unconscious)
-				//								{
-				//									allUnavailable = false;
-				//									break;
-				//								}
-				//							}
-
-				//							if (allUnavailable)
-				//							{
-				//								mBattleTurn = BattleTurn.Win;
-				//								await EndBattle();
-				//							}
-				//							else
-				//								ExecuteBattle();
-				//						}
-				//						else
-				//							ExecuteBattle();
-				//					}
-				//					else if (mBattleTurn == BattleTurn.Enemy)
-				//					{
-				//						ExecuteBattle();
-				//					}
-				//					else if (mBattleTurn == BattleTurn.RunAway || mBattleTurn == BattleTurn.Win || mBattleTurn == BattleTurn.Lose)
-				//					{
-				//						await EndBattle();
-				//					}
-				//					else if (mWeaponShopEnd)
-				//					{
-				//						mWeaponShopEnd = false;
-				//						GoWeaponShop();
-				//					}
-				//					else if (mTrainingEnd == true)
-				//					{
-				//						mTrainingEnd = false;
-				//						GoTrainingCenter();
-				//					}
-				//					else if (mCureMenuState == CureMenuState.NotCure)
-				//					{
-				//						mCureMenuState = CureMenuState.None;
-				//						ShowHealType();
-				//					}
-				//					else if (mCureMenuState == CureMenuState.CureEnd)
-				//					{
-				//						mCureMenuState = CureMenuState.None;
-				//						GoHospital();
-				//					}
-				//				}
-				else if (mTalkMode == 0 && mMenuMode == MenuMode.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
+				else if (ContinueText.Visibility == Visibility.Visible)
+				{
+					async Task InvokeSpecialEventLaterPart()
+					{
+						if (mSpecialEvent == SpecialEventType.LeaveSoldier)
+						{
+							InvokeAnimation(AnimationType.LeaveSoldier);
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.ViewGeniusKieLetter)
+						{
+							Talk(new string[] {
+								$"{mPlayerList[0].Name}에게.",
+								"",
+								"",
+								" 자네라면 여기에 올 거라고 믿고  이 글을 쓴다네. 나는 지금 은신 중이라  내가 있는 곳을 밝힐순 없지만 나는 지금 무사하다네." +
+								"  자네와의 기나 긴 모험을 끝마치고 돌아 오던중 나는 나름대로의 뜻이 있어 로어성에 돌아오지 않았다네." +
+								" 내 자신의 의지였다면 영영 로어성에 돌아오지 않았겠지만  곧 발생할  새로운 위협을 나는 느끼고 있기 때문에  자네에게 이런 쪽지를 보내게 되었네."
+							});
+
+							mSpecialEvent = SpecialEventType.ViewGeniusKieLetter2;
+						}
+						else if (mSpecialEvent == SpecialEventType.ViewGeniusKieLetter2)
+						{
+							Talk(new string[] {
+								$" 로어성까지는 소문이 미치지 않았는지는 모르겠지만 로어 대륙의 남동쪽에는 알 수 없는 피라미드가 땅 속으로 부터 솟아 올랐다네." +
+								"  나와 로어 헌터 둘이서 그 곳을 탐험 했었지. 그 곳에는 다시 두개의 동굴이 있었고 그 두곳은 지하 세계와 연결 되어 있었다네." +
+								"  그 곳에 대해서는 지금 이 메모의 여백이 좁아서 말하기 어렵다네." +
+								" 나는 지금 이 곳,저 곳 떠돌아 다니지만  북동쪽 해안의 오두막에 살고 있는 전투승 레굴루스에게 물어 보면  내가 있는 곳을 자세히 알 수 있을 걸세.",
+								"",
+								"",
+								"",
+								"                          지니어스 기로부터"
+							});
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.TalkPrisoner)
+						{
+							AppendText(new string[] {
+							" 하지만 더욱 이상한것은 로드 안 자신도 그에 대한 사실을 인정하면서도  왜 우리에게는 그를 배격하도록만 교육시키는 가를  알고 싶을뿐입니다." +
+							" 로드 안께서는 나를 이해한다고 하셨지만 사회 혼란을 방지하기 위해 나를 이렇게 밖에 할수 없다고 말씀하시더군요." +
+							" 그리고 이것은 선을 대표하는 자기로서는 이 방법 밖에는 없다고 하시더군요.",
+							" 하지만 로드 안의 마음은 사실 이렇지 않다는걸 알수 있었습니다.  에이션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알수가 있었기 때문입니다."
+							});
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn)
+						{
+							Talk(" 또 자네의 힘을 빌릴 때가 온것 같네. 새로운 마력이 온통 이 세계를 휘감고 있다네." +
+							$" 그것을 내가 깨닭았을때는  이미 그 새로운 존재가 민심을 선동하고 있었다네." +
+							"  주민들은 [color={RGB.LightCyan}]다크 메이지[/color]가 있어서 곧 여기를 침공할 거라고 하며 나에게 방어를 요청했다네." +
+							"  하지만 다크 메이지란 존재는 내가 알기로도 존재하지 않으며  나와 연대 관계에 있는 에인션트 이블도 역시 그런 존재를 모르고 있었다네." +
+							"  하지만 주민들은 어떻게 알았는지 그 존재를 말하고 있다네. 그럼 이번에 해야할 임무를 말해 주겠네.");
+
+							mSpecialEvent = SpecialEventType.MeetLordAhn2;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn2)
+						{
+							AppendText(new string[] { " 자네는 메너스란 동굴을 기억할 걸세. 그곳은 네크로만서가 사라진후 파괴되었고  지금은 다시 원래대로 광산이 되었다네." +
+							"  하지만 언제부턴가 그곳은 잇달은 의문의 살인 때문에  지금은 거의 폐광이 되다시피 한 곳이라네." +
+							" 주민들은 그 살인이  모두 다크 메이지의 짓이라고들 하고있네. 나도 다크 메이지의 존재를 믿고 싶지는 않지만  일이 이렇게 되었으니 어쩔수 없다네.",
+							" 지금 즉시 메너스로 가서  진상을 밝혀 주게.",
+							" 그리고 다크 메이지에 대한 정보도  알아 오도록 하게.  무기는 무기고에서 가져가도록 허락하지. 부탁하네.",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 10000 ] [[ 황금 + 1000 ][/color]"});
+
+							mPlayerList[0].Experience += 10000;
+							mParty.Gold += 1000;
+							mParty.Etc[9]++;
+
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn3)
+						{
+							Talk(new string[] {
+								" 그리고 내가 다크 메이지의 기원을 여러 방면으로 알아 보던 중에 이 책을 찾아 내었네.",
+								$" 이 책은 당신도 알다시피  [color={RGB.LightCyan}]알비레오[/color]라고 하는 타임 워커가 이 대륙에 남기고 간 예언서이지." +
+								" 중요한 부분만 해석하면 다음과 같네."
+							});
+
+							mSpecialEvent = SpecialEventType.MeetLordAhn4;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn4)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}]첫번째 흉성이 나타나는 날, 평화는 로어의 신과 함께 대지로 추락할 것이며  공간이 어긋나고 대륙이 진동하며  새로운 존재가 나타난다.[/color]",
+								"",
+								" 이 글은 저번에 네크로만서가 나타날 때의 그 광경을 묘사한 구절이란것을 금방 알 수 있네.",
+								"",
+								$"[color={RGB.White}]두번째 흉성이 나타나는 날, 그는 용암의 대륙으로부터 세상을 뒤흔들게 되며 그는 네크로만서라 불리어 진다.[/color]",
+								"",
+								" 이 글 또한 몇년 전의 일과 일치 하네.",
+								$"[color={RGB.White}]세번째 흉성이 나타나는 날, 네크로만서를  이기는 자는 아무도 없게 된다.[/color]",
+								"",
+								" 하지만 이 글은 사실과 다르다네.  자네가 네크로만서를 물리쳤기 때문에 말일세.",
+								"",
+								$"[color={RGB.White}]네번째 흉성이 나타나는 날, 메너스의 달이 붉게 물들때 어둠의 영혼이 나타나  세계의 종말을 예고한다.[/color]",
+								"",
+								" 이 글이 가장 중요한 요지라네. '메너스의 달이 붉게 물들때' 란 메너스에서 일어난 지금까지의 살인 사건을 말하는 것이고," +
+								" '영혼' 이란 옛 부터 전승되는 구전에 의하면  영혼의 힘을 이용할 수 있는 사람,  즉 마법사를  지칭하는 말이 된다네." +
+								"  그러므로 '어둠의 영혼'은 바로 어둠의 마법사를 뜻하는 말이 되네." +
+								" 다시 풀이하면 그 뜻은 '메너스에서 살인 사건이 일어날때 다크 메이지가 세계의 종말을 예고 한다'라는 말이 된다네.",
+								"",
+								$"[color={RGB.White}]다섯번째 흉성이 나타나는 날, 내가 본 다섯번의 흉성 중에 하나가  나타나지 않았음을 알아낸다.[/color]",
+								"",
+								" 위에서의 예언을 보면 하나가 틀려 있지.  바로 세번째 흉성이 떨어질 때의 일 말일세.  그것이 틀렸다는 그 말일세." +
+								" 알비레오 그 자신도 자네가 네크로만서를 물리치리라고는 생각하지 못했는데 자네 해 내었기 때문에 이런 말을 적었던것 같네."
+							});
+
+							mSpecialEvent = SpecialEventType.MeetLordAhn5;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn5)
+						{
+							AppendText(new string[] {
+								" 이 예언에 의하면 반드시 다크 메이지가 세상을  멸망 시키게 된다네.  알비레오 그 자신도 그 것을 알려 주려 했던 것이고." +
+								"  그렇다면 우리는 이번에도 저번의 네크로만서때 처럼 스스로의 운명을 바꾸기 위해  도전 보아야 한다는 결론을 얻을 수 있게 되네.",
+								" 그럼 자네에게 또 하나의 할 일을 주겠네. 자네는 지금 즉시 라스트 디치성에 가도록 하게." +
+								" 그곳에서도  우리와 같은 위기를  느끼고 있을것이고  이 보다 더 많은 정보가 있을 수도 있을 테니 한시 바삐 그 곳으로 가보도록 하게."
+							});
+
+							mParty.Etc[9]++;
+							mSpecialEvent = SpecialEventType.None;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn6)
+						{
+							Talk(new string[] {
+								" 이 석판의 내용을 읽어 보겠네.",
+								$"[color={RGB.White}] 어둠은 달이며 달은 여성이라." +
+								$"  이 세계가 아르테미스를 3 번 범할때 어둠은 깨어나고 다크 메이지는[/color] [color={RGB.Yellow}]실리안 카미너스( Cyllian Cominus )[/color][color={RGB.White}]라고 불리운다." +
+								" 그리고 그녀는 누구도 당해낼 수 없는 마력으로 세계를 종말로 이끄노니....[/color]",
+								"",
+								" 이글의 해석은 다음과 같다네.",
+								" \"어둠의 마법사\"는 여자 마법사를 뜻하며, \"세계가 아르테미스를 범한다\"라는 구절은  지구가 달(아르테미스)을 가리는 현상," +
+								" 즉 월식을 말하는 것이며 그 월식이 3번 일어난 후 \"어둠이 깨어난다\" 즉 실리안 카미너스라는 존재가 생겨난다는 것이네.  그리고는 그녀가 이 세계를 멸망시킨다는 것이네."
+							});
+
+							mSpecialEvent = SpecialEventType.MeetLordAhn7;
+						}
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn7)
+						{
+							Talk(new string[] {
+								" 이 글이 정말이라면 알비레오의 예언은 실현되고 반드시 세계는 멸망하게 될 걸세. 하지만 자네는 언제나 운명에 대항에 왔으니 이런 운명적인 것에는 익숙하겠지 ?" +
+								" 네크로만서와 싸울때도 그랬으니까.",
+								$" 그리고 [color={RGB.White}]흉성의 단서[/color]에서 가져온  이 석판은 도저히 나의 힘으로는 해독이 안되는군." +
+								"  이 세계의 운명이 달린 일이니  지금 당장 에인션트 이블과 함께 상의 해봐야 겠네.",
+								" 그럼 내일 아침에 보도록하세."
+							});
+
+							mSpecialEvent = SpecialEventType.SleepLoreCastle;
+							mParty.Etc[9]++;
+						}
+						else if (mSpecialEvent == SpecialEventType.SleepLoreCastle)
+						{
+
+						}
+					}
+
+					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
+						args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadDPadLeft ||
+						args.VirtualKey == VirtualKey.Right || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight || args.VirtualKey == VirtualKey.GamepadDPadRight ||
+						args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
+						return;
+
+					if (StatPanel.Visibility == Visibility.Visible)
+						StatPanel.Visibility = Visibility.Collapsed;
+
+					if (StatHealthPanel.Visibility == Visibility.Visible)
+						StatHealthPanel.Visibility = Visibility.Collapsed;
+
+					if (DialogText.Visibility == Visibility.Collapsed)
+						DialogText.Visibility = Visibility.Visible;
+
+					ContinueText.Visibility = Visibility.Collapsed;
+
+					//if (mBattleTurn == BattleTurn.None)
+					//{
+					//	DialogText.Blocks.Clear();
+					//	DialogText.TextHighlighters.Clear();
+					//}
+
+					if (mCureResult.Count > 0)
+					{
+						//ShowCureResult();
+					}
+					else if (mRemainDialog.Count > 0)
+					{
+						DialogText.Blocks.Clear();
+						DialogText.TextHighlighters.Clear();
+
+						var added = true;
+						while (added && mRemainDialog.Count > 0)
+						{
+							added = AppendText(mRemainDialog[0], true);
+							if (added)
+								mRemainDialog.RemoveAt(0);
+						}
+
+						ContinueText.Visibility = Visibility.Visible;
+					}
+					else if (mSpecialEvent > 0)
+						await InvokeSpecialEventLaterPart();
+					else if (mCureBattle)
+					{
+						mCureBattle = false;
+						//AddBattleCommand(true);
+					}
+					else if (mPenetration == true)
+					{
+						mPenetration = false;
+					}
+					else if (mTelescopeXCount != 0 || mTelescopeYCount != 0)
+					{
+						if ((mTelescopeXCount != 0 && (mParty.XAxis + mTelescopeXCount <= 4 || mParty.XAxis + mTelescopeXCount >= mMapWidth - 3)) ||
+							(mTelescopeXCount != 0 && (mParty.YAxis + mTelescopeYCount <= 4 || mParty.YAxis + mTelescopeYCount >= mMapHeight - 3)))
+						{
+							mTelescopeXCount = 0;
+							mTelescopeYCount = 0;
+							return;
+						}
+
+						if (mTelescopeXCount < 0)
+							mTelescopeXCount++;
+
+						if (mTelescopeXCount > 0)
+							mTelescopeXCount--;
+
+						if (mTelescopeYCount < 0)
+							mTelescopeYCount++;
+
+						if (mTelescopeYCount > 0)
+							mTelescopeYCount--;
+
+						if (mTelescopeXCount != 0 || mTelescopeYCount != 0)
+							Talk($"[color={RGB.White}]천리안 사용중 ...[/color]");
+					}
+					else if (mBattleTurn == BattleTurn.Player)
+					{
+						//if (mBattleCommandQueue.Count == 0)
+						//{
+						//	var allUnavailable = true;
+						//	foreach (var enemy in mEncounterEnemyList)
+						//	{
+						//		if (!enemy.Dead && !enemy.Unconscious)
+						//		{
+						//			allUnavailable = false;
+						//			break;
+						//		}
+						//	}
+
+						//	if (allUnavailable)
+						//	{
+						//		mBattleTurn = BattleTurn.Win;
+						//		await EndBattle();
+						//	}
+						//	else
+						//		ExecuteBattle();
+						//}
+						//else
+						//	ExecuteBattle();
+					}
+					else if (mBattleTurn == BattleTurn.Enemy)
+					{
+						//ExecuteBattle();
+					}
+					else if (mBattleTurn == BattleTurn.RunAway || mBattleTurn == BattleTurn.Win || mBattleTurn == BattleTurn.Lose)
+					{
+						//await EndBattle();
+					}
+					else if (mWeaponShopEnd)
+					{
+						//mWeaponShopEnd = false;
+						//GoWeaponShop();
+					}
+					else if (mTrainingEnd == true)
+					{
+						//mTrainingEnd = false;
+						//GoTrainingCenter();
+					}
+					else if (mCureMenuState == CureMenuState.NotCure)
+					{
+						//mCureMenuState = CureMenuState.None;
+						//ShowHealType();
+					}
+					else if (mCureMenuState == CureMenuState.CureEnd)
+					{
+						//mCureMenuState = CureMenuState.None;
+						//GoHospital();
+					}
+				}
+				else if (mMenuMode == MenuMode.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
 				{
 					AppendText($"[color={RGB.Red}]당신의 명령을 고르시오 ===>[/color]");
 
@@ -5822,6 +4953,10 @@ namespace DarkUWP
 			return (byte)(layer[index] & 0x7F);
 		}
 
+		private void UpdateTileInfo(int x, int y, int tile) {
+			mMapLayer[x + mMapWidth * y] = (byte)((mMapLayer[x + mMapWidth * y] & 0x80) | tile);
+		}
+
 
 		//		private void StartBattle(bool assualt = true)
 		//		{
@@ -7785,14 +6920,14 @@ namespace DarkUWP
 		//				return "그녀";
 		//		}
 
-		//		private void ShowCharacterMenu(MenuMode menuMode)
-		//		{
-		//			var menuStr = new string[mPlayerList.Count];
-		//			for (var i = 0; i < mPlayerList.Count; i++)
-		//				menuStr[i] = mPlayerList[i].Name;
+		private void ShowCharacterMenu(MenuMode menuMode)
+		{
+			var menuStr = new string[mPlayerList.Count];
+			for (var i = 0; i < mPlayerList.Count; i++)
+				menuStr[i] = mPlayerList[i].Name;
 
-		//			ShowMenu(menuMode, menuStr);
-		//		}
+			ShowMenu(menuMode, menuStr);
+		}
 
 		//		private void JoinMember(Lore player)
 		//		{
@@ -7923,7 +7058,7 @@ namespace DarkUWP
 				}
 
 				if (!added)
-					mRemainBattleResult.Add(text[i]);
+					mRemainDialog.Add(text[i]);
 			}
 		}
 
@@ -8080,870 +7215,401 @@ namespace DarkUWP
 				return true;
 		}
 
-		//		private void Talk(string dialog)
-		//		{
-		//			Talk(new string[] { dialog });
-		//		}
-
-		//		private void Talk(string[] dialog)
-		//		{
-		//			AppendText(dialog);
-		//			ContinueText.Visibility = Visibility.Visible;
-		//		}
-
-		//		private void TalkMode(int moveX, int moveY, VirtualKey key = VirtualKey.None)
-		//		{
-		//			void GoGrocery()
-		//			{
-		//				AppendText(new string[] {
-		//						$"[color={RGB.White}]여기는 식료품점 입니다.[/color]",
-		//						$"[color={RGB.White}]몇개를 원하십니까 ?[/color]"
-		//					});
-
-
-		//				var foodMenuItem = new string[5];
-		//				for (var i = 0; i < foodMenuItem.Length; i++)
-		//					foodMenuItem[i] = $"{(i + 1) * 10} 인분 : 금 {(i + 1) * 100} 개";
-
-		//				ShowMenu(MenuMode.Grocery, foodMenuItem);
-		//			}
-
-		//			if (mParty.Map == 6)
-		//			{
-		//				if (moveX == 8 && moveY == 63)
-		//				{
-		//					AppendText(new string[] {
-		//						" 당신이 모험을 시작한다면, 많은 괴물들을 만날 것이오.",
-		//						"무엇보다도, 왕뱀과 벌레 떼들과 독사는 맹독이 있으니 주의하시기 바라오."
-		//					});
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 71 && moveY == 72)
-		//				{
-		//					AppendText(new string[] { "오크는 가장 하급 괴물이오." });
-
-		//					ContinueText.Visibility = Visibility;
-		//				}
-		//				else if (moveX == 50 && moveY == 71)
-		//				{
-		//					if ((mParty.Etc[49] & (1 << 4)) == 0)
-		//					{
-		//						AppendText(new string[] { " 당신이 네크로맨서에 진정으로 대항하고자 한다면, 이 성의 바로 위에 있는 피라미드에 가보도록 하시오." +
-		//							$"그 곳은 네크로맨서와 동시에 바다에서 떠오른 [color={RGB.LightCyan}]또 다른 지식의 성전[/color]이기 때문이오." +
-		//							" 당신이 어느 수준이 되어 그 곳에 들어간다면 진정한 이 세계의 진실을 알 수 있을 것이오." });
-
-		//						mSpecialEvent = SpecialEventType.MeetLoreSolider;
-		//						ContinueText.Visibility = Visibility.Visible;
-		//					}
-		//					else
-		//					{
-		//						AppendText(new string[] { " '메나스'속에는 드와프, 거인, 식인 늑대, 독사 같은 괴물들이 살고 있소." });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-		//					}
-		//				}
-		//				else if (moveX == 57 && moveY == 73)
-		//				{
-		//					AppendText(new string[] { " 나의 부모님은 독사의 독에 의해 돌아가셨습니다. 독사 정말 위험한 존재입니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 62 && moveY == 26)
-		//				{
-		//					AppendText(new string[] {
-		//						" 단지 로드 안만이 능력 상으로 네크로맨서에게 도전할 수 있습니다.",
-		//						" 하지만 로드 안 자신이 대립을 싫어해서, 현재는 네크로맨서에게 대항할 자가 없습니다."
-		//					});
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 89 && moveY == 81)
-		//				{
-		//					AppendText(new string[] { " 우리는 에이션트 이블을 배척하고 로드 안님을 받들어야 합니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 93 && moveY == 67)
-		//				{
-		//					AppendText(new string[] { " 우리는 메나스의 동쪽에 있는 나무로부터 많은 식량을 얻은 적이 있습니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 18 && moveY == 52)
-		//				{
-		//					AppendText(new string[] { $"[color={RGB.LightGreen}] 이 세계의 창시자는 안 영기님 이시며, 그는 위대한 프로그래머입니다.[/color]" });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if ((moveX == 12 && moveY == 26) || (moveX == 17 && moveY == 26))
-		//				{
-		//					AppendText(new string[] { " 어서 오십시오. 여기는 로어 주점입니다.",
-		//						mRand.Next(2) == 0 ? $"거기 {mPlayerList[0].GenderName}분 어서 오십시오." : " 위스키에서 칵테일까지 마음껏 선택하십시오."
-		//					});
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 20 && moveY == 32)
-		//				{
-		//					AppendText(new string[] { "..." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 9 && moveY == 29)
-		//				{
-		//					AppendText(new string[] { "요새 무덤 쪽에서 유령이 떠돈다던데..." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 12 && moveY == 31)
-		//				{
-		//					AppendText(new string[] { "하하하, 자네도 한번 마셔보게나." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 14 && moveY == 34)
-		//				{
-		//					AppendText(new string[] { " 이제 로드 안의 시대도 끝나가는가? 그까짓 네크로맨서라는 작자에게 쩔쩔 매는 꼴이라니 ... 차라리 내가 나가서 그놈과 싸우는 게 났겠다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 17 && moveY == 32)
-		//				{
-		//					AppendText(new string[] { " 당신은 스켈레톤족의 한 명이 우리와 함께 생활하려 한다는 것에 대해서 어떻게 생각하십니까 ?",
-		//					" 저는 그 말을 들었을 때 너무 혐오스러웠습니다. 어서 빨리 그 살아있는 뼈다귀를 여기서 쫓아냈으면 좋겠습니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 20 && moveY == 35)
-		//				{
-		//					AppendText(new string[] { " ... 끄~~윽 ... ..." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 17 && moveY == 37)
-		//				{
-		//					AppendText(new string[] { " 이보게 자네, 내말 좀 들어 보게나. 나의 친구들은 이제 이 세상에 없다네. 그들은 너무나도 용감하고 믿음직스러운 친구들이었는데..." +
-		//						"내가 다리를 다쳐 병원에 있을 동안 그들은 모두 이 대륙의 평화를 위해 로어 특공대에 지원했다네. 하지만 그들은 아무도 다시는 돌아오지 못했어." +
-		//						" 그런 그들에게 이렇게 살아있는 나로서는 미안할 뿐이네 그래서 술로 나날을 보내고 있지. 죄책감을 잊기 위해서 말이지..." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 71 && moveY == 77)
-		//				{
-		//					AppendText(new string[] { " 물러나십시오. 여기는 용사의 유골들을 안치해 놓은 곳입니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 62 && moveY == 75 && (mParty.Etc[49] & 1) == 0)
-		//				{
-		//					if (mTalkMode == 0)
-		//					{
-		//						AppendText(new string[] { " 당신이 한 유골 앞에 섰을 때 이상한 느낌과 함께 먼 곳으로부터 어떤 소리가 들려왔다." });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mTalkMode = 1;
-		//						mTalkX = moveX;
-		//						mTalkY = moveY;
-		//					}
-		//					else if (mTalkMode == 1)
-		//					{
-		//						AppendText(new string[] { $"[color={RGB.LightMagenta}] 안녕하시오. 대담한 용사여.[/color]",
-		//							$"[color={RGB.LightMagenta}] 당신이 나의 잠을 깨웠소? 나는 고대에 이곳을 지키다가 죽어간 기사 주니어 안타레스라고 하오." +
-		//							" 저의 아버지는 레드 안타레스라고 불렸던 최강의 마법사였소. 그는 말년에 어떤 동굴로 은신을 한 후 아무에게도 모습을 나타내지 않았소." +
-		//							" 하지만 당신의 운명은 나의 아버지를 만나야만 하는 운명이라는 것을 알 수 있소. 반드시 나의 아버지를 만나서 당신이 알지 못했던 새로운 능력들을 배우시오." +
-		//							" 그리고 나의 아버지를 당신의 동행으로 참가시키도록 하시오. 물론 좀 어렵겠지만 ...[/color]" });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mTalkMode = 2;
-		//						mTalkX = moveX;
-		//						mTalkY = moveY;
-		//					}
-		//					else if (mTalkMode == 2)
-		//					{
-		//						AppendText(new string[] { $"[color={RGB.LightMagenta}] 아 참, 그리고 내가 죽기 전에 여기에 뭔가를 여기에 숨겨 두었는데 당신에게 도움이 될지 모르겠소. 그럼, 나는 다시 오랜 잠으로 들어가야겠소.[/color]" });
-
-		//						mMapLayer[61 + mMapWidth * 78] = 44;
-		//						mMapLayer[61 + mMapWidth * 79] = 44;
-		//						mMapLayer[61 + mMapWidth * 80] = 44;
-		//						mMapLayer[61 + mMapWidth * 81] = 0;
-		//						mMapLayer[61 + mMapWidth * 82] = 14;
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mParty.Etc[49] |= 1;
-
-		//						mTalkMode = 0;
-		//					}
-		//				}
-		//				else if (moveX == 23 && moveY == 49)
-		//				{
-		//					AppendText(new string[] { $"힘내게, {mPlayerList[0].Name}",
-		//					"자네라면 충분히 네크로맨서를 무찌를 수 있을 걸세. 자네만 믿겠네."
-		//					});
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 23 && moveY == 53)
-		//				{
-		//					AppendText(new string[] { $" 위의 저 친구로부터 당신 얘기 많이 들었습니다. 저는 우리성에서 당신 같은 용감한 사람이 있다는 걸 자랑스럽게 생각합니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 12 || moveY == 54)
-		//				{
-		//					AppendText(new string[] { $" 만약, 당신들이 그 일을 해내기가 어렵다고 생각되시면 라스트디치 성에서 성문을 지키고 있는 폴라리스란 청년을 일행에 참가시켜 주십시오." +
-		//						" 분명 그 사람이라면 쾌히 승낙할 겁니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 49 && moveY == 10)
-		//				{
-		//					AppendText(new string[] { $" 이 안에 갇혀있는 사람들에게는 일체 면회가 허용되지 않습니다. 나가 주십시오." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 52 && moveY == 10)
-		//				{
-		//					AppendText(new string[] { $" 여기는 로드 안의 체제에 대해서 깊은 반감을 가지고 있는 자들을 수용하고 있습니다.",
-		//					" 아마 그들은 죽기 전에는 이곳을 나올 수 없을 겁니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 40 && moveY == 9)
-		//				{
-		//					if (mTalkMode == 0)
-		//					{
-		//						AppendText(new string[] { $" 나는 이곳의 기사로서 이 세계의 모든 대륙을 탐험하고 돌아왔었습니다." +
-		//						" 내가 마지막 대륙을 돌았을 때 나는 새로운 존재를 발견했습니다. 그는 바로 예전까지도 로드 안과 대립하던 에이션트 이블이라는 존재였습니다." +
-		//						" 지금 우리의 성에서는 철저하게 배격하도록 어릴 때부터 가르침 받아온 그 에이션트 이블이었습니다." +
-		//						" 하지만 그곳에서 본 그는 우리가 알고 있는 그와는 전혀 다른 인간미를 가진 말 그대로 신과 같은 존재였습니다." +
-		//						"내가 그의 신앙 아래 있는 어느 도시를 돌면서 내가 느낀것은 정말 로드 안에게서는 찾아볼 수가 없는 그런 자애와 따뜻한 정이었습니다." +
-		//						" 그리고 여태껏 내가 알고 있는 그에 대한 지식이 정말 잘못되었다는 것과 이런 사실을 다른 사람에게도 알려주고 싶다는 이유로 그의 사상을 퍼뜨리다 이렇게 잡히게 된 것입니다." });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mTalkMode = 1;
-		//						mTalkX = moveX;
-		//						mTalkY = moveY;
-		//					}
-		//					else if (mTalkMode == 1)
-		//					{
-		//						AppendText(new string[] { " 하지만 더욱 이상한 것은 로드 안 자신도 그에 대한 사실을 인정하면서도 왜 우리에게는 그를 배격하도록만 교육하는 가를 알고 싶을 뿐입니다." +
-		//							"로드 안께서는 나를 이해한다고 하셨지만 사회 혼란을 방지하기 위해 나를 이렇게 밖에 할 수 없다고 말씀하시더군요. 그리 이것은 선을 대표하는 자기로서는 이 방법 밖에는 없다고 하시더군요." +
-		//							" 하지만 로드 안의 마음은 사실 이렇지 않다는 걸 알 수 있었습니다. 에이션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알 수가 있었기 때문입니다." });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mTalkMode = 0;
-		//					}
-
-		//				}
-		//				else if (moveX == 39 && moveY == 14)
-		//				{
-		//					AppendText(new string[] { " 히히히... 위대한 용사님. 낄낄낄.. 내가 당신들의 일행에 끼이면 안될까요? 우히히히.." });
-
-		//					ShowMenu(MenuMode.JoinMadJoe, new string[]
-		//					{
-		//						"그렇다면 당신을 받아들이지요",
-		//						"당신은 이곳에 그냥 있는 게 낫겠소"
-		//					});
-		//				}
-		//				else if (moveX == 62 && moveY == 9)
-		//				{
-		//					AppendText(new string[] { " 안녕하시오. 나는 한때 이곳의 유명한 도둑이었던 사람이오. 결국 그 때문에 나는 잡혀서 평생 여기에 있게 되었지만...",
-		//					$" 그건 그렇고, 내가 로어 성의 보물인 [color={RGB.LightCyan}]황금의 방패[/color]를 훔쳐 달아나다. 그만 그것을 메나스라는 금광에 숨겨 놓은 채 잡혀 버리고 말았소.",
-		//					"나는 이제 그것을 가져봤자 쓸 때도 없으니 차라리 당신이 그걸 가지시오. 가만있자... 어디였더라... 그래! 메나스의 가운데쯤에 벽으로 사방이 둘러 싸여진 곳이었는데.." +
-		//					" 당신들이라면 지금 여기에 들어온 것과 같은 방법으로 들어가서 방패를 찾을수 있을 것이오. 행운을 빌겠소."
-		//					});
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 59 && moveY == 14)
-		//				{
-		//					AppendText(new string[] { " 당신들에게 경고해 두겠는데 건너편 방에 있는 조는 오랜 수감생활 끝에 미쳐 버리고 말았소. 그의 말에 속아서 당신네 일행에 참가시키는 그런 실수는 하지 마시오." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if ((moveX == 41 && moveY == 77) || (moveX == 41 && moveY == 79))
-		//				{
-		//					if ((mParty.Etc[49] & (1 << 3)) == 0)
-		//						AppendText(new string[] { " 로드 안님의 명령에 의해서 당신들에게 한 가지의 무기를 드리겠습니다. 들어가셔서 무기를 선택해 주십시오." });
-		//					else
-		//						AppendText(new string[] { " 여기서 가져가신 무기를 잘 사용하셔서 세계의 적인 네크로맨서를 무찔러 주십시오." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-
-		//				}
-		//				else if (moveX == 50 && moveY == 13)
-		//				{
-		//					AppendText(new string[] { "메나스 에는 금덩이가 많다던데..." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 82 && moveY == 26)
-		//				{
-		//					AppendText(new string[] { "메나스는 한때 금광이었습니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if ((moveX == 86 && moveY == 72) || (moveX == 90 && moveY == 64))
-		//					GoGrocery();
-		//				else if ((moveX == 7 && moveY == 72) || (moveX == 13 && moveY == 68) || (moveX == 13 && moveY == 72))
-		//				{
-		//					GoWeaponShop();
-		//				}
-		//				else if ((moveX == 86 && moveY == 13) || (moveX == 85 && moveY == 11))
-		//				{
-		//					GoHospital();
-		//				}
-		//				else if ((moveX == 20 && moveY == 11) || (moveX == 24 && moveY == 12))
-		//				{
-		//					GoTrainingCenter();
-		//				}
-		//				else if ((moveX == 49 && moveY == 50) || (moveX == 51 && moveY == 50))
-		//				{
-		//					if (mTalkMode == 0)
-		//					{
-		//						if ((mParty.Etc[29] & 1) == 1)
-		//							AppendText(new string[] { "행운을 빌겠소 !!!" });
-		//						else if (mParty.Etc[9] < 3)
-		//							AppendText(new string[] { "저희 성주님을 만나 보십시오." });
-		//						else
-		//						{
-		//							AppendText(new string[] { "당신은 이 게임 세계에 도전하고 싶습니까?",
-		//							AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox" ? "(A: 예 / B: 아니오)" : "(Y/n)" });
-
-		//							mTalkMode = 1;
-		//							mTalkX = moveX;
-		//							mTalkY = moveY;
-
-		//							mSpecialEvent = SpecialEventType.StartGame;
-		//						}
-		//					}
-		//					else if (mTalkMode == 1 && (key == VirtualKey.Y || key == VirtualKey.GamepadA))
-		//					{
-		//						mMapLayer[48 + mMapWidth * 51] = 47;
-		//						mMapLayer[49 + mMapWidth * 51] = 44;
-		//						mMapLayer[50 + mMapWidth * 51] = 44;
-		//						mMapLayer[51 + mMapWidth * 51] = 44;
-		//						mMapLayer[52 + mMapWidth * 51] = 47;
-		//						mMapLayer[48 + mMapWidth * 52] = 47;
-		//						mMapLayer[49 + mMapWidth * 52] = 44;
-		//						mMapLayer[50 + mMapWidth * 52] = 44;
-		//						mMapLayer[51 + mMapWidth * 52] = 44;
-		//						mMapLayer[52 + mMapWidth * 52] = 45;
-
-		//						AppendText(new string[] { "",
-		//						"예.",
-		//						"",
-		//						"이제부터 당신은 진정한 이 세계에 발을 디디게 되는 것입니다." }, true);
-
-		//						ContinueText.Visibility = Visibility.Visible;
-		//						mParty.Etc[29] |= 1;
-
-		//						mTalkMode = 0;
-		//						mSpecialEvent = SpecialEventType.None;
-		//					}
-		//					else if (mTalkMode == 1 && (key == VirtualKey.N || key == VirtualKey.GamepadB))
-		//					{
-		//						AppendText(new string[] { "",
-		//						"아니오.",
-		//						"",
-		//						"다시 생각해 보십시오." }, true);
-
-		//						ContinueText.Visibility = Visibility.Visible;
-		//						mTalkMode = 0;
-		//						mSpecialEvent = SpecialEventType.None;
-		//					}
-		//				}
-		//				else if (moveX == 50 && moveY == 86)
-		//				{
-		//					if ((mParty.Etc[29] & (1 << 1)) == 0)
-		//					{
-		//						for (var i = 48; i < 53; i++)
-		//							mMapLayer[i + mMapWidth * 87] = 44;
-
-		//						AppendText(new string[] { $"난 당신을 믿소, {mPlayerList[0].Name}." });
-
-		//						ContinueText.Visibility = Visibility.Visible;
-		//						mParty.Etc[29] |= 1 << 1;
-		//					}
-		//					else
-		//					{
-		//						AppendText(new string[] { $"힘내시오, {mPlayerList[0].Name}." });
-		//						ContinueText.Visibility = Visibility.Visible;
-		//					}
-		//				}
-		//				else if (47 <= moveX && moveX <= 53 && 30 <= moveY && moveY <= 36)
-		//				{
-		//					if (mParty.Etc[9] == 0)
-		//						AppendText(new string[] { "저희 성주님을 만나십시오." });
-		//					else
-		//						AppendText(new string[] { "당신이 성공하기를 빕니다." });
-
-		//					ContinueText.Visibility = Visibility.Visible;
-		//				}
-		//				else if (moveX == 50 && moveY == 27)
-		//				{
-		//					if (mTalkMode == 0)
-		//					{
-		//						if (mParty.Etc[9] == 0)
-		//						{
-		//							AppendText(new string[] { $"나는 [color={RGB.LightCyan}]로드 안[/color]이오.",
-		//							"이제부터 당신은 이 게임에서 새로운 인물로서 생을 시작하게 될 것이오. 그럼 나의 이야기를 시작하겠소." });
-		//							ContinueText.Visibility = Visibility.Visible;
-
-		//							mParty.Etc[9]++;
-
-		//							mTalkMode = 1;
-		//							mTalkX = moveX;
-		//							mTalkY = moveY;
-		//						}
-		//						else if (mParty.Etc[9] == 3)
-		//						{
-		//							AppendText(new string[] { $" 대륙의 남서쪽에 있는 '[color={RGB.LightCyan}]메나스[/color]'를 탐사해 주시오." });
-		//							ContinueText.Visibility = Visibility.Visible;
-		//						}
-		//						else if (mParty.Etc[9] == 4)
-		//						{
-		//							AppendText(new string[] { "당신들의 성공을 축하하오!!",
-		//						$"[color={RGB.LightCyan}][[EXP + 1000][/color]" });
-
-		//							mPlayerList.ForEach(delegate (Lore player)
-		//							{
-		//								player.Experience += 1000;
-		//							});
-
-		//							mParty.Etc[9]++;
-		//							ContinueText.Visibility = Visibility.Visible;
-		//						}
-		//						else if (mParty.Etc[9] == 5)
-		//						{
-		//							AppendText(new string[] { " 드디어 나는 당신들의 능력을 믿을 수 있게 되었소. 그렇다면 당신들에게 네크로맨서 응징이라는 막중한 임무를 한번 맡겨 보겠소.",
-		//							$"먼저 대륙의 동쪽에 있는 '[color={RGB.LightCyan}]라스트디치[/color]'에 가보도록 하시오. '[color={RGB.LightCyan}]라스트디치[/color]'성에는 지금 많은 근심에 쌓여있소. 그들을 도와주시오." });
-
-		//							mParty.Etc[9]++;
-		//							ContinueText.Visibility = Visibility.Visible;
-		//						}
-		//						else if (mParty.Etc[9] == 6)
-		//						{
-		//							AppendText(new string[] { " 당신은 이제 스스로 행동해 나가시오." });
-		//							ContinueText.Visibility = Visibility.Visible;
-		//						}
-		//					}
-		//					else if (mTalkMode == 1)
-		//					{
-		//						AppendText(new string[] { " 이 세계는 내가 통치하는 동안에는 무척 평화로운 세상이 진행되어 왔었소. 그러나 그것은 한 운명의 장난으로 무참히 깨어져 버렸소.",
-		//							" 한 날, 대기의 공간이 진동하며 난데없는 푸른 번개가 대륙들 중의 하나를 강타했소. 공간은 휘어지고 시간은 진동하며 이 세계를 공포 속으로 몰고 갔소." +
-		//							" 그 번개의 위력으로 그 불운한 대륙은 황폐화된 용암 대지로 변하고 말았고, 다른 하나의 대륙은 충돌 시의 진동에 의해 바다 깊이 가라앉아 버렸소.",
-		//							" 그런 일이 있은 한참 후에, 이상하게도 용암대지의 대륙으로부터 강한 생명의 기운이 발산되기 시작했소." +
-		//							" 그래서, 우리들은 그 원인을 알아보기 위해 '로어 특공대'를 조직하기로 합의를 하고 " +
-		//							"이곳에 있는 거의 모든 용사들을 모아서 용암 대지로 변한 그 대륙으로 급히 그들을 파견하였지만 여태껏 아무 소식도 듣지 못했소. 그들이 생존해 있는지조차도 말이오.",
-		//							$" 이런저런 방법을 통하여 그들의 생사를 알아내려던 중 우연히 우리들은 '[color={RGB.LightCyan}]네크로맨서[/color]'라고 불리는 용암 대지속의 새로운 세력의 존재를" +
-		//							"알아내었고, 그때의 그들은 이미 막강한 세력으로 성장해가고 있는 중이었소. 그때의 번개는 그가 이 공간으로 이동하는 수단이었소. 즉 그는 이 공간의 인물이 아닌 다른 차원을 가진 공간에서 왔던 것이오."
-		//						});
-
-		//						ContinueText.Visibility = Visibility.Visible;
-		//						mParty.Etc[9]++;
-
-		//						mTalkMode = 2;
-		//						mTalkX = moveX;
-		//						mTalkY = moveY;
-		//					}
-		//					else if (mTalkMode == 2)
-		//					{
-		//						AppendText(new string[] { $" 그는 현재 이 세계의 반을 그의 세력권 안에 넣고 있소. 여기서 당신의 궁극적인 임무는 바로 '[color={RGB.LightCyan}]네크로맨서의 야심을 봉쇄 시키는 것[/color]'이라는 걸 명심해 두시오.",
-		//						" 네크로맨서의 영향력은 이미 로어 대륙까지 도달해있소. 또한 그들은 이 대륙의 남서쪽에 '메나스'라고 불리는 지하 동굴을 얼마 전에 구축했소. 그래서, 그 동굴의 존재 때문에 우리들은 그에게 위협을 당하게 되었던 것이오.",
-		//						" 하지만, 로어 특공대가 이 대륙을 떠난 후로는 그 일당들에게 대적할 용사는 이미 남아있지 않았소. 그래서 부탁하건대, 그 동굴을 중심부까지 탐사해 주시오.",
-		//						" 나는 당신들에게 네크로맨서에 대한 일을 맡기고 싶지만, 아직은 당신들의 확실한 능력을 모르는 상태이지요. 그래서 이 일은 당신들의 잠재력을 증명해 주는 좋은 기회가 될 것이오.",
-		//						" 만약 당신들이 무기가 필요하다면 무기고에서 약간의 무기를 가져가도록 허락하겠소."
-		//						});
-
-		//						ContinueText.Visibility = Visibility.Visible;
-
-		//						mParty.Etc[9]++;
-
-		//						mTalkMode = 0;
-		//					}
-		//				}
-		//			}
-		//			else if (mParty.Map == 7)
-		//			{
-		//				if (moveX == 50 && moveY == 54)
-		//					Talk($"라스트디치 성과 배리안트 피플즈 성은 매우 닮았다는 말이 있습니다.");
-		//				else if (moveX == 7 && moveY == 43)
-		//					Talk("이 세계는 다섯 개의 대륙으로 되어 있다더군요.");
-		//				else if (moveX == 67 && moveY == 34)
-		//					Talk("각각의 대륙에는 서로 통하는 문이 존재합니다.");
-		//				else if (moveX == 42 && moveY == 8)
-		//					Talk("당신은 피라미드 안에서 쉽게 창을 발견할 수 있을 것입니다.");
-		//				else if (moveX == 64 && moveY == 9)
-		//					Talk("지하 출입구는 여기로부터 서쪽에 나타나곤 합니다.");
-		//				else if (moveX == 13 && moveY == 67)
-		//					Talk("로어 특공대의 지휘관은 저의 남편인데 '로어 헌터'라고 불렸습니다.");
-		//				else if (moveX == 56 && moveY == 41)
-		//					Talk("미이라 장군과 두 마리의 스핑크스의 공격은 가히 치명적입니다.");
-		//				else if (moveX == 43 && moveY == 33)
-		//					Talk("지하 출입구는 당신을 다른 대륙으로 인도해 줄 것입니다.");
-		//				else if (moveX == 31 && moveY == 55)
-		//					Talk("로어 특공대의 지휘관은 상당히 능력 있는 인물이었습니다.");
-		//				else if ((moveX == 35 && moveY == 18) || (moveX == 35 && moveY == 20) || (moveX == 40 && moveY == 17) || (moveX == 40 && moveY == 19) || (moveX == 40 && moveY == 21) || (moveX == 39 && moveY == 40))
-		//				{
-		//					if (mParty.Etc[12] == 0)
-		//						Talk("성주님을 만나 보십시오.");
-		//					else
-		//						Talk("당신이 성공하기를 빕니다.");
-		//				}
-		//				else if (moveX == 36 && moveY == 40 && mParty.Etc[13] < 2)
-		//				{
-		//					AppendText(new string[] {
-		//						$"나의 이름은 [color={RGB.LightCyan}]폴라리스[/color]요.",
-		//						"당신들과 같이 미이라 장군을 물리치고 싶소.",
-		//						$"[color={RGB.LightGreen}]내가 당신의 일행에 끼여도 되겠소?[/color]"
-		//					});
-
-		//					ShowMenu(MenuMode.JoinPolaris, new string[] {
-		//						"나는 당신의 제안을 받아들이겠소",
-		//						"나는 당신의 도움은 필요 없소"
-		//					});
-
-		//					mMemberLeftTile = 44;
-		//					mMemberX = moveX;
-		//					mMemberY = moveY;
-		//				}
-		//				else if ((moveX == 17 && moveY == 18) || (moveX == 23 && moveY == 18) || (moveX == 20 && moveY == 20) || (moveX == 15 && moveY == 23))
-		//					GoTrainingCenter();
-		//				else if ((moveX == 56 && moveY == 16) || (moveX == 53 && moveY == 19) || (moveX == 57 && moveY == 21) || (moveX == 58 && moveY == 24))
-		//					GoGrocery();
-		//				else if ((moveX == 58 && moveY == 55) || (moveX == 58 && moveY == 57) || (moveX == 58 && moveY == 59))
-		//					GoWeaponShop();
-		//				else if ((moveX == 16 && moveY == 55) || (moveX == 16 && moveY == 57) || (moveX == 16 && moveY == 59))
-		//					GoHospital();
-		//				else if (moveX == 37 && moveY == 16)
-		//				{
-		//					if (mParty.Etc[12] == 0)
-		//					{
-		//						Talk(new string[] {
-		//							$" 당신이 {mPlayerList[0].Name}이오?",
-		//							" 나는 로드 안에게 당신이 온다는 소식을 전해 받았소. 들었다시피 우리성에는 큰 문제가 있소." +
-		//							" 그것은 이 성의 북쪽에 위치해있는 동굴 때문이오. 그 동굴 때문에 우리들은 상당한 압박을 받고 있소.",
-		//							$" 만약 당신들이 위대한 영웅이라면, [color={RGB.LightCyan}]피라미드[/color]라는 동굴에 있는 [color={RGB.LightCyan}]미이라 장군[/color]을 처단해 주시오.",
-		//							" 당신들이 이 임무를 완수하면 나는 당신들에게 도움에 대한 댓가를 치러주겠소."
-		//						});
-
-		//						mParty.Etc[12]++;
-		//					}
-		//					else if (mParty.Etc[12] == 1)
-		//					{
-		//						Talk($" 부탁하건대, 피라미드의 '[color={RGB.LightCyan}]미이라 장군[/color]'을 처단해 주시오.");
-		//					}
-		//					else if (mParty.Etc[12] == 2)
-		//					{
-		//						Talk(new string[] {
-		//							"당신의 성공에 경의를 표하오.",
-		//							$"[color={RGB.LightCyan}][[EXP + 10000][/color]"
-		//						});
-
-		//						foreach (var player in mPlayerList)
-		//						{
-		//							player.Experience += 10000;
-		//						}
-
-		//						mParty.Etc[12]++;
-		//					}
-		//					else if (mParty.Etc[12] == 3)
-		//					{
-		//						Talk(new string[] {
-		//							$" 이 성의 북동쪽에 '[color={RGB.LightCyan}]지하 출입구[/color]'라는 것이 있소." +
-		//							$" 만약 당신이 '[color={RGB.LightCyan}]지하 출입구[/color]' 속에 들어간다면 '[color={RGB.LightCyan}]배리안트 피플즈[/color]'성으로 통하게 될것이오.",
-		//							$"'[color={RGB.LightCyan}]배리안트 피플즈[/color]'는 네크로맨서에게 매우 심하게 영향을 받고 있소"
-		//						});
-		//					}
-		//				}
-		//			}
-		//			else if (mParty.Map == 9)
-		//			{
-		//				if ((moveX == 11 && moveY == 10) || (moveX == 14 && moveY == 11) || (moveX == 11 && moveY == 14))
-		//					GoTrainingCenter();
-		//				else if ((moveX == 39 && moveY == 36) || (moveX == 36 && moveY == 38) || (moveX == 40 && moveY == 40))
-		//					GoGrocery();
-		//				else if ((moveX == 36 && moveY == 9) || (moveX == 39 && moveY == 11) || (moveX == 40 && moveY == 14))
-		//					GoWeaponShop();
-		//				else if ((moveX == 8 && moveY == 38) || (moveX == 11 && moveY == 40) || (moveX == 15 && moveY == 39))
-		//					GoHospital();
-		//				else if (moveX == 23 && moveY == 37)
-		//					Talk(" 이블 씰의 어디엔가에 '황금의 봉인'이 숨겨져 있다더군요.");
-		//				else if (moveX == 22 && moveY == 11)
-		//					Talk(" 황금의 갑옷이 퀘이크 동굴 안에 숨겨져있다는 소문이 떠돌고 있습니다.");
-		//				else if (moveX == 27 && moveY == 17)
-		//					Talk(" 배리안트 피플즈 성은 네크로맨서에 대한 강한 저항 때문에 그에 의해 쑥밭이 되어 버렸습니다.");
-		//				else if (moveX == 29 && moveY == 30)
-		//					Talk(" 배리안트 피플즈 최대의 사냥꾼인 리겔은 성을 파괴시킨 적들을 물리치기 위해서 이블 씰로 들어갔습니다.");
-		//				else if (moveX == 33 && moveY == 37)
-		//					Talk("위쪽에는 스왐프 대륙으로 통하는 문이 있지만 아무도 접근할 수가 없습니다.");
-		//				else if (moveX == 37 && moveY == 13)
-		//					Talk("퀘이크 속에는 많은 비밀문이 있다고 들었습니다.");
-		//				else if (moveX == 14 && moveY == 41)
-		//					Talk("워터 필드로 통하는 문에는 세 마리의 와이번이 지키고 있습니다.");
-		//				else if (moveX == 25 && moveY == 6)
-		//					Talk("스왐프 대륙으로 통하는 문에는 고르곤 세 자매가 살고 있소.");
-		//				else if ((moveX == 33 && moveY == 23) || (moveX == 36 && moveY == 23) || (moveX == 40 && moveY == 23) || (moveX == 34 && moveY == 26) || (moveX == 37 && moveY == 26) || (moveX == 40 && moveY == 26))
-		//				{
-		//					if (mParty.Etc[13] == 0)
-		//						Talk("우리 성주님을 만나보십시오.");
-		//					else
-		//						Talk("당신의 성공을 빌겠습니다.");
-		//				}
-		//				else if (moveX == 41 && moveY == 24)
-		//				{
-		//					if (mParty.Etc[13] == 0)
-		//					{
-		//						Talk(new string[] {
-		//							" 당신을 만나게 되어 영광이오.",
-		//							" 나는 로어 대륙에서의 당신의 공훈을 높이 평가하며, 또한 라스트디치성을 구제하것에 대해서도 감사를 표하오." +
-		//							$" 라스트디치 성의 쌍둥이 성인 '[color={RGB.LightCyan}]배리안트 피플즈[/color]'는 네크로맨서에 대한 강한 저항 때문에 그에 의해서 처참히 파괴되었소." +
-		//							$" 그런 후에 그는 '배리안트 피플즈'의 지하에다가 [color={RGB.LightCyan}]이블 씰[/color]이라는 동굴을 구축하였소.",
-		//							"그리고 그는 이블 씰의 어디엔가에 이 대륙의 운명을 담고 있는 황금의 봉인을 숨겨놓았소. 만약 그 봉인이 풀어진다면, 이 대륙은 봉인 속에서 나타난 괴물들에 의해서 황폐화될 것이오.",
-		//							$" 한시바삐 이블 씰로 가시오, 그리고 '[color={RGB.LightCyan}]황금의 봉인[/color]'을 찾으시오."
-		//						});
-		//						mParty.Etc[13]++;
-		//					}
-		//					else if (mParty.Etc[13] == 1)
-		//					{
-		//						Talk(new string[] {
-		//							$" 배리안트 피플즈에 있는 이블 씰로 가서 [color={RGB.LightCyan}]황금의 봉인[/color]을 찾아오시오.",
-		//							" 지금 지체할 시간이 없소."
-		//						});
-		//					}
-		//					else if (mParty.Etc[13] == 2)
-		//					{
-		//						Talk(new string[] {
-		//							" 오, 당신은 황금의 봉인을 찾았군요!",
-		//							$" [color={RGB.LightCyan}][[ EXP + 10000 ][/color]"
-		//						});
-
-		//						foreach (var player in mPlayerList)
-		//						{
-		//							player.Experience += 10000;
-		//						}
-
-		//						mParty.Etc[13]++;
-		//					}
-		//					else if (mParty.Etc[13] == 3)
-		//					{
-		//						Talk(new string[] {
-		//							" 그러나, 이 대륙에는 아직 위험한 장소가 많이 있소.",
-		//							$" 여기로부터 북동쪽에 '[color={RGB.LightCyan}]퀘이크[/color]'라고 불리는 동굴이 있소. 만약 퀘이크마저 무너뜨리면, 이 대륙은 다시 평화롭게 될 것이오.",
-		//							$" [color={RGB.LightCyan}]퀘이크[/color]로 가서 보스인 아키가고일과 좀비들을 물리쳐 주십시오."
-		//						});
-		//						mParty.Etc[13]++;
-		//					}
-		//					else if (mParty.Etc[13] == 4)
-		//					{
-		//						Talk($"퀘이크의 [color={RGB.LightCyan}]아키가고일[/color]을 물리치십시오.");
-		//					}
-		//					else if (mParty.Etc[13] == 5)
-		//					{
-		//						Talk(new string[] {
-		//							" 당신들은 위대한 영웅임에 틀림없군요.",
-		//							$" [color={RGB.LightCyan}][[ EXP + 40000 ][/color]",
-		//							"",
-		//							$" 여기에 [color={RGB.LightCyan}]워터 키[/color]가 있소.",
-		//							$" 이 열쇠는 [color={RGB.LightCyan}]워터 필드[/color]의 문을 열 것이오."
-		//						});
-
-		//						foreach (var player in mPlayerList)
-		//						{
-		//							player.Experience += 40000;
-		//						}
-
-		//						mParty.Etc[13]++;
-		//					}
-		//					else if (mParty.Etc[13] == 6)
-		//						Talk($"와이번 동굴의 [color={RGB.LightCyan}]워터 필드의 문[/color]을 통하여 다음 대륙으로 가십시오.");
-		//				}
-		//			}
-		//			else if (mParty.Map == 10)
-		//			{
-		//				if ((moveX == 35 && moveY == 31) || (moveX == 37 && moveY == 32) || (moveX == 38 && moveY == 34))
-		//					GoTrainingCenter();
-		//				else if ((moveX == 16 && moveY == 56) || (moveX == 11 && moveY == 58) || (moveX == 10 && moveY == 54))
-		//					GoGrocery();
-		//				else if ((moveX == 10 && moveY == 29) || (moveX == 10 && moveY == 31) || (moveX == 12 && moveY == 33))
-		//					GoWeaponShop();
-		//				else if ((moveX == 32 && moveY == 59) || (moveX == 34 && moveY == 53) || (moveX == 40 && moveY == 57))
-		//					GoHospital();
-		//				else if (moveX == 10 && moveY == 15)
-		//					Talk("노티스 동굴의 히드라는 머리가 셋이나 달렸다더군요.");
-		//				else if (moveX == 13 && moveY == 17)
-		//					Talk("노티스 동굴은 혼란스러운 미로라서 항상 주위를 염두에 두셔야 합니다.");
-		//				else if (moveX == 23 && moveY == 21)
-		//					Talk("락업 동굴은 미로로 구성된 동굴이오.");
-		//				else if (moveX == 26 && moveY == 21)
-		//					Talk("락업 속에 미노타우루스는 네크로맨서의 부하는 아닙니다.");
-		//				else if (moveX == 23 && moveY == 68)
-		//					Talk(" 락업 의 보스인 거대 드래곤은 아주 거대한 용이라는데, 그것의 꼬리 또한 강력한 무기라서 조심해야 할 것이오.");
-		//				else if (moveX == 36 && moveY == 15)
-		//					Talk(" 고르곤 세 자매의 힘은 네크로맨서의 힘과 필적하지만 중대한 약점이 하나 있소.");
-		//				else if (moveX == 39 && moveY == 17)
-		//					Talk("스테노와 에우리알레는 거의 불멸의 생명체 입니다.");
-		//				else if (moveX == 39 && moveY == 55)
-		//				{
-		//					AppendText(new string[] {
-		//					" 나는 로어 특공대의 대장인 로어 헌터라고 하오. 여기서의 적들과는, 이제 대항하기가 혼자서는 무리라고 판단했소." +
-		//					" 그래서, 나는 여태껏 여기서 새로운 영웅들을 기다리고 있었소.",
-		//					" 내가 당신의 일행에 끼게 되는 걸 어떻게 생각하오?"
-		//					});
-
-		//					ShowMenu(MenuMode.JoinLoreHunter, new string[] {
-		//						"우리도 그러기를 바라오",
-		//						"몸이 완전히 회복될 때까지 기다리시오"
-		//					});
-		//				}
-		//				else if (moveX == 24 && moveY == 17)
-		//				{
-		//					if (mParty.Etc[14] == 0)
-		//					{
-		//						Talk(new string[] {
-		//						" 여기는 워터 필드라는 성이오. 이곳이 당신이 마지막으로 거칠 우리편의 성이오.",
-		//						" 차원의 틈을 통해 네크로맨서가 내려 오던 날이 대륙은 거의 전부가 바다로 가라앉았소." +
-		//						" 하지만 그때에 살아남은 사람들은 아직 가라앉지 않은 이곳에 찾아와서 이 성을 건립했소. 그러고는 공이 컸던 나를 왕으로 추대했던 것이오.",
-		//						" 당신도 생각하고 있다시피 이 대륙은 거의 물로 덮여있소. 하지만 이곳처럼 물이 차지 않은 두 곳에 네크로맨서는 이미 이 대륙의 지배를 위한 동굴을 만들었소." +
-		//						" 그 두 곳의 적들은 여타의 대륙과는 비교가 안될 정도의 거대한 적들이 많이 있소.",
-		//						" 우리로서는 더 이상 손을 쓸 수가 없소. 이곳 사람들의 마지막 희망인 이곳이 적들에게 점령된다면 와이번 동굴로 이어지는 워터 게이트를 통해 다른 대륙도 하나둘씩 점령되어 갈 것이오."
-		//						});
-
-		//						mParty.Etc[14]++;
-		//					}
-		//					else if (mParty.Etc[14] == 1)
-		//						Talk(" 먼저, 여기서 남서쪽의 어느 섬에 있는 동굴인 노티스에 가서 보스인 히드라를 물리쳐 주십시오.");
-		//					else if (mParty.Etc[14] == 2)
-		//					{
-		//						Talk(new string[] {
-		//							"히드라를 물리치다니 ... 대단한 능력이오.",
-		//							$" [color={RGB.LightCyan}][[ EXP + 150000 ][/color]",
-		//							"이제는 소문으로만 듣던 당신들의 능력을 믿을 수 있겠소."
-		//						});
-
-		//						foreach (var player in mPlayerList)
-		//						{
-		//							player.Experience += 150000;
-		//						}
-
-		//						mParty.Etc[14]++;
-		//					}
-		//					else if (mParty.Etc[14] == 3)
-		//						Talk(" 이번에는 대륙의 동쪽에 있는 락업 동굴 속의 거대 드래곤을 물리쳐 주시오.");
-		//					else if (mParty.Etc[14] == 4)
-		//					{
-		//						Talk(new string[] {
-		//							"역시 위대한 영웅이오!!",
-		//							$" [color={RGB.LightCyan}][[ EXP + 300000 ][/color]",
-		//							"여기에 스왐프 키가 있소."
-		//						});
-
-		//						foreach (var player in mPlayerList)
-		//						{
-		//							player.Experience += 300000;
-		//						}
-
-		//						mParty.Etc[14]++;
-		//					}
-		//					else if (mParty.Etc[14] == 5)
-		//					{
-		//						Talk(" 스왐프 키는 가이아 테라 의 스왐프 게이트를 여는데 사용되오. 거기서 늪의 대륙으로 가시오. 늪의 대륙은 완전한 적들의 소굴이므로 매우 주의하시오.");
-		//					}
-		//				}
-		//			}
-		//			else if (mParty.Map == 24)
-		//			{
-		//				if ((moveX == 10 && moveY == 21) || (moveX == 13 && moveY == 23))
-		//					GoTrainingCenter();
-		//				else if ((moveX == 32 && moveY == 34) || (moveX == 34 && moveY == 36))
-		//					GoGrocery();
-		//				else if ((moveX == 32 && moveY == 20) || (moveX == 36 && moveY == 23) || (moveX == 39 && moveY == 22))
-		//					GoWeaponShop();
-		//				else if ((moveX == 14 && moveY == 35) || (moveX == 10 && moveY == 37) || (moveX == 13 && moveY == 39))
-		//					GoHospital();
-		//				else if (moveX == 16 && moveY == 14)
-		//					Talk(" 에이션트 이블은 우리의 구세주였습니다.");
-		//				else if (moveX == 17 && moveY == 9)
-		//					Talk(" 이 세상을 이렇게 불행하게 한자는 바로 안 영기라는 프로그래머입니다.");
-		//				else if (moveX == 19 && moveY == 12)
-		//					Talk(" 우리는 여태껏 당신들이 오기를 기다렸습니다.");
-		//				else if (moveX == 26 && moveY == 7)
-		//					Talk(" 에이션트 이블은 결코 평판과 같이 나쁜 존재가 아닙니다.");
-		//				else if (moveX == 30 && moveY == 12)
-		//					Talk(" 당신들은 분명히 우리들을 밖으로 나가게 해줄 것입니다.");
-		//				else if (moveX == 32 && moveY == 9)
-		//				{
-		//					Talk(new string[] {
-		//						" 이 사람들은 잘 모르겠지만 사실 나는 이 게임의 제작자인 안 영기요.",
-		//						" 나는 여태껏 계속 당신들이 가는 도시마다 주민으로 가장한 채 당신들을 지켜보았소. 이 게임의 버그를 찾거나 난이도를 조절하기 위해서 말이요." +
-		//						" 만약 당신들이 네크로맨서를 물리친다면 내가 마지막으로 당신 앞에 나타나겠소.",
-		//						" 그럼, 이만 나는 가보겠소."
-		//					});
-
-		//					mSpecialEvent = SpecialEventType.MeetAhnInLastShelter;
-		//				}
-		//			}
-		//			else if (mParty.Map == 27)
-		//			{
-		//				if (moveX == 14 && moveY == 5)
-		//				{
-		//					mSpecialEvent = SpecialEventType.MeetAhnInAnotherLore;
-
-		//					Talk(" 당신 앞의 사람이 갑자기 어떤 남자로 변하였다.");
-		//				}
-		//				else if (moveX == 9 && moveY == 13)
-		//				{
-		//					Talk(" 당신이 유골에 다가서자 어디선가 소리가 들려왔다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetWillOfDeneb;
-		//				}
-		//				else if (moveX == 9 && moveY == 17)
-		//				{
-		//					Talk(" 당신이 유골에 다가서자 어디선가 소리가 들려왔다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetWillOfSirius;
-		//				}
-		//				else if (moveX == 9 && moveY == 29)
-		//				{
-		//					Talk(" 당신이 유골에 다가서자 어디선가 소리가 들려왔다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetWillOfAlbireo;
-		//				}
-		//				else if (moveX == 20 && moveY == 31)
-		//				{
-		//					Talk(" 당신이 유골에 다가서자 어디선가 소리가 들려왔다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetWillOfCanopus;
-		//				}
-		//				else if (moveX == 20 && moveY == 21)
-		//				{
-		//					Talk(" 당신이 유골에 다가서자 어디선가 소리가 들려왔다.");
-
-		//					mSpecialEvent = SpecialEventType.MeetWillOfArcturus;
-		//				}
-		//				else if (moveX == 20 && moveY == 11)
-		//				{
-		//					AppendText(" 당신 앞에 있는 유골의 손에는 어떤 두루마리가 쥐어져 있었다.");
-
-		//					ShowMenu(MenuMode.ReadScroll, new string[] {
-		//						"그 문서를 읽어 보고 싶다",
-		//						"그냥 지나가겠다"
-		//					});
-		//				}
-		//				else
-		//				{
-		//					AppendText(" 당신이 유골에 다가가자 재로 변하였다.");
-		//					InvokeAnimation(AnimationType.Remains7, moveX, moveY);
-		//				}
-		//			}
-		//		}
+		private void Talk(string dialog)
+		{
+			Talk(new string[] { dialog });
+		}
+
+		private void Talk(string[] dialog)
+		{
+			AppendText(dialog);
+			ContinueText.Visibility = Visibility.Visible;
+		}
+
+		private void TalkMode(int moveX, int moveY, VirtualKey key = VirtualKey.None)
+		{
+			void ShowClassTrainingMenu()
+			{
+				AppendText("어떤 일을 원하십니까 ?");
+
+				ShowMenu(MenuMode.ClassTraining, new string[] {
+					"전투사 계열의 기술을 습득",
+					"마법사 계열의 능력을 습득",
+					"전투사 계열의 계급을 바꿈",
+					"마법사 계열의 계급을 바꿈"
+				});
+			}
+
+			void ShowHospitalMenu()
+			{
+				AppendText(new string[] {
+					$"[color={RGB.White}]여기는 병원입니다.[/color]",
+					$"[color={RGB.White}]누가 치료를 받겠습니까 ?[/color]",
+				});
+
+				ShowCharacterMenu(MenuMode.Hospital);
+			}
+
+			void ShowWeaponShopMenu()
+			{
+				AppendText(new string[] {
+					$"[color={RGB.White}]여기는 무기상점입니다.[/color]",
+					$"[color={RGB.White}]우리들은 무기, 방패, 갑옷을 팔고있습니다.[/color]",
+					$"[color={RGB.White}]어떤 종류를 원하십니까 ?[/color]",
+				});
+
+				ShowMenu(MenuMode.ChooseWeaponType, new string[] {
+					"베는 무기류",
+					"찍는 무기류",
+					"찌르는 무기류",
+					"쏘는 무기류",
+					"방패류",
+					"갑옷류"
+				});
+			}
+
+			void ShowGroceryMenu()
+			{
+				AppendText(new string[] {
+					$"[color={RGB.White}]여기는 식료품점 입니다.[/color]",
+					$"[color={RGB.White}]몇개를 원하십니까 ?[/color]",
+				});
+
+				ShowMenu(MenuMode.ChooseFoodAmount, new string[] {
+					"10인분 : 금 100개",
+					"20인분 : 금 200개",
+					"30인분 : 금 300개",
+					"40인분 : 금 400개",
+					"50인분 : 금 500개"
+				});
+			}
+
+			if (mParty.Map == 6)
+			{
+				if ((moveX == 20 && moveY == 11) || (moveX == 24 && moveY == 12))
+					ShowClassTrainingMenu();
+				else if ((moveX == 85 && moveY == 11) || (moveX == 86 && moveY == 13))
+					ShowHospitalMenu();
+				else if ((moveX == 13 && moveY == 72) || (moveX == 7 && moveY == 70) || (moveX == 13 && moveY == 68))
+					ShowWeaponShopMenu();
+				else if ((moveX == 86 && moveY == 72) || (moveX == 90 && moveY == 64) || (moveX == 93 && moveY == 67))
+					ShowGroceryMenu();
+				else if (moveX == 23 && moveY == 49)
+				{
+					if (mParty.Etc[9] == 0)
+						AppendText("어서 로드 안 님에게 가보도록 하게.");
+					else
+					{
+						AppendText(new string[] {
+							$" 이번에도 큰일을 맞게 됐군, {mPlayerList[0].Name}.",
+							" 이번에도 분명 당신은 해낼 수 있으리라고 믿네.  과거의 영웅은  이제 잊혀져 가지만 다시 일어서는 날이 바로 지금인것 같네." +
+							" 이번 일만 성공하면  다시 그때의 영광을 찾을수 있을 걸세. 자네의 성공을 빌어 주겠네."
+						});
+					}
+				}
+				else if (moveX == 23 && moveY == 53)
+					AppendText(" 로드 안 님이 당신을 부르셨다면서요. 시대의 영웅이었던  당신처럼 되기 위해  저도 열심히 수련을 하고 있습니다.");
+				else if (moveX == 18 && moveY == 52)
+					AppendText($" 이 세계의 창시자는 [color={RGB.LightGreen}]안 영기[/color]님 이시며, 그는 위대한 프로그래머 입니다.");
+				else if (moveX == 12 && moveY == 54)
+					AppendText($" 지금 어떤 예언서가 발견되어  주민들의 관심을 끌고 있더군요.");
+				else if ((moveX == 12 && moveY == 26) || (moveX == 17 && moveY == 26))
+				{
+					string message;
+					if (mRand.Next(2) == 0)
+						message = $" 거기 {mPlayerList[0].GenderStr}분 어서 오십시오.";
+					else
+						message = "위스키에서 칵테일까지 마음껏 선택하십시오.";
+
+					AppendText(new string[] {
+						" 어서 오십시오. 여기는 로어 주점입니다.",
+						message
+					});
+				}
+				else if (moveX == 20 && moveY == 35)
+					AppendText($" 으~~~ 취한다.");
+				else if (moveX == 17 && moveY == 37)
+					AppendText($" 예언서 ?  뭐가 예언서야 ! 그런걸 믿다니 우리가 무슨 어린애 인가.");
+				else if (moveX == 14 && moveY == 34)
+					AppendText($" 큰일났군. 벌써 내 친구도 두명이나 메너스에서 희생되었는데...");
+				else if (moveX == 12 && moveY == 31)
+				{
+					AppendText($" 타임 워커인 알비레오를 전에 한번 본적이 있지.  그는 예언서 하나만 남겨 놓고는 다시 시간 속으로 여행을 떠났다네." +
+					" 아무도 그가 어느 시대의 사람인지 아니면 이 차원의 사람인지도 모른다네." +
+					"  나도 그가 예언서를 전해주기 위해 로어 대륙에 왔을때 잠시 본 적이 있었는데 정말 대단한 분이셨지. 아마도 고대의 마법사 레드 안타레스에 필적하는 실력이더군");
+				}
+				else if (moveX == 17 && moveY == 32)
+					AppendText($" 흑흑흑~~~ 저의 오빠가 메너스에서 죽었어요. 하지만 아무도 원인 조차 알 수 없다고 하더군요.");
+				else if (moveX == 9 && moveY == 29)
+					AppendText($" 당신께서  또 새로운 모험을 하신다고 들었는데  옛날의 동료들은 모두 흩어져 있어서 다시 모으셔야 되겠군요.");
+				else if (moveX == 71 && moveY == 77)
+				{
+					AppendText(new string[] {
+						$" 과거의 영웅이었던 {mPlayerList[0].Name}님.",
+						" 오늘도 역시  베라트릭스님의 무덤에  오셨군요. 아참 !  전에 어떤 전사분께서 베라트릭스님의 무덤에 들리고는  거기에 메모를 남겨 두었더군요." +
+						" 이름은 지니어스 기라고 하던데, 옛날에 들어본 이름 같기도 하고..."
+					});
+				}
+				else if (moveX == 66 && moveY == 77)
+				{
+					Talk(new string[] {
+						"묘비에 쓰여 있기를 ...",
+						"",
+						"",
+						$"[color={RGB.LightCyan}]          여기는 베라트릭스의 묘[/color]",
+						$"[color={RGB.White}]     772 년 11 월 27 일 여기에 잠들다.[/color]",
+						"",
+						"",
+						"",
+						"",
+						"",
+						" 자세히 살펴 보니  묘비 밑에 어떤 쪽지가 있었다."
+					});
+
+					mSpecialEvent = SpecialEventType.ViewGeniusKieLetter;
+				}
+				else if (moveX == 49 && moveY == 10)
+					AppendText(" 이 안에 갇혀있는 사람들에게는 일체 면회가 허용되지 않습니다. 나가 주십시오.");
+				else if (moveX == 52 && moveY == 10)
+				{
+					AppendText(new string[] {
+						" 여기는 로드 안의 체제에 대해서  깊은 반감을 가지고 있는 자들을 수용하고 있습니다.",
+						" 아마 그들은 죽기전에는 이곳을 나올수 없을겁니다."
+					});
+				}
+				else if (moveX == 40 && moveY == 9)
+				{
+					Talk(" 나는 이곳의 기사로서  이 세계의 모든 대륙을 탐험하고 돌아왔었습니다." +
+					" 내가 마지막 대륙을 돌았을때  나는 새로운 존재를 발견했습니다." +
+					" 그는 바로 예전까지도 로드 안과 대립하던 에이션트 이블이라는 존재였습니다." +
+					" 지금 우리의 성에서는 철저하게 배격하도록 어릴때부터 가르침 받아온 그 에이션트 이블이었습니다." +
+					"  하지만 그곳에서 본 그는 우리가 알고있는 그와는 전혀 다른 인간미를 가진  말 그대로  신과같은 존재였습니다." +
+					"  내가 그의 신앙 아래 있는 어느 도시를 돌면서 내가 느낀것은 정말 로드 안에게서는 찾아볼수가 없는 그런 자애와 따뜻한 정이었습니다." +
+					"  그리고 여태껏 내가 알고 있는 그에 대한 지식이  정말 잘못되었다는 것과  이런 사실을 다른 사람에게도 알려주고 싶다는 이유로  그의 사상을 퍼뜨리다 이렇게 잡히게 된것입니다.");
+
+					mSpecialEvent = SpecialEventType.TalkPrisoner;
+				}
+				else if (moveX == 39 && moveY == 14)
+				{
+					AppendText(" 히히히... 위대한 용사님. 낄낄낄.. 내가 당신들의 일행에 끼이면 안될까요 ? 우히히히..");
+
+					ShowMenu(MenuMode.JoinMadJoe, new string[] {
+						"그렇다면 당신을 받아들이지요",
+						"당신은 이곳에 그냥 있는게 낫겠소"
+					});
+				}
+				else if (moveX == 62 && moveY == 9 && (mParty.Etc[49] & (1 << 5)) == 0)
+				{
+					AppendText(new string[] {
+						" 내가 몇년 전에 황금 방패를 숨겨 놓았던  메너스에 새로운 일들이 생겼다는게 사실이오 ?",
+						" 내가 저번에는 용기가 없어서 당신과 함께 동행하자는 말을 못했지만 이번에는 한번 부탁하겠소.",
+						" 나는 비록 도둑질을 해서 여기에 들어왔지만 암살자로서의 임무도 잘 해낼거요."
+					});
+
+					ShowMenu(MenuMode.JoinMercury, new string[] {
+						"승락하겠소, 그럼 잘 부탁하오",
+						"죄수를 탈출 시키면 나 역시 힘들게 되오"
+					});
+				}
+				else if (moveX == 59 && moveY == 14)
+					AppendText(" 당신들에게 경고해 두겠는데 건너편 방에 있는 조는 오랜 수감생활 끝에  미쳐 버리고 말았소.  그의 말에 속아서 당신네 일행에 참가시키는 그런 실수는 하지마시오.");
+				else if ((moveX == 41 && moveY == 77) || (moveX == 41 && moveY == 79))
+				{
+					if ((mParty.Etc[29] & (1 << 3)) == 0)
+						AppendText(" 로드 안 님의 명령에 의해서  당신들에게 한가지의 무기를 드리겠습니다.  들어가셔서 무기를 선택해 주십시오.");
+					else
+						AppendText(" 여기서 가져가신 무기를 잘 사용하셔서 임무를 수행하는데 잘 활용 하십시오.");
+				}
+				else if (moveX == 78 && moveY == 46)
+					AppendText(" 우리 은행은 철저하게 보안 되고 있습니다.");
+				else if (moveX == 78 && moveY == 48)
+					AppendText(" 손님께서는 예금 창구의 안쪽으로는 들어가시면 안됩니다. 그 때의 일은 책임 질 수 없습니다.");
+				else if (moveX == 84 && moveY == 47)
+					AppendText(" 지금은 민심이 어수선해서 은행의 입출금을 금지하고 있습니다. 양해하여 주십시오.");
+				else if (moveX == 89 && moveY == 46)
+				{
+					Talk(new string[] {
+						" 누구냐 !  앗 은행 강도다.",
+						" 경비병 !  경비병 !"
+					});
+
+					mSpecialEvent = SpecialEventType.BattleBankGuard;
+				}
+				else if (moveX == 88 && moveY == 22 && (mParty.Etc[49] & 1) == 0)
+				{
+					AppendText(new string[] {
+						$" 오, {mPlayerList[0].Name}!",
+						" 자네는 날 기억하겠지. 나는 헤라클레스일세. 자네와 네크로만서를 물리치던 때가  생각나는군." +
+						" 그래, 이번에도 중대한 일이 발생했다고들 하던데 그게 사실인가 ?  사실이라면 이번에도 나를 모험에 참가 시켜주게."
+					});
+
+					ShowMenu(MenuMode.JoinHercules, new string[] {
+						"나 역시 자네의 도움이 필요했다네",
+						"자네까지 나설 정도로 심각한일은 아니네"
+					});
+				}
+				else if (moveX == 20 && moveY == 32 && (mParty.Etc[49] & (1 << 2)) == 0)
+				{
+					AppendText(new string[] {
+						$" 안녕하신가 ? {mPlayerList[0].Name}.",
+						" 설마 날 잊었다고는 하지 않겠지." +
+						"  지금은 사건이 없어서  한가하게 이런 일을 하고 있지만 간혹 여기를 들리는 사람중에는 이 타이탄님을 기억하는 사람이 있다네." +
+						"  요새는 세상이 너무 조용해서 이런일은 나하고는 정말 안 어울린다네.  자네 모습을 보니 모험을 떠나려는 것 같은데 나도 끼이면 안 되겠나 ?"
+					});
+
+					ShowMenu(MenuMode.JoinHercules, new string[] {
+						"물론 나는 환영하지",
+						"별일 아니라서 자네는 재미 없을 걸세"
+					});
+				}
+				else if (moveX == 8 && moveY == 63 && (mParty.Etc[49] & (1 << 1)) == 0)
+				{
+					AppendText(new string[] {
+						$" 오래간 만이군 {mPlayerList[0].Name}.",
+						" 2-3 년전에 자네와 함께  모험을 떠났던 것이 엊그제 같은데 벌써 세월은 이렇게 지났군. 그간 생활이 어떠했나 ?" +
+						" 그건 그렇고, 또 이 곳에 무슨일이 생겼다지 ? 이번에도 자네에게 나의 마법의 힘을 빌려 주고 싶은데 자네는 어떻게 생각하나 ?"
+					});
+
+					ShowMenu(MenuMode.JoinHercules, new string[] {
+						"머린, 자네의 힘이 필요하네",
+						"글쎄.. 꼭 그럴것 까지는 없지"
+					});
+				}
+				else if (moveX == 87 && moveY == 37 && (mParty.Etc[49] & (1 << 3)) == 0)
+				{
+					AppendText(new string[] {
+						$" 요새는 좀처럼 볼 기회가 없군요. {mPlayerList[0].Name}.",
+						" 나는 네크로만서와의 결전이 끝난후에 컨져러의 수업을 쌓고 있었죠. 지금은 초보적인 수준밖에는 안되지만." +
+						" 당신이 또 새로운 임무를 받았다고들 하던데 사실인가요 ?  그렇다면 저도 그 임무에 빠질수가 없지요." +
+						"  몇년전 그때처럼 '당신과 함께 싸우고 싶군요."
+					});
+
+					ShowMenu(MenuMode.JoinHercules, new string[] {
+						"베텔규스, 자네라면 환영하지",
+						"글쎄.. 임무가 하찮은 거라서.."
+					});
+				}
+				else if (moveX == 50 && moveY == 86)
+				{
+					if ((mParty.Etc[29] & (1 << 1)) == 0)
+					{
+						for (var x = 48; x < 53; x++)
+							UpdateTileInfo(x, 87, 44);
+
+						AppendText($"난 당신을 믿소, {mPlayerList[0].Name}.");
+					}
+					else
+						AppendText($"힘내시오, {mPlayerList[0].Name}.");
+				}
+				else if (moveX == 84 && moveY == 54)
+				{
+					AppendText(new string[] {
+						$" 살려 주십시오. {mPlayerList[0].Name}님.",
+						" 아마 조금만 있으면 다크 메이지가 이곳을 폐허로 만들겁니다."
+					});
+				}
+				else if (moveX == 71 && moveY == 72)
+					AppendText(" 나는 어릴적에  할아버지로 부터 지하 세계의 사람들에 대해 들은 적이 있는데  지금은 기억이 잘 나지 않는군요.");
+				else if (moveX == 40 && moveY == 13)
+					AppendText("' 당신이 이 세계를 네크로만서로 부터 구한 후에는 다른 대륙도 원래의 모습을 찾았습니다.");
+				else if (moveX == 89 && moveY == 58)
+				{
+					AppendText(new string[] {
+						$" {mPlayerList[0].Name}님.",
+						" 만나게 되어서 기쁩니다. 이번 모험을 하는데 약간의 도움이 되었으면 합니다. 이 밭에 있는 채소를 조금 드릴테니 식량으로 사용해 주십시오."
+					});
+
+					if ((mParty.Etc[29] & (1 << 2)) == 0)
+					{
+						AppendText(new string[] {
+							"",
+							$"[color={RGB.LightCyan}] 당신은 그녀에게 약간의 식량을 받았다.[/color]"
+						}, true);
+
+						if (mParty.Food + 20 < 256)
+							mParty.Food += 20;
+						else
+							mParty.Food = 255;
+
+						mParty.Etc[29] |= 1 << 2;
+					}
+				}
+				else if (moveX == 91 && moveY == 79)
+					AppendText(" 알비레오님의 예언서에 의하면 다크 메이지가 이 세계를 멸망 시킨다고 하던데 정말 큰 일이군요.");
+				else if (moveX == 90 && moveY == 80)
+				{
+					AppendText(" 얼마 전에 옆집에 살던 분이 메너스 광산에서 일하던 중 의문의 살인을 당했어요." +
+					" 시체를 본 사람에 의하면  날카로운 독 화살에 맞아서 즉사했다고 하던데요.");
+				}
+				else if (moveX == 57 && moveY == 73)
+					AppendText(" 이번에도 우리들은 당신만 믿고 있습니다.");
+				else if (moveX == 62 && moveY == 26)
+					AppendText(" 당신과 함께 싸웠던  전투승 레굴루스는 로어성을 떠나  대륙의 북동쪽 섬의 오두막에 산다고 합니다.");
+				else if (moveX == 50 && moveY == 71)
+					AppendText(" 당신과 함께 싸웠던 폴라리스는 라스트디치성 군주의 수석 호위관이 되어 있더군요.");
+				else if (moveX == 49 && moveY == 50)
+					AppendText(" 타이탄님은 당신과의 모험이 끝난후  로어 주점의 경비와 치안을 맡고 있더군요.");
+				else if (moveX == 51 && moveY == 50)
+					AppendText(" 이번의 모험도 역시 성공하기를 빕니다.");
+				else if (46 <= moveX && moveX <= 54 && 29 <= moveY && moveY <= 37)
+				{
+					if (mParty.Etc[9] == 0)
+						AppendText(" 성주님께서 당신을 찾으십니다.");
+					else
+						AppendText(" 이번의 모험도 역시 성공하기를 빕니다.");
+				}
+				else if (moveX == 50 && moveY == 27)
+				{
+					if (mParty.Etc[9] == 0)
+					{
+						Talk(new string[] {
+							$" {mPlayerList[0].Name}.",
+							" 네크로만서를 물리친후 잘 쉬었는가 ?  또 자네를 부를일이 있다는 그 자체는 그 만큼 세상이 혼란스러워 졌다는 증거일세. 그럼 말을 계속 해 보도록 하겠네."
+						});
+
+						mSpecialEvent = SpecialEventType.MeetLordAhn;
+					}
+					else if (mParty.Etc[9] == 1)
+						AppendText(" 메너스에서 일어난  의문의 살인에 대한 원인과 다크 메이지의 정보도 알아오게. 자네만 믿겠네.");
+					else if (mParty.Etc[9] == 2)
+					{
+						AppendText(new string[] {
+							$" 돌아왔군, {mPlayerList[0].Name}.",
+							" 메너스에서 알아낸것이 없다고 ? 이거 큰일이네. 자네가 이곳으로 돌아오던 시간에 또 한명이 메너스에서 살해 당했다네." +
+							"  그리고 주민들의 여론은 더욱 악화 되었다는 것은 자명한 사실 이네. 자시 자네에게 부탁하겠네.  다시 그곳으로 가서 살인에 대한 단서를 찾아오게.",
+							" 꼭, 부탁하네."
+						});
+
+						mParty.Etc[9]++;
+					}
+					else if (mParty.Etc[9] == 3)
+						AppendText(" 다시 메너스로 가서 살인에 대한 단서를 찾아오도록 하게. 부탁하네.");
+					else if (mParty.Etc[9] == 4)
+					{
+						Talk(new string[] {
+							$" 정말 잘해냈군 {mPlayerList[0].Name}.",
+							" 역시 과거의 영웅은 현재의 영웅이군. 미궁에 빠졌던  살인 사건의 원인을 알아내고  그들을 제거 해내다니. 당신에게 그 댓가로 약간의 상금을 주도록 하겠네.",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 5000 ][/color]"
+						});
+
+						mParty.Gold += 5000;
+
+						mSpecialEvent = SpecialEventType.MeetLordAhn3;
+					}
+					else if (mParty.Etc[9] == 5)
+						AppendText(" 자네는 라스트 디치성에서의 일을  모두 끝내고 다시 돌아 오도록 하게.");
+					else if (mParty.Etc[9] == 6) {
+						Talk(new string[] {
+							" 라스트 디치에서의 임무를  잘 수행했다고 들었네. 어디, 자네가 지금 들고 있는 석판을 좀 볼까 ? 음.......",
+							$" 그러면 [color={RGB.White}]흉성의 증거[/color]에서 가져온 것 부터 해독해 보도록하지."
+						});
+
+						mSpecialEvent = SpecialEventType.MeetLordAhn6;
+					}
+				}
+
+			}
+		}
 		//		private async Task EnterSwampGate()
 		//		{
 		//			mAnimationEvent = AnimationType.None;
@@ -8970,16 +7636,39 @@ namespace DarkUWP
 						Task.Delay(500).Wait();
 					}
 				}
+				else if (mAnimationEvent == AnimationType.LeaveSoldier) {
+					for (var i = 1; i <= 4 + Math.Abs(mParty.YAxis - 48); i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(500).Wait();
+					}
+				}
 			});
 
 			await animationTask;
 
 			if (mAnimationEvent == AnimationType.LordAhnCall)
 			{
+				Talk(new string[] {
+					$" 일어났군, {mPlayerList[0].Name}.",
+					" 자네 빨리 로드 안 님께 가보도록 하게. 급히 찾으시는 것 보니 아무래도 무슨 큰 일이 벌어진것 같네. 네크로만서 이후 몇년간 세상이 조용하더니만...",
+					" 그건 그렇고 빨리 서두르게."
+				});
+
+				mSpecialEvent = SpecialEventType.LeaveSoldier;
+			}
+			else if (mAnimationEvent == AnimationType.LeaveSoldier) {
+				for (var y = 48; y < 51; y++)
+					UpdateTileInfo(18, y, 44);
+				mParty.Etc[29] |= 1;
+
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
 			}
 			else
 			{
 				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
 			}
 		}
 
@@ -9022,6 +7711,9 @@ namespace DarkUWP
 				return;
 			}
 
+			var playerX = mParty.XAxis;
+			var playerY = mParty.YAxis;
+
 			var xOffset = 0;
 			var yOffset = 0;
 			if (mTelescopeXCount != 0)
@@ -9040,7 +7732,7 @@ namespace DarkUWP
 					yOffset = mTelescopePeriod - Math.Abs(mTelescopeYCount);
 			}
 
-			var transform = Matrix3x2.Identity * Matrix3x2.CreateTranslation(-new Vector2(52 * (mParty.XAxis - 4 + xOffset), 52 * (mParty.YAxis - 5 + yOffset)));
+			var transform = Matrix3x2.Identity * Matrix3x2.CreateTranslation(-new Vector2(52 * (playerX - 4 + xOffset), 52 * (playerY - 5 + yOffset)));
 			args.DrawingSession.Transform = transform;
 
 			var size = sender.Size.ToVector2();
@@ -9054,31 +7746,30 @@ namespace DarkUWP
 			{
 				lock (mapLock)
 				{
-					if (mMapLayer != null)
-						DrawLayer(sb, mMapLayer);
+					for (int i = 0; i < mMapLayer.Length; ++i)
+					{
+						DrawTile(sb, mMapLayer, i, playerX, playerY);
+					}
 				}
 
 				if (mCharacterTiles != null)
 				{
-					mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(mParty.XAxis, mParty.YAxis), Vector4.One);
+					mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY), Vector4.One);
 				}
 			}
 		}
 
-		private void DrawLayer(CanvasSpriteBatch sb, byte[] layer)
-		{
-			for (int i = 0; i < layer.Length; ++i)
-			{
-				DrawTile(sb, layer, i);
-			}
-		}
-
-		void DrawTile(CanvasSpriteBatch sb, byte[] layer, int index)
+		void DrawTile(CanvasSpriteBatch sb, byte[] layer, int index, int playerX, int playerY)
 		{
 			int row = index / mMapWidth;
 			int column = index % mMapWidth;
 
-			Vector4 tint = Vector4.One;
+			Vector4 tint;
+			
+			if ((layer[index] & 0x80) > 0 || (mXWide == 0 && mYWide == 0) || (playerX - mXWide <= column && column <= playerX + mXWide && playerY - mYWide <= column && column <= playerY + mYWide))
+				tint = Vector4.One;
+			else
+				tint = new Vector4(0.2f, 0.2f, 2f, 1);
 
 			if (mMapTiles != null)
 			{	
@@ -9198,10 +7889,10 @@ namespace DarkUWP
 					}
 					else if (mAnimationFrame >= 5) {
 						if (column == 19) {
-							if (mParty.YAxis > 48 && row == 44 + mAnimationFrame) {
+							if (playerY > 48 && row == 44 + mAnimationFrame) {
 								mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 							}
-							else if (mParty.YAxis < 48 && row == mParty.YAxis - (mAnimationFrame - 4))
+							else if (playerY < 48 && row == playerY - (mAnimationFrame - 5))
 							{
 								mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 							}
@@ -9211,6 +7902,28 @@ namespace DarkUWP
 						else
 							mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 					}
+					else
+						mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+				}
+				else if (mAnimationEvent == AnimationType.LeaveSoldier) {
+					if (mAnimationFrame <= 3)
+					{
+						if (column == mAnimationFrame + 18 && row == playerY)
+							mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+						else
+							mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+					}
+					else if (mAnimationFrame <= Math.Abs(playerY - 48) + 3)
+					{
+						if (playerY < 48 && row == playerY + (mAnimationFrame - 3) && column == 21)
+							mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+						else if (playerY > 48 && row == playerY - (mAnimationFrame - 3) && column == 21)
+							mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+						else
+							mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+					}
+					else if (column == 22 && row == 48)
+						mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 					else
 						mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
 				}
@@ -10151,6 +8864,105 @@ namespace DarkUWP
 				mParty.Day -= 360;
 				mParty.Year++;
 			}
+
+			UpdateView();
+		}
+
+		private void UpdateView()
+		{
+			bool dark;
+			if (mPosition == PositionType.Den)
+			{
+				dark = true;
+
+				mXWide = 1;
+				mYWide = 1;
+			}
+			else if (7 > mParty.Hour || mParty.Hour > 17)
+			{
+				dark = true;
+				if (mParty.Hour == 18)
+				{
+					if (0 <= mParty.Min && mParty.Min <= 19)
+					{
+						mXWide = 4;
+						mYWide = 4;
+					}
+					else if (20 <= mParty.Min && mParty.Min <= 39)
+					{
+						mXWide = 3;
+						mYWide = 3;
+					}
+					else
+					{
+						mXWide = 2;
+						mYWide = 2;
+					}
+				}
+				else if (mParty.Hour == 6)
+				{
+					if (0 <= mParty.Min && mParty.Min <= 19)
+					{
+						mXWide = 2;
+						mYWide = 2;
+					}
+					else if (20 <= mParty.Min && mParty.Min <= 39)
+					{
+						mXWide = 3;
+						mYWide = 3;
+					}
+					else
+					{
+						mXWide = 4;
+						mYWide = 4;
+					}
+				}
+				else
+				{
+					mXWide = 1;
+					mYWide = 1;
+				}
+			}
+			else
+				dark = false;
+
+			if (dark && mParty.Etc[0] > 0)
+			{
+				if (1 <= mParty.Etc[0] && mParty.Etc[0] <= 2)
+				{
+					if (mXWide < 2 && mYWide < 2)
+					{
+						mXWide = 2;
+						mYWide = 2;
+					}
+				}
+				else if (3 <= mParty.Etc[0] && mParty.Etc[0] <= 4)
+				{
+					if (mXWide < 3 && mYWide < 3)
+					{
+						mXWide = 3;
+						mYWide = 3;
+					}
+				}
+				else if (5 <= mParty.Etc[0] && mParty.Etc[0] <= 6)
+				{
+					if (mXWide < 4 && mYWide < 4)
+					{
+						mXWide = 4;
+						mYWide = 4;
+					}
+				}
+				else
+				{
+					mXWide = 4;
+					mYWide = 4;
+				}
+			}
+			else if (!dark)
+			{
+				mXWide = 0;
+				mYWide = 0;
+			}
 		}
 
 		private enum PositionType
@@ -10166,6 +8978,13 @@ namespace DarkUWP
 			None,
 			Game,
 			GameOptions,
+			ClassTraining,
+			Hospital,
+			ChooseWeaponType,
+			ChooseFoodAmount,
+			JoinMadJoe,
+			JoinMercury,
+			JoinHercules,
 			ChooseSaveGame,
 			ChooseLoadGame,
 			ChooseGameOverLoadGame,
@@ -10260,95 +9079,26 @@ namespace DarkUWP
 		private enum AnimationType
 		{
 			None,
-			LordAhnCall
+			LordAhnCall,
+			LeaveSoldier
 		}
 
 		private enum SpecialEventType
 		{
 			None,
-			StartGame,
-			MeetLoreSolider,
-			MeetSkeleton,
-			RefuseJoinSkeleton,
-			MeetDraconian,
-			MeetDraconian2,
-			MeetDraconian3,
-			MeetAncientEvil,
-			MeetAncientEvil2,
-			MeetAncientEvil3,
-			EnterSwampGate,
-			EnterSwampGate2,
-			EnterSwampGate3,
-			EnterSwampGate4,
-			FindOedipusSpear,
-			FindOedipusSpear2,
-			MajorMummyRoom,
-			MeetRigel,
-			EnterEvilConcentration,
-			FindGoldenShield,
-			FindGoldenArmor,
-			BattleHydra,
-			AfterBattleHydra,
-			BattleArchiGagoyle,
-			MeetRedAntares,
-			MeetRedAntares2,
-			MeetRedAntares3,
-			BattleMinotaur,
-			MeetSpica,
-			BattleHugeDragon,
-			BattleCrabGod,
-			BattleMinotaur2,
-			BattleThreeDragon,
-			BattleAstralMud,
-			ExitImperiumMinor,
-			BattleDeathKnight,
-			MeetFaceNecromancer,
-			BattleDual,
-			BattleFackNecromancer,
-			AfterBattleFakeNecromancer,
-			FailRunawayBattleFakeNecromancer,
-			BattlePanzerViper,
-			AfterBattlePanzerViper,
-			AfterLordAhnAndAncientEvil,
-			FailRunawayBattleNecromancer,
-			BattleNecromancer,
-			MeetAhnInLastShelter,
-			MeetAhnInAnotherLore,
-			MeetAhnInAnotherLore2,
-			MeetWillOfDeneb,
-			MeetWillOfDeneb2,
-			MeetWillOfDeneb3,
-			MeetWillOfDeneb4,
-			MeetWillOfDeneb5,
-			MeetWillOfDeneb6,
-			MeetWillOfSirius,
-			MeetWillOfSirius2,
-			MeetWillOfSirius3,
-			MeetWillOfAlbireo,
-			MeetWillOfAlbireo2,
-			MeetWillOfCanopus,
-			MeetWillOfCanopus2,
-			MeetWillOfCanopus3,
-			MeetWillOfArcturus,
-			MeetWillOfArcturus2,
-			MeetWillOfArcturus3,
-			SwampGatePyramid,
-			SwampGatePyramid2,
-			SwampGatePyramid3,
-			SwampGatePyramid4,
-			SwampGatePyramid5,
-			SwampGatePyramid6,
-			ReadScroll,
-			BattleWivern,
-			BattleExitSwampGate,
-			DefeatAstralMud,
-			EnterImperiumMinor,
-			EnterDungeonOfEvil,
-			KillDraconian,
-			BattleBlackKnight,
-			BattlePrison,
-			RunawayMadJoe,
-			Ending
+			LeaveSoldier,
+			ViewGeniusKieLetter,
+			ViewGeniusKieLetter2,
+			TalkPrisoner,
+			BattleBankGuard,
+			MeetLordAhn,
+			MeetLordAhn2,
+			MeetLordAhn3,
+			MeetLordAhn4,
+			MeetLordAhn5,
+			MeetLordAhn6,
+			MeetLordAhn7,
+			SleepLoreCastle,
 		}
 
 		private class HealthTextBlock
