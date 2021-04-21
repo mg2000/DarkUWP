@@ -80,9 +80,10 @@ namespace DarkUWP
 		private Lore mCurePlayer = null;
 		private CureMenuState mCureMenuState = CureMenuState.None;
 
-		private bool mTrainingEnd = false;
-
 		private int mTeleportationDirection = 0;
+
+		private Lore mTrainPlayer;
+		private List<Tuple<int, int>> mTrainSkillList = new List<Tuple<int, int>>();
 
 		private SpecialEventType mSpecialEvent = SpecialEventType.None;
 
@@ -272,62 +273,6 @@ namespace DarkUWP
 				 args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadLeftThumbstickLeft || args.VirtualKey == VirtualKey.GamepadLeftThumbstickRight ||
 				 args.VirtualKey == VirtualKey.GamepadDPadUp || args.VirtualKey == VirtualKey.GamepadDPadDown || args.VirtualKey == VirtualKey.GamepadDPadLeft || args.VirtualKey == VirtualKey.GamepadDPadRight))
 				{
-					void MovePlayer(int moveX, int moveY)
-					{
-						mParty.XAxis = moveX;
-						mParty.YAxis = moveY;
-
-						bool needUpdateStat = false;
-						foreach (var player in mPlayerList)
-						{
-							if (player.Poison > 0)
-								player.Poison++;
-
-							if (player.Poison > 10)
-							{
-								player.Poison = 1;
-								if (0 < player.Dead && player.Dead < 100)
-									player.Dead++;
-								else if (player.Unconscious > 0)
-								{
-									player.Unconscious++;
-									if (player.Unconscious > player.Endurance * player.Level)
-										player.Dead = 1;
-								}
-								else
-								{
-									player.HP--;
-									if (player.HP <= 0)
-										player.Unconscious = 1;
-								}
-
-								needUpdateStat = true;
-							}
-						}
-
-						if (needUpdateStat)
-						{
-							DisplayHP();
-							DisplayCondition();
-						}
-
-						//DetectGameOver();
-
-						if (mParty.Etc[4] > 0)
-							mParty.Etc[4]--;
-
-						//if (!(mMapLayer[moveX + mMapWidth * moveY] == 0 || (mPosition == PositionType.Den && mMapLayer[moveX + mMapWidth * moveY] == 52)) && mRand.Next(mEncounter * 20) == 0)
-						//{
-						//	EncounterEnemy();
-						//	mTriggeredDownEvent = true;
-						//}
-
-						if (mPosition == PositionType.Ground)
-							PlusTime(0, 2, 0);
-						else
-							PlusTime(0, 0, 5);
-					}
-
 					var x = mParty.XAxis;
 					var y = mParty.YAxis;
 
@@ -483,7 +428,7 @@ namespace DarkUWP
 							}
 							else if (GetTileInfo(x, y) == 23)
 							{
-							//	ShowSign(x, y);
+								ShowSign(x, y);
 							}
 							else if (GetTileInfo(x, y) == 24)
 							{
@@ -669,6 +614,146 @@ namespace DarkUWP
 
 			gamePageKeyUpEvent = async (sender, args) =>
 			{
+				var swordEnableClass = new int[,] {
+						{  50,  50,  50,  50,  50,  50 },
+						{  60,  60,  50,   0,  60,  50 },
+						{ 100,   0,   0,   0,  30,  30 },
+						{   0,  50,  50, 100,   0,  60 },
+						{   0,   0,   0,   0,   0, 100 },
+						{  80,   0,  60,  80,   0,  70 },
+						{  60,  50,  50,  30,  70,  50 }
+					};
+
+				var magicEnableClass = new int[,] {
+						{  50,  30,  30,   0,  50,   0 },
+						{  20,  50,  30,  10,  50,  30 },
+						{  20,  20,  50,  10,  50,  50 },
+						{ 100,  60,  60,  50, 100,   0 },
+						{  60,  70, 100, 100, 100, 100 },
+						{  60, 100,  70, 100, 100,  50 },
+						{  70, 100,  70,  50, 100, 100 }
+					};
+
+				void ShowTrainSkillMenu()
+				{
+					AppendText($"[color={RGB.White}]{mTrainPlayer.Name}의 현재 능력치[/color]");
+
+					var trainSkillMenuList = new List<string>();
+					mTrainSkillList.Clear();
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 0] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  베는 무기  기술치  :\t{mTrainPlayer.SwordSkill,5}[/color]", true);
+						trainSkillMenuList.Add("  베는  무기  기술치");
+						mTrainSkillList.Add(new Tuple<int, int>(0, swordEnableClass[mTrainPlayer.Class - 1, 0]));
+					}
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 1] > 0)
+					{
+						if (mTrainPlayer.Class != 7)
+						{
+							AppendText($"[color={RGB.LightCyan}]  찍는 무기  기술치  :\t{mTrainPlayer.AxeSkill}[/color]", true);
+							trainSkillMenuList.Add("  찍는  무기  기술치");
+						}
+						else
+						{
+							AppendText($"[color={RGB.LightCyan}]  치료 마법  능력치  :\t{mTrainPlayer.AxeSkill}[/color]", true);
+							trainSkillMenuList.Add("  치료  마법  능력치");
+						}
+
+						mTrainSkillList.Add(new Tuple<int, int>(1, swordEnableClass[mTrainPlayer.Class - 1, 1]));
+					}
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 2] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  찌르는 무기 기술치 :\t{mTrainPlayer.SpearSkill}[/color]", true);
+						trainSkillMenuList.Add("  찌르는 무기 기술치");
+						mTrainSkillList.Add(new Tuple<int, int>(2, swordEnableClass[mTrainPlayer.Class - 1, 2]));
+					}
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 3] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  쏘는 무기  기술치  :\t{mTrainPlayer.BowSkill}[/color]", true);
+						trainSkillMenuList.Add("  쏘는  무기  기술치");
+						mTrainSkillList.Add(new Tuple<int, int>(3, swordEnableClass[mTrainPlayer.Class - 1, 3]));
+					}
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 4] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  방패 사용  기술치  :\t{mTrainPlayer.ShieldSkill}[/color]", true);
+						trainSkillMenuList.Add("  방패  사용  능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(4, swordEnableClass[mTrainPlayer.Class - 1, 4]));
+					}
+
+					if (swordEnableClass[mTrainPlayer.Class - 1, 5] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  맨손 사용  기술치  :\t{mTrainPlayer.FistSkill}[/color]", true);
+						trainSkillMenuList.Add("  맨손  사용  기술치");
+						mTrainSkillList.Add(new Tuple<int, int>(5, swordEnableClass[mTrainPlayer.Class - 1, 5]));
+					}
+
+					AppendText($"[color={RGB.LightGreen}] 여분의 경험치 :\t{mTrainPlayer.Experience}[/color]", true);
+
+					AppendText($"[color={RGB.LightRed}]당신이 수련 하고 싶은 부분을 고르시오.[/color]", true);
+
+					ShowMenu(MenuMode.ChooseTrainSkill, trainSkillMenuList.ToArray());
+				}
+
+				void ShowTrainMagicMenu()
+				{
+					AppendText($"[color={RGB.White}]{mTrainPlayer.Name}의 현재 능력치[/color]");
+
+					var trainSkillMenuList = new List<string>();
+					mTrainSkillList.Clear();
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 0] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  공격 마법 능력치 :\t{mTrainPlayer.AttackMagic, 5}[/color]", true);
+						trainSkillMenuList.Add("  공격 마법 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(0, magicEnableClass[mTrainPlayer.Class - 1, 0]));
+					}
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 1] > 0) {
+						AppendText($"[color={RGB.LightCyan}]  변화 마법 능력치 :\t{mTrainPlayer.PhenoMagic}[/color]", true);
+						trainSkillMenuList.Add("  변화 마법 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(1, magicEnableClass[mTrainPlayer.Class - 1, 1]));
+					}
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 2] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  치료 마법 능력치 :\t{mTrainPlayer.CureMagic}[/color]", true);
+						trainSkillMenuList.Add("  치료 마법 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(2, magicEnableClass[mTrainPlayer.Class - 1, 2]));
+					}
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 3] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  특수 마법 능력치 :\t{mTrainPlayer.SpecialMagic}[/color]", true);
+						trainSkillMenuList.Add("  특수 마법 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(3, magicEnableClass[mTrainPlayer.Class - 1, 3]));
+					}
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 4] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  초 자연력 능력치 :\t{mTrainPlayer.ESPMagic}[/color]", true);
+						trainSkillMenuList.Add("  초 자연력 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(4, magicEnableClass[mTrainPlayer.Class - 1, 4]));
+					}
+
+					if (magicEnableClass[mTrainPlayer.Class - 1, 5] > 0)
+					{
+						AppendText($"[color={RGB.LightCyan}]  소환 마법 능력치 :\t{mTrainPlayer.SummonMagic}[/color]", true);
+						trainSkillMenuList.Add("  소환 마법 능력치");
+						mTrainSkillList.Add(new Tuple<int, int>(5, magicEnableClass[mTrainPlayer.Class - 1, 5]));
+					}
+
+					AppendText($"[color={RGB.LightGreen}] 여분의 경험치 :\t{mTrainPlayer.Experience}[/color]", true);
+
+					AppendText($"[color={RGB.LightRed}]당신이 배우고 싶은 부분을 고르시오.[/color]", true);
+
+					ShowMenu(MenuMode.ChooseTrainMagic, trainSkillMenuList.ToArray());
+				}
+
 				//				int GetWeaponPrice(int weapon)
 				//				{
 				//					switch (weapon)
@@ -1278,7 +1363,12 @@ namespace DarkUWP
 				{
 					async Task InvokeSpecialEventLaterPart()
 					{
-						if (mSpecialEvent == SpecialEventType.LeaveSoldier)
+						if (mSpecialEvent == SpecialEventType.CantTrain)
+						{
+							mSpecialEvent = SpecialEventType.None;
+							ShowTrainSkillMenu();
+						}
+						else if (mSpecialEvent == SpecialEventType.LeaveSoldier)
 						{
 							InvokeAnimation(AnimationType.LeaveSoldier);
 							mSpecialEvent = SpecialEventType.None;
@@ -1432,12 +1522,14 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.None;
 						}
-						else if (mSpecialEvent == SpecialEventType.MeetLordAhn8) {
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn8)
+						{
 							InvokeAnimation(AnimationType.TalkLordAhn);
 
 							mSpecialEvent = SpecialEventType.None;
 						}
-						else if (mSpecialEvent == SpecialEventType.MeetLordAhn9) {
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn9)
+						{
 							mAnimationEvent = AnimationType.None;
 							mAnimationFrame = 0;
 
@@ -1475,7 +1567,8 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.None;
 						}
-						else if (mSpecialEvent == SpecialEventType.MeetLordAhn11) {
+						else if (mSpecialEvent == SpecialEventType.MeetLordAhn11)
+						{
 							mAnimationEvent = AnimationType.None;
 							mAnimationFrame = 0;
 
@@ -1622,11 +1715,6 @@ namespace DarkUWP
 					{
 						//mWeaponShopEnd = false;
 						//GoWeaponShop();
-					}
-					else if (mTrainingEnd == true)
-					{
-						//mTrainingEnd = false;
-						//GoTrainingCenter();
 					}
 					else if (mCureMenuState == CureMenuState.NotCure)
 					{
@@ -1936,8 +2024,11 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
 					{
-						if (mMenuMode != MenuMode.None && mMenuMode != MenuMode.BattleLose && mMenuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == 0)
+						if (mMenuMode != MenuMode.None && mMenuMode != MenuMode.BattleLose && mMenuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
 						{
+							AppendText("");
+							HideMenu();
+
 							//	if (mMenuMode == MenuMode.CastOneMagic ||
 							//	mMenuMode == MenuMode.CastAllMagic ||
 							//	mMenuMode == MenuMode.CastSpecial ||
@@ -1971,14 +2062,14 @@ namespace DarkUWP
 							//		mMenuMode == MenuMode.BattleCommand ||
 							//		mMenuMode == MenuMode.JoinSkeleton)
 							//		return;
-							//	else
-							{
-								AppendText(new string[] { "" });
-								HideMenu();
+							//else 
+							if (mMenuMode == MenuMode.ConfirmExitMap) {
+								mParty.YAxis--;
 
 								mMenuMode = MenuMode.None;
 							}
-
+							else
+								mMenuMode = MenuMode.None;
 						}
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
@@ -2983,34 +3074,6 @@ namespace DarkUWP
 							//	else
 							//		CoreApplication.Exit();
 							//}
-							//else if (mMenuMode == MenuMode.JoinMadJoe)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(0);
-							//		player.Name = "미친 조";
-							//		player.Class = 8;
-							//		player.Weapon = 0;
-							//		player.Shield = 0;
-							//		player.Armor = 0;
-							//		player.WeaPower = 0;
-							//		player.ShiPower = 0;
-							//		player.ArmPower = 0;
-							//		player.AC = 0;
-
-							//		JoinMember(player);
-
-							//		mMapLayer[39 + mMapWidth * 14] = 47;
-
-							//		mParty.Etc[49] |= 1 << 1;
-							//	}
-							//	else
-							//		ShowNoThanks();
-							//}
 							//else if (mMenuMode == MenuMode.Grocery)
 							//{
 							//	mMenuMode = MenuMode.None;
@@ -3403,636 +3466,309 @@ namespace DarkUWP
 							//		}
 							//	}
 							//}
-							//else if (mMenuMode == MenuMode.TrainingCenter)
-							//{
-							//	var player = mPlayerList[mMenuFocusID];
-
-							//	var exp = player.Experience;
-							//	var nextFinalLevel = 0;
-							//	if (exp < 20000)
-							//	{
-							//		if (0 <= exp && exp <= 1499)
-							//			nextFinalLevel = 1;
-							//		else if (1500 <= exp && exp <= 5999)
-							//			nextFinalLevel = 2;
-							//		else if (6000 <= exp && exp <= 19999)
-							//			nextFinalLevel = 3;
-							//	}
-							//	else
-							//	{
-							//		exp /= 10000;
-
-							//		if (2 <= exp && exp <= 4)
-							//			nextFinalLevel = 4;
-							//		else if (5 <= exp && exp <= 14)
-							//			nextFinalLevel = 5;
-							//		else if (15 <= exp && exp <= 24)
-							//			nextFinalLevel = 6;
-							//		else if (25 <= exp && exp <= 49)
-							//			nextFinalLevel = 7;
-							//		else if (50 <= exp && exp <= 79)
-							//			nextFinalLevel = 8;
-							//		else if (80 <= exp && exp <= 104)
-							//			nextFinalLevel = 9;
-							//		else if (105 <= exp && exp <= 131)
-							//			nextFinalLevel = 10;
-							//		else if (132 <= exp && exp <= 161)
-							//			nextFinalLevel = 11;
-							//		else if (162 <= exp && exp <= 194)
-							//			nextFinalLevel = 12;
-							//		else if (195 <= exp && exp <= 230)
-							//			nextFinalLevel = 13;
-							//		else if (231 <= exp && exp <= 269)
-							//			nextFinalLevel = 14;
-							//		else if (270 <= exp && exp <= 311)
-							//			nextFinalLevel = 15;
-							//		else if (312 <= exp && exp <= 356)
-							//			nextFinalLevel = 16;
-							//		else if (357 <= exp && exp <= 404)
-							//			nextFinalLevel = 17;
-							//		else if (405 <= exp && exp <= 455)
-							//			nextFinalLevel = 18;
-							//		else if (456 <= exp && exp <= 509)
-							//			nextFinalLevel = 19;
-							//		else
-							//			nextFinalLevel = 20;
-							//	}
-
-							//	var payment = 0;
-							//	if (player.Level[0] == 20)
-							//	{
-							//		AppendText(new string[] { $"당신은 최고 레벨에 도달했습니다.",
-							//							"더 이상 저희들은 가르칠 필요가 없습니다." });
-
-							//		ContinueText.Visibility = Visibility.Visible;
-
-							//		mTrainingEnd = true;
-							//	}
-							//	else if (player.Level[0] < nextFinalLevel)
-							//	{
-							//		switch (nextFinalLevel)
-							//		{
-							//			case 1:
-							//				payment = 2;
-							//				break;
-							//			case 2:
-							//				payment = 3;
-							//				break;
-							//			case 3:
-							//				payment = 5;
-							//				break;
-							//			case 4:
-							//				payment = 8;
-							//				break;
-							//			case 5:
-							//				payment = 15;
-							//				break;
-							//			case 6:
-							//				payment = 25;
-							//				break;
-							//			case 7:
-							//				payment = 40;
-							//				break;
-							//			case 8:
-							//				payment = 70;
-							//				break;
-							//			case 9:
-							//				payment = 120;
-							//				break;
-							//			case 10:
-							//				payment = 200;
-							//				break;
-							//			case 11:
-							//				payment = 350;
-							//				break;
-							//			case 12:
-							//				payment = 600;
-							//				break;
-							//			case 13:
-							//				payment = 1000;
-							//				break;
-							//			case 14:
-							//				payment = 1700;
-							//				break;
-							//			case 15:
-							//				payment = 3000;
-							//				break;
-							//			case 16:
-							//				payment = 5000;
-							//				break;
-							//			case 17:
-							//				payment = 8300;
-							//				break;
-							//			case 18:
-							//				payment = 14000;
-							//				break;
-							//			case 19:
-							//				payment = 24000;
-							//				break;
-							//			case 20:
-							//				payment = 40000;
-							//				break;
-							//		}
-
-							//		if (mParty.Gold < payment)
-							//		{
-							//			AppendText(new string[] { $"당신은 금 {payment - mParty.Gold}개가 더 필요합니다." });
-
-							//			ContinueText.Visibility = Visibility.Visible;
-
-							//			mTrainingEnd = true;
-							//		}
-							//		else
-							//		{
-							//			mParty.Gold -= payment;
-
-							//			AppendText(new string[] { $"[color={RGB.White}]{player.Name}의 레벨은 {nextFinalLevel}입니다." });
-
-							//			for (var nextLevel = player.Level[0] + 1; nextLevel <= nextFinalLevel; nextLevel++)
-							//			{
-							//				player.Level[0] = nextLevel;
-
-							//				if (player.Class == 1)
-							//				{
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Strength < 20)
-							//						player.Strength++;
-							//					else if (player.Endurance < 20)
-							//						player.Endurance++;
-							//					else if (player.Accuracy[0] < 20)
-							//						player.Accuracy[0]++;
-							//					else
-							//						player.Agility++;
-							//					//}
-							//				}
-							//				else if (player.Class == 2 || player.Class == 9)
-							//				{
-							//					player.Level[1] = nextLevel;
-							//					player.Level[2] = (int)Math.Round((double)nextLevel / 2);
-
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Mentality < 20)
-							//						player.Mentality++;
-							//					else if (player.Concentration < 20)
-							//						player.Concentration++;
-							//					else if (player.Accuracy[1] < 20)
-							//						player.Accuracy[1]++;
-							//					//}
-							//				}
-							//				else if (player.Class == 3)
-							//				{
-							//					player.Level[1] = (int)Math.Round((double)nextLevel / 2);
-							//					player.Level[2] = nextLevel;
-
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Concentration < 20)
-							//						player.Concentration++;
-							//					else if (player.Accuracy[2] < 20)
-							//						player.Accuracy[2]++;
-							//					else if (player.Mentality < 20)
-							//						player.Mentality++;
-							//					//}
-							//				}
-							//				else if (player.Class == 4)
-							//				{
-							//					if (nextFinalLevel < 16)
-							//						player.Level[1] = nextLevel;
-							//					else
-							//						player.Level[1] = 16;
-
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Strength < 20)
-							//						player.Strength++;
-							//					else if (player.Mentality < 20)
-							//						player.Mentality++;
-							//					else if (player.Accuracy[0] < 20)
-							//						player.Accuracy[0]++;
-							//					else if (player.Accuracy[1] < 20)
-							//						player.Accuracy[1]++;
-							//					//}
-							//				}
-							//				else if (player.Class == 5)
-							//				{
-							//					player.WeaPower = player.Level[0] * 2 + 10;
-
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Strength < 20)
-							//						player.Strength++;
-							//					else if (player.Accuracy[1] < 20)
-							//						player.Accuracy[1]++;
-							//					else if (player.Endurance < 20)
-							//						player.Endurance++;
-							//					//}
-							//				}
-							//				else if (player.Class == 6)
-							//				{
-							//					player.Level[1] = (int)Math.Round((double)nextLevel / 2);
-							//					player.Level[2] = nextLevel;
-
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Resistance < 18)
-							//						player.Resistance++;
-							//					else if (player.Resistance < 20)
-							//					{
-							//						if (player.Luck > mRand.Next(21))
-							//							player.Resistance++;
-							//					}
-							//					else
-							//						player.Agility++;
-							//					//}
-							//				}
-							//				else if (player.Class == 7 || player.Class == 8)
-							//				{
-							//					//if (player.Luck > mRand.Next(30))
-							//					//{
-							//					if (player.Endurance < 20)
-							//						player.Endurance++;
-							//					else if (player.Strength < 20)
-							//						player.Strength++;
-							//					else
-							//						player.Agility++;
-							//					//}
-							//				}
-							//				else if (player.Class == 10)
-							//				{
-							//					player.Level[1] = nextLevel;
-							//					player.Level[2] = nextLevel;
-
-							//					if (player.Strength < 20)
-							//						player.Strength++;
-							//					if (player.Mentality < 20)
-							//						player.Mentality++;
-							//					if (player.Concentration < 20)
-							//						player.Concentration++;
-							//					if (player.Endurance < 20)
-							//						player.Endurance++;
-							//					else if (player.Agility < 20)
-							//						player.Agility++;
-
-							//					for (var i = 0; i < player.Accuracy.Length; i++)
-							//					{
-							//						if (player.Accuracy[i] < 20)
-							//							player.Accuracy[i]++;
-							//					}
-							//				}
-							//			}
-
-							//			ContinueText.Visibility = Visibility.Visible;
-
-							//			DisplayPlayerInfo();
-
-							//			mTrainingEnd = true;
-							//		}
-							//	}
-							//	else
-							//	{
-							//		var needExp = new string[]
-							//		{
-							//							"1500",
-							//							"6000",
-							//							"20000",
-							//							"50000",
-							//							"150000",
-							//							"250000",
-							//							"500000",
-							//							"800000",
-							//							"1050000",
-							//							"1320000",
-							//							"1620000",
-							//							"1950000",
-							//							"2310000",
-							//							"2700000",
-							//							"3120000",
-							//							"3570000",
-							//							"4050000",
-							//							"4560000",
-							//							"5100000"
-							//		};
-
-							//		AppendText(new string[] { $" 당신은 아직 전투 경험이 부족합니다.",
-							//						"",
-							//						"",
-							//						$"당신이 다음 레벨이 되려면 경험치가 {needExp[player.Level[0] - 1]} 이상 이어야 합니다."
-							//						});
-
-							//		ContinueText.Visibility = Visibility.Visible;
-
-							//		mTrainingEnd = true;
-							//	}
-							//}
-							//else if (mMenuMode == MenuMode.ConfirmExitMap)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		if (mParty.Map == 6)
-							//		{
-							//			if ((mParty.Etc[30] & 1) == 0)
-							//			{
-							//				Talk(" 당신이 로어 성을 떠나려는 순간 누군가가 당신을 불렀다.");
-
-							//				mSpecialEvent = SpecialEventType.MeetSkeleton;
-							//			}
-							//			else
-							//				await ExitCastleLore();
-							//		}
-							//		else if (mParty.Map == 7)
-							//		{
-							//			mParty.Map = 1;
-							//			mParty.XAxis = 76;
-							//			mParty.YAxis = 56;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 8)
-							//		{
-							//			mParty.Map = 2;
-							//			mParty.XAxis = 18;
-							//			mParty.YAxis = 26;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 9)
-							//		{
-							//			mParty.Map = 2;
-							//			mParty.XAxis = 31;
-							//			mParty.YAxis = 81;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 10)
-							//		{
-							//			mParty.Map = 3;
-							//			mParty.XAxis = 73;
-							//			mParty.YAxis = 19;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 11)
-							//		{
-							//			mParty.Map = 7;
-							//			mParty.XAxis = 37;
-							//			mParty.YAxis = 6;
-
-							//			await RefreshGame();
-
-							//			foreach (var player in mPlayerList)
-							//			{
-							//				if (player.Name == "폴라리스")
-							//				{
-							//					mMapLayer[36 + mMapWidth * 40] = 44;
-							//					break;
-							//				}
-							//			}
-							//		}
-							//		else if (mParty.Map == 12)
-							//		{
-							//			mParty.Map = 8;
-							//			mParty.XAxis = 38;
-							//			mParty.YAxis = 6;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 13)
-							//		{
-							//			mParty.Map = 9;
-							//			mParty.XAxis = 25;
-							//			mParty.YAxis = 5;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 14)
-							//		{
-							//			mParty.Map = 1;
-							//			mParty.XAxis = 17;
-							//			mParty.YAxis = 88;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 15)
-							//		{
-							//			mParty.Map = 2;
-							//			mParty.XAxis = 81;
-							//			mParty.YAxis = 47;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 16)
-							//		{
-							//			mParty.Map = 2;
-							//			mParty.XAxis = 43;
-							//			mParty.YAxis = 7;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 17)
-							//		{
-							//			mParty.Map = 3;
-							//			mParty.XAxis = 22;
-							//			mParty.YAxis = 62;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 18)
-							//		{
-							//			mParty.Map = 3;
-							//			mParty.XAxis = 95;
-							//			mParty.YAxis = 42;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 19)
-							//		{
-							//			mParty.Map = 4;
-							//			mParty.XAxis = 47;
-							//			mParty.YAxis = 57;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 20)
-							//		{
-							//			mParty.Map = 4;
-							//			mParty.XAxis = 81;
-							//			mParty.YAxis = 16;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 21)
-							//		{
-							//			if ((mParty.Etc[41] & 1) == 0)
-							//			{
-							//				mEncounterEnemyList.Clear();
-							//				if ((mParty.Etc[41] & (1 << 2)) == 0)
-							//					JoinEnemy(54);
-
-							//				if ((mParty.Etc[41] & (1 << 3)) == 0)
-							//					JoinEnemy(55);
-
-							//				if (mEncounterEnemyList.Count == 0)
-							//				{
-							//					mParty.Etc[41] |= 1;
-							//					return;
-							//				}
-
-							//				for (var i = 0; i < 4; i++)
-							//				{
-							//					JoinEnemy(34);
-							//				}
-
-							//				HideMap();
-							//				DisplayEnemy();
-
-							//				mBattleEvent = 15;
-
-							//				StartBattle(false);
-							//			}
-							//		}
-							//		else if (mParty.Map == 22)
-							//		{
-							//			if ((mParty.Etc[42] & (1 << 2)) == 0)
-							//			{
-							//				mEncounterEnemyList.Clear();
-
-							//				var enemyID = mRand.Next(5) + 41;
-							//				if (enemyID == 41)
-							//					enemyID = 34;
-
-							//				for (var i = 0; i < 6; i++)
-							//				{
-							//					JoinEnemy(enemyID);
-							//				}
-
-							//				JoinEnemy(65);
-
-							//				HideMap();
-							//				DisplayEnemy();
-
-							//				Talk($"[color={RGB.LightCyan}]{mPlayerList[0].Name}, 나의 힘을 보여주겠다.[/color]");
-
-							//				mSpecialEvent = SpecialEventType.ExitImperiumMinor;
-							//			}
-							//			else
-							//			{
-							//				mParty.Map = 5;
-							//				mParty.XAxis = 14;
-							//				mParty.YAxis = 31;
-
-							//				await RefreshGame();
-							//			}
-							//		}
-							//		else if (mParty.Map == 23)
-							//		{
-							//			mParty.Map = 5;
-							//			mParty.XAxis = 33;
-							//			mParty.YAxis = 14;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 24)
-							//		{
-							//			mParty.Map = 22;
-							//			mParty.XAxis = 24;
-							//			mParty.YAxis = 23;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 25)
-							//		{
-							//			mParty.Map = 23;
-							//			mParty.XAxis = 24;
-							//			mParty.YAxis = 44;
-
-							//			await RefreshGame();
-							//		}
-							//		else if (mParty.Map == 27)
-							//		{
-							//			mParty.Map = 1;
-							//			mParty.XAxis = 19;
-							//			mParty.YAxis = 7;
-
-							//			await RefreshGame();
-							//		}
-							//	}
-							//	else
-							//	{
-							//		AppendText("");
-
-							//		if (mParty.Map == 27 && mParty.YAxis < 24)
-							//			mParty.YAxis++;
-							//		else
-							//			mParty.YAxis--;
-							//	}
-							//}
-							//else if (mMenuMode == MenuMode.JoinSkeleton)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	mParty.Etc[30] |= 1;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		mAnimationEvent = AnimationType.None;
-							//		mAnimationFrame = 0;
-
-							//		JoinMemberFromEnemy(18);
-							//		await ExitCastleLore();
-							//	}
-							//	else if (mMenuFocusID == 1)
-							//	{
-							//		ShowNoThanks();
-							//		mSpecialEvent = SpecialEventType.RefuseJoinSkeleton;
-							//	}
-							//}
-							//else if (mMenuMode == MenuMode.BattleStart)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	var avgLuck = 0;
-							//	mPlayerList.ForEach(delegate (Lore player)
-							//	{
-							//		avgLuck += player.Luck;
-							//	});
-							//	avgLuck /= mPlayerList.Count;
-
-							//	var avgEnemyAgility = 0;
-							//	mEncounterEnemyList.ForEach(delegate (BattleEnemyData enemy)
-							//	{
-							//		avgEnemyAgility += enemy.Agility;
-							//	});
-							//	avgEnemyAgility /= mEncounterEnemyList.Count;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var avgAgility = 0;
-							//		foreach (var player in mPlayerList)
-							//		{
-							//			avgAgility += player.Agility;
-							//		}
-							//		avgAgility /= mPlayerList.Count;
-
-							//		if (avgAgility > avgEnemyAgility)
-							//			StartBattle(true);
-							//		else
-							//			StartBattle(false);
-							//	}
-							//	else if (mMenuFocusID == 1)
-							//	{
-							//		if (avgLuck > avgEnemyAgility)
-							//		{
-							//			mBattleTurn = BattleTurn.RunAway;
-							//			await EndBattle();
-							//		}
-							//		else
-							//			StartBattle(false);
-							//	}
-							//}
+							else if (mMenuMode == MenuMode.TrainingCenter) {
+								mMenuMode = MenuMode.None;
+
+								if (mMenuFocusID == 0) {
+									AppendText(new string[] {
+										$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
+										$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰것입니다.[/color]",
+										"",
+										$"[color={RGB.White}]누가 훈련을 받겠습니까?[/color]"
+									});
+
+									ShowCharacterMenu(MenuMode.ChooseTrainSkillMember);
+								}
+								else if (mMenuFocusID == 1) {
+									mMenuMode = MenuMode.None;
+
+									AppendText(new string[] {
+										$"[color={RGB.White}] 여기는 마법 학교 입니다.[/color]",
+										$"[color={RGB.White}] 만약 당신이 충분한 실전 경험을 쌓았다면, 당신은 더욱 능숙하게 마법을 다룰것입니다.[/color]",
+										"",
+										$"[color={RGB.White}]누가 가르침을 받겠습니까?[/color]"
+									});
+
+									ShowCharacterMenu(MenuMode.ChooseTrainMagicMember);
+								}
+							}
+							else if (mMenuMode == MenuMode.ChooseTrainSkillMember) {
+								mMenuMode = MenuMode.None;
+
+								mTrainPlayer = mPlayerList[mMenuFocusID];
+
+								if (mTrainPlayer.ClassType != ClassCategory.Sword) {
+									AppendText(" 당신은 전투사 계열이 아닙니다.");
+									return;
+								}
+
+								var readyToLevelUp = true;
+								for (var i = 0; i < 6; i++) {
+									int skill;
+									switch (i) {
+										case 0:
+											skill = mTrainPlayer.SwordSkill;
+											break;
+										case 1:
+											skill = mTrainPlayer.AxeSkill;
+											break;
+										case 2:
+											skill = mTrainPlayer.SpearSkill;
+											break;
+										case 3:
+											skill = mTrainPlayer.BowSkill;
+											break;
+										case 4:
+											skill = mTrainPlayer.ShieldSkill;
+											break;
+										default:
+											skill = mTrainPlayer.FistSkill;
+											break;
+											
+									}
+
+									if (swordEnableClass[mTrainPlayer.Class - 1, i] > 0) {
+										if (skill < swordEnableClass[mTrainPlayer.Class - 1, i]) {
+											readyToLevelUp = false;
+											break;
+										}
+									}
+								}
+
+								if (readyToLevelUp) {
+									AppendText(" 당신은 모든 과정을 수료했으므로 모든 경험치를 레벨로 바꾸겠습니다.");
+
+									mTrainPlayer.PotentialExperience += mTrainPlayer.Experience;
+									mTrainPlayer.Experience = 0;
+
+									return;
+								}
+
+								ShowTrainSkillMenu();
+							}
+							else if (mMenuMode == MenuMode.ChooseTrainSkill) {
+								mMenuMode = MenuMode.None;
+
+								int skill;
+								switch (mTrainSkillList[mMenuFocusID].Item1) {
+									case 0:
+										skill = mTrainPlayer.SwordSkill;
+										break;
+									case 1:
+										skill = mTrainPlayer.AxeSkill;
+										break;
+									case 2:
+										skill = mTrainPlayer.SpearSkill;
+										break;
+									case 3:
+										skill = mTrainPlayer.BowSkill;
+										break;
+									case 4:
+										skill = mTrainPlayer.ShieldSkill;
+										break;
+									default:
+										skill = mTrainPlayer.FistSkill;
+										break;
+								}
+
+								if (skill >= mTrainSkillList[mMenuFocusID].Item2) {
+									Talk("이 분야는 더 배울 것이 없습니다");
+									mSpecialEvent = SpecialEventType.CantTrain;
+
+									return;
+								}
+
+								var needExp = 15 * skill * skill;
+
+								if (needExp > mTrainPlayer.Experience) {
+									Talk("아직 경험치가 모자랍니다");
+									mSpecialEvent = SpecialEventType.CantTrain;
+
+									return;
+								}
+
+								mTrainPlayer.Experience -= needExp;
+								mTrainPlayer.PotentialExperience += needExp;
+
+								switch (mTrainSkillList[mMenuFocusID].Item1)
+								{
+									case 0:
+										mTrainPlayer.SwordSkill++;
+										break;
+									case 1:
+										mTrainPlayer.AxeSkill++;
+										break;
+									case 2:
+										mTrainPlayer.SpearSkill++;
+										break;
+									case 3:
+										mTrainPlayer.BowSkill++;
+										break;
+									case 4:
+										mTrainPlayer.ShieldSkill++;
+										break;
+									default:
+										mTrainPlayer.FistSkill++;
+										break;
+								}
+
+								ShowTrainSkillMenu();
+							}
+							else if (mMenuMode == MenuMode.ChooseTrainMagicMember)
+							{
+								mMenuMode = MenuMode.None;
+
+								mTrainPlayer = mPlayerList[mMenuFocusID];
+
+								if (mTrainPlayer.ClassType != ClassCategory.Magic)
+								{
+									AppendText(" 당신은 마법사 계열이 아닙니다.");
+									return;
+								}
+
+								var readyToLevelUp = true;
+								for (var i = 0; i < 6; i++)
+								{
+									int skill;
+									switch (i)
+									{
+										case 0:
+											skill = mTrainPlayer.AttackMagic;
+											break;
+										case 1:
+											skill = mTrainPlayer.PhenoMagic;
+											break;
+										case 2:
+											skill = mTrainPlayer.CureMagic;
+											break;
+										case 3:
+											skill = mTrainPlayer.SpecialMagic;
+											break;
+										case 4:
+											skill = mTrainPlayer.ESPMagic;
+											break;
+										default:
+											skill = mTrainPlayer.SummonMagic;
+											break;
+
+									}
+
+									if (magicEnableClass[mTrainPlayer.Class - 1, i] > 0)
+									{
+										if (skill < magicEnableClass[mTrainPlayer.Class - 1, i])
+										{
+											readyToLevelUp = false;
+											break;
+										}
+									}
+								}
+
+								if (readyToLevelUp)
+								{
+									AppendText(" 당신은 모든 과정을 수료했으므로 모든 경험치를 레벨로 바꾸겠습니다.");
+
+									mTrainPlayer.PotentialExperience += mTrainPlayer.Experience;
+									mTrainPlayer.Experience = 0;
+
+									return;
+								}
+
+								ShowTrainMagicMenu();
+							}
+							else if (mMenuMode == MenuMode.ChooseTrainMagic)
+							{
+								mMenuMode = MenuMode.None;
+
+								int skill;
+								switch (mTrainSkillList[mMenuFocusID].Item1)
+								{
+									case 0:
+										skill = mTrainPlayer.AttackMagic;
+										break;
+									case 1:
+										skill = mTrainPlayer.PhenoMagic;
+										break;
+									case 2:
+										skill = mTrainPlayer.CureMagic;
+										break;
+									case 3:
+										skill = mTrainPlayer.SpecialMagic;
+										break;
+									case 4:
+										skill = mTrainPlayer.ESPMagic;
+										break;
+									default:
+										skill = mTrainPlayer.SummonMagic;
+										break;
+								}
+
+								if (skill >= mTrainSkillList[mMenuFocusID].Item2)
+								{
+									Talk("이 분야는 더 배울 것이 없습니다");
+									mSpecialEvent = SpecialEventType.CantTrain;
+
+									return;
+								}
+
+								var needExp = 15 * skill * skill;
+
+								if (needExp > mTrainPlayer.Experience)
+								{
+									Talk("아직 경험치가 모자랍니다");
+									mSpecialEvent = SpecialEventType.CantTrain;
+
+									return;
+								}
+
+								mTrainPlayer.Experience -= needExp;
+								mTrainPlayer.PotentialExperience += needExp;
+
+								switch (mTrainSkillList[mMenuFocusID].Item1)
+								{
+									case 0:
+										mTrainPlayer.AttackMagic++;
+										break;
+									case 1:
+										mTrainPlayer.PhenoMagic++;
+										break;
+									case 2:
+										mTrainPlayer.CureMagic++;
+										break;
+									case 3:
+										mTrainPlayer.ESPMagic++;
+										break;
+									case 4:
+										mTrainPlayer.SummonMagic++;
+										break;
+									default:
+										mTrainPlayer.FistSkill++;
+										break;
+								}
+
+								ShowTrainSkillMenu();
+							}
+							else if (mMenuMode == MenuMode.ConfirmExitMap)
+							{
+								mMenuMode = MenuMode.None;
+
+								if (mMenuFocusID == 0)
+								{
+									if (mParty.Map == 6)
+									{
+										mParty.Map = 1;
+										mParty.XAxis = 19;
+										mParty.YAxis = 11;
+
+										await RefreshGame();
+									}
+									
+								}
+								else
+								{
+									AppendText("");
+									mParty.YAxis--;
+								}
+							}
 							//else if (mMenuMode == MenuMode.BattleCommand)
 							//{
 							//	mMenuMode = MenuMode.None;
@@ -4561,25 +4297,6 @@ namespace DarkUWP
 							//		AppendText(new string[] { "" });
 							//	}
 							//}
-							//else if (mMenuMode == MenuMode.ChooseGoldShield)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	var player = mPlayerList[mMenuFocusID];
-							//	player.Shield = 5;
-							//	player.ShiPower = 5;
-							//	player.AC = player.ShiPower + player.ArmPower;
-							//	if (player.Class == 1)
-							//		player.AC++;
-
-							//	if (player.AC > 10)
-							//		player.AC = 10;
-
-							//	AppendText(new string[] { $"[color={RGB.White}]{player.Name}(이)가 황금의 방패를 장착했다." });
-
-							//	UpdatePlayersStat();
-							//	mParty.Etc[31] |= (1 << 6);
-							//}
 							//else if (mMenuMode == MenuMode.SwapMember)
 							//{
 							//	mMenuMode = MenuMode.None;
@@ -4592,303 +4309,6 @@ namespace DarkUWP
 							//	DisplayPlayerInfo();
 
 							//	AppendText(new string[] { "" });
-							//}
-							//else if (mMenuMode == MenuMode.JoinPolaris)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(8);
-							//		player.Name = "폴라리스";
-							//		player.Class = 4;
-							//		player.Level[1] = 3;
-							//		player.Weapon = 4;
-							//		player.Shield = 1;
-							//		player.WeaPower = 10;
-							//		player.ShiPower = 1;
-							//		player.ArmPower = 2;
-							//		player.AC = 3;
-
-							//		JoinMember(player);
-
-							//		mMapLayer[36 + mMapWidth * 40] = 44;
-							//	}
-							//	else
-							//		ShowNoThanks();
-							//}
-							//else if (mMenuMode == MenuMode.JoinDraconian)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(61);
-							//		player.Class = 4;
-							//		player.Level[0] = 17;
-
-							//		JoinMember(player);
-
-							//		mParty.Etc[15] |= (1 << 1);
-							//	}
-							//	else
-							//		Talk(" 다시 생각해 보니 나는 당신들과 같이 싸울 운명이 아닌 것 같소.");
-							//}
-							//else if (mMenuMode == MenuMode.ChooseOedipusSpear)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	var player = mPlayerList[mMenuFocusID];
-							//	if (player.Class == 5)
-							//	{
-							//		AppendText(new string[] { "전투승은 이 무기가 필요없습니다." });
-							//	}
-							//	else
-							//	{
-							//		player.Shield = 3;
-							//		player.ShiPower = 12;
-
-							//		if (player.Class == 1)
-							//			player.WeaPower += (int)Math.Round(player.WeaPower * 0.5);
-
-							//		AppendText(new string[] { $"{player.Name}(이)가 오이디푸스의 창을 장착했다." });
-
-							//		mParty.Etc[32] |= (1 << 7);
-							//	}
-							//}
-							//else if (mMenuMode == MenuMode.JoinLoreHunter)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(38);
-							//		player.Name = "로어 헌터";
-							//		player.Class = 7;
-							//		player.Weapon = 5;
-							//		player.Shield = 2;
-							//		player.Armor = 1;
-							//		player.WeaPower = 15;
-							//		player.ShiPower = 2;
-							//		player.ArmPower = 2;
-							//		player.AC = 4;
-
-							//		JoinMember(player);
-
-							//		mMapLayer[39 + mMapWidth * 55] = 44;
-							//		mParty.Etc[37] |= (1 << 3);
-							//	}
-							//	else
-							//		ShowNoThanks();
-							//}
-							//else if (mMenuMode == MenuMode.JoinRigel)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(13);
-							//		player.Name = "리겔";
-							//		player.Class = 7;
-							//		player.Weapon = 4;
-							//		player.Shield = 1;
-							//		player.Armor = 1;
-							//		player.WeaPower = 10;
-							//		player.ShiPower = 1;
-							//		player.ArmPower = 2;
-							//		player.AC = 3;
-							//		player.HP = 1;
-
-							//		JoinMember(player);
-							//	}
-							//	else if (mMenuFocusID == 1)
-							//	{
-							//		Talk(" 일행은 그에게 치료 마법을 사용하여 상처를 모두 치료한 후 그가 이곳을 빠져나갈 수 있을 정도의 식량을 나누어 주었다." +
-							//		" 그러자 리겔이란 그 용사는 우리의 무기에 신의 축복을 내려주고는 자신의 길을 떠났다.");
-
-							//		if (mParty.Food > 4)
-							//			mParty.Food -= 5;
-							//		else
-							//			mParty.Food = 0;
-
-							//		mPlayerList[0].SP = 0;
-
-							//		foreach (var player in mPlayerList)
-							//		{
-							//			if (mRand.Next(20) < player.Luck && mRand.Next(20) < player.Luck)
-							//				player.WeaPower = (int)Math.Round(player.WeaPower * 1.2);
-							//		}
-
-							//		DisplayPlayerInfo();
-							//	}
-							//	else
-							//	{
-							//		AppendText(new string[] { "" });
-							//	}
-
-							//	mParty.Etc[30] |= 1 << 1;
-							//	mSpecialEvent = SpecialEventType.None;
-							//}
-							//else if (mMenuMode == MenuMode.ChooseGoldShield2)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	var player = mPlayerList[mMenuFocusID];
-							//	player.Shield = 5;
-							//	player.ShiPower = 5;
-							//	player.AC = player.ShiPower + player.ArmPower;
-
-							//	if (player.Class == 1)
-							//		player.AC++;
-
-							//	if (player.AC > 10)
-							//		player.AC = 10;
-
-							//	AppendText(new string[] { $"[color={RGB.White}]{player.Name}(이)가 황금의 방패를 장착했다.[/color]" });
-
-							//	DisplayPlayerInfo();
-
-							//	mParty.Etc[35] |= 1 << 2;
-							//}
-							//else if (mMenuMode == MenuMode.ChooseGoldArmor)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	var player = mPlayerList[mMenuFocusID];
-							//	player.Armor = 5;
-							//	player.ArmPower = 5;
-							//	player.AC = player.ShiPower + player.ArmPower;
-
-							//	if (player.Class == 1)
-							//		player.AC++;
-
-							//	if (player.AC > 10)
-							//		player.AC = 10;
-
-							//	AppendText(new string[] { $"[color={RGB.White}]{player.Name}(이)가 황금의 갑옷을 장착했다.[/color]" });
-
-							//	DisplayPlayerInfo();
-
-							//	mParty.Etc[35] |= 1 << 3;
-							//}
-							//else if (mMenuMode == MenuMode.JoinRedAntares)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(54);
-							//		player.Name = "레드 안타레스";
-							//		player.Class = 9;
-							//		player.Weapon = 0;
-							//		player.Shield = 0;
-							//		player.Armor = 0;
-							//		player.WeaPower = 0;
-							//		player.ShiPower = 0;
-							//		player.ArmPower = 0;
-							//		player.AC = 0;
-							//		player.HP = 0;
-							//		player.Resistance = 15;
-							//		player.Endurance = 10;
-
-							//		JoinMember(player);
-							//	}
-							//	else if (mMenuFocusID == 1)
-							//		ShowNoThanks();
-
-							//	mParty.Etc[37] |= 1 << 1;
-							//}
-							//else if (mMenuMode == MenuMode.JoinSpica)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	if (mMenuFocusID == 0)
-							//	{
-							//		var player = GetMemberFromEnemy(42);
-							//		player.Name = "스피카";
-							//		player.Gender = "female";
-							//		player.Class = 3;
-							//		player.Strength = 10;
-							//		player.Mentality = 17;
-							//		player.Concentration = 20;
-							//		player.Endurance = 9;
-							//		player.Resistance = 15;
-							//		player.Agility = 7;
-							//		player.Accuracy[0] = 8;
-							//		player.Accuracy[1] = 15;
-							//		player.Accuracy[2] = 20;
-							//		player.Luck = 10;
-							//		player.Poison = 0;
-							//		player.Unconscious = 0;
-							//		player.Dead = 0;
-							//		player.Level[0] = 11;
-							//		player.Level[1] = 6;
-							//		player.Level[2] = 11;
-							//		player.HP = player.Endurance * player.Level[0];
-							//		player.SP = player.Mentality * player.Level[1];
-							//		player.ESP = player.Concentration * player.Level[2];
-							//		player.AC = 3;
-							//		player.Weapon = 1;
-							//		player.Shield = 1;
-							//		player.Armor = 1;
-							//		player.WeaPower = 5;
-							//		player.ShiPower = 3;
-							//		player.ArmPower = 2;
-
-							//		JoinMember(player);
-							//	}
-							//	else if (mMenuFocusID == 1)
-							//		AppendText(new string[] { "" });
-
-							//	mParty.Etc[38] |= 1 << 1;
-							//}
-							//else if (mMenuMode == MenuMode.QnA)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	AppendText("");
-
-							//	for (var x = 22; x < 25; x++)
-							//		mMapLayer[x + mMapWidth * mParty.YAxis] = 44;
-
-							//	if ((mMenuFocusID == 0 && mQuestionID > 3) || (mMenuFocusID == 1 && mQuestionID < 4))
-							//	{
-							//		for (var y = 48; y < 52; y++)
-							//		{
-							//			mMapLayer[21 + mMapWidth * y] = 25;
-							//			mMapLayer[25 + mMapWidth * y] = 23;
-
-							//			for (var x = 22; x < 25; x++)
-							//				mMapLayer[x + mMapWidth * y] = 44;
-							//		}
-							//	}
-							//	else
-							//	{
-							//		mParty.Map = 4;
-							//		mParty.XAxis = 81;
-							//		mParty.YAxis = 16;
-
-							//		await RefreshGame();
-							//	}
-							//}
-							//else if (mMenuMode == MenuMode.ReadScroll)
-							//{
-							//	mMenuMode = MenuMode.None;
-
-							//	Talk(new string[] {
-							//							$"[color={RGB.White}] Durant l''estoille cheuelue apparente,[/color]",
-							//							" 머리를 푼 별이 나타날 때",
-							//							$"[color={RGB.White}] Les trois grand princes seront faits ennemies,[/color]",
-							//							" 거대한 세 왕자가 서로를 적대한다",
-							//							$"[color={RGB.White}] Frappez du ciel paix terre trembulente,[/color]",
-							//							" 평화는 하늘에서 당하고 대지는 요동한다",
-							//							$"[color={RGB.White}] En son haut auge de l''exaltation,[/color]",
-							//							" 그 찬미해야 할 높은 오류 속에서",
-							//							$"[color={RGB.White}] Neromancer sur le bord mis.[/color]",
-							//							" 네크로맨서는 해안으로 밀려나리라."
-							//						});
-
-							//	mSpecialEvent = SpecialEventType.ReadScroll;
 							//}
 							else if (mMenuMode == MenuMode.ChooseLoadGame || mMenuMode == MenuMode.ChooseGameOverLoadGame)
 							{
@@ -4963,6 +4383,9 @@ namespace DarkUWP
 								//							});
 								//}
 							}
+							else if (mMenuMode == MenuMode.JoinMadJoe) {
+								
+							}
 						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
@@ -5030,6 +4453,62 @@ namespace DarkUWP
 			mMapLayer[x + mMapWidth * y] = (byte)((mMapLayer[x + mMapWidth * y] & 0x80) | tile);
 		}
 
+		private void MovePlayer(int moveX, int moveY)
+		{
+			mParty.XAxis = moveX;
+			mParty.YAxis = moveY;
+
+			bool needUpdateStat = false;
+			foreach (var player in mPlayerList)
+			{
+				if (player.Poison > 0)
+					player.Poison++;
+
+				if (player.Poison > 10)
+				{
+					player.Poison = 1;
+					if (0 < player.Dead && player.Dead < 100)
+						player.Dead++;
+					else if (player.Unconscious > 0)
+					{
+						player.Unconscious++;
+						if (player.Unconscious > player.Endurance * player.Level)
+							player.Dead = 1;
+					}
+					else
+					{
+						player.HP--;
+						if (player.HP <= 0)
+							player.Unconscious = 1;
+					}
+
+					needUpdateStat = true;
+				}
+			}
+
+			if (needUpdateStat)
+			{
+				DisplayHP();
+				DisplayCondition();
+			}
+
+			//DetectGameOver();
+
+			if (mParty.Etc[4] > 0)
+				mParty.Etc[4]--;
+
+			//if (!(mMapLayer[moveX + mMapWidth * moveY] == 0 || (mPosition == PositionType.Den && mMapLayer[moveX + mMapWidth * moveY] == 52)) && mRand.Next(mEncounter * 20) == 0)
+			//{
+			//	EncounterEnemy();
+			//	mTriggeredDownEvent = true;
+			//}
+
+			if (mPosition == PositionType.Ground)
+				PlusTime(0, 2, 0);
+			else
+				PlusTime(0, 0, 5);
+		}
+
 
 		//		private void StartBattle(bool assualt = true)
 		//		{
@@ -5062,12 +4541,12 @@ namespace DarkUWP
 		//			}
 		//		}
 
-		//		private async Task RefreshGame()
-		//		{
-		//			AppendText(new string[] { "" });
-		//			await LoadMapData();
-		//			InitializeMap();
-		//		}
+		private async Task RefreshGame()
+		{
+			AppendText(new string[] { "" });
+			await LoadMapData();
+			InitializeMap();
+		}
 
 		//		private void ExecuteBattle()
 		//		{
@@ -6591,17 +6070,6 @@ namespace DarkUWP
 
 		//			ShowCharacterMenu(MenuMode.Hospital);
 		//		}
-		//		private void GoTrainingCenter()
-		//		{
-		//			AppendText(new string[] {
-		//						$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
-		//						$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰 것입니다.[/color]",
-		//						"",
-		//						$"[color={RGB.White}]누가 훈련을 받겠습니까 ?[/color]"
-		//					});
-
-		//			ShowCharacterMenu(MenuMode.TrainingCenter);
-		//		}
 
 		//		private void ShowPartyStatus()
 		//		{
@@ -6736,6 +6204,90 @@ namespace DarkUWP
 				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0) {
 					
 					InvokeAnimation(AnimationType.LordAhnCall);
+				}
+				else if (mParty.XAxis == 40 && mParty.YAxis == 78) {
+					if ((mParty.Etc[29] & (1 << 3)) == 0) {
+						mParty.Etc[29] |= 1 << 3;
+
+						InvokeAnimation(AnimationType.GetDefaultWeapon);
+					}
+				}
+				else if ((mParty.XAxis == 50 && mParty.YAxis == 11) || (mParty.XAxis == 51 && mParty.YAxis == 11)) {
+					if ((mParty.Etc[49] & (1 << 4)) > 0 || (mParty.Etc[49] & (1 << 5)) > 0) {
+						if ((mParty.Etc[49] & (1 << 4)) > 0) {
+							// 전투 시스템 미구현
+						}
+					}
+				}
+				else if (mParty.XAxis == 85 && mParty.YAxis == 47) {
+					AppendText(" 당신은 열쇠를 발견 했다.");
+					UpdateTileInfo(86, 47, 44);
+				}
+				else if (mParty.XAxis == 89 && mParty.YAxis == 37 && (mParty.Etc[30] & 1) == 0) {
+					AppendText(" 당신은 금화 2000 개를 발견했다.");
+					mParty.Gold += 2000;
+					mParty.Etc[30] |= 1;
+				}
+				else if (mParty.XAxis == 89 && mParty.YAxis == 40 && (mParty.Etc[30] & (1 << 1)) == 0) {
+					AppendText(" 당신은 100 개의 식량을 발견했다.");
+					if (mParty.Food + 100 < 256)
+						mParty.Food += 100;
+					else
+						mParty.Food = 255;
+
+					mParty.Etc[30] |= 1 << 1;
+				}
+				else if (mParty.XAxis == 89 && mParty.YAxis == 41 && (mParty.Etc[30] & (1 << 2)) == 0)
+				{
+					AppendText(" 당신은 금화 1000 개를 발견했다.");
+					mParty.Gold += 1000;
+
+					mParty.Etc[30] |= 1 << 2;
+				}
+				else if (mParty.XAxis == 89 && mParty.YAxis == 42 && (mParty.Etc[30] & (1 << 3)) == 0)
+				{
+					AppendText(" 당신은 금화 2500 개를 발견했다.");
+					mParty.Gold += 2500;
+
+					mParty.Etc[30] |= 1 << 3;
+				}
+				else if (mParty.XAxis == 89 && mParty.YAxis == 43 && (mParty.Etc[30] & (1 << 4)) == 0)
+				{
+					AppendText(" 당신은 금화 5000 개를 발견했다.");
+					mParty.Gold += 5000;
+
+					mParty.Etc[30] |= 1 << 4;
+				}
+				else if (mParty.XAxis == 81 && mParty.YAxis == 51 && (mParty.Etc[31] & 1) == 0)
+				{
+					AppendText(" 당신은 금화 5000 개를 발견했다.");
+					mParty.Gold += 5000;
+
+					mParty.Etc[31] |= 1;
+				}
+				else if (mParty.XAxis == 83 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 1)) == 0)
+				{
+					AppendText(" 당신은 금화 5000 개를 발견했다.");
+					mParty.Gold += 5000;
+
+					mParty.Etc[30] |= 1 << 1;
+				}
+				else if (mParty.XAxis == 88 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 2)) == 0)
+				{
+					AppendText(" 당신은 금화 5000 개를 발견했다.");
+					mParty.Gold += 5000;
+
+					mParty.Etc[30] |= 1 << 2;
+				}
+				else if (mParty.XAxis == 90 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 3)) == 0)
+				{
+					AppendText(" 당신은 금화 5000 개를 발견했다.");
+					mParty.Gold += 5000;
+
+					mParty.Etc[30] |= 1 << 3;
+				}
+				else if (mParty.YAxis == 94) {
+					ShowExitMenu();
 				}
 			}
 		}
@@ -7050,11 +6602,11 @@ namespace DarkUWP
 			}
 		}
 
-		private void ShowMenu(MenuMode menuMode, string[] menuItem)
+		private void ShowMenu(MenuMode menuMode, string[] menuItem, int focusID = 0)
 		{
 			mMenuMode = menuMode;
 			mMenuCount = menuItem.Length;
-			mMenuFocusID = 0;
+			mMenuFocusID = focusID;
 
 			for (var i = 0; i < mMenuList.Count; i++)
 			{
@@ -7062,6 +6614,11 @@ namespace DarkUWP
 				{
 					mMenuList[i].Text = menuItem[i];
 					mMenuList[i].Visibility = Visibility.Visible;
+
+					if (i == focusID)
+						mMenuList[i].Foreground = new SolidColorBrush(GetColor(RGB.White));
+					else
+						mMenuList[i].Foreground = new SolidColorBrush(GetColor(RGB.LightGray));
 				}
 				else
 					mMenuList[i].Visibility = Visibility.Collapsed;
@@ -7305,7 +6862,7 @@ namespace DarkUWP
 			{
 				AppendText("어떤 일을 원하십니까 ?");
 
-				ShowMenu(MenuMode.ClassTraining, new string[] {
+				ShowMenu(MenuMode.TrainingCenter, new string[] {
 					"전투사 계열의 기술을 습득",
 					"마법사 계열의 능력을 습득",
 					"전투사 계열의 계급을 바꿈",
@@ -7583,8 +7140,8 @@ namespace DarkUWP
 				}
 				else if (moveX == 71 && moveY == 72)
 					AppendText(" 나는 어릴적에  할아버지로 부터 지하 세계의 사람들에 대해 들은 적이 있는데  지금은 기억이 잘 나지 않는군요.");
-				else if (moveX == 40 && moveY == 13)
-					AppendText("' 당신이 이 세계를 네크로만서로 부터 구한 후에는 다른 대륙도 원래의 모습을 찾았습니다.");
+				else if (moveX == 50 && moveY == 13)
+					AppendText(" 당신이 이 세계를 네크로만서로 부터 구한 후에는 다른 대륙도 원래의 모습을 찾았습니다.");
 				else if (moveX == 89 && moveY == 58)
 				{
 					AppendText(new string[] {
@@ -7902,7 +7459,7 @@ namespace DarkUWP
 							UpdatePlayersStat();
 						}
 						else {
-							mParty.XAxis++;
+							MovePlayer(mParty.XAxis + 1, mParty.YAxis);
 							mFace = 2;
 
 							break;
@@ -7914,6 +7471,13 @@ namespace DarkUWP
 					for (var i = 1; i <= 59; i++) {
 						mAnimationFrame = i;
 						Task.Delay(5).Wait();
+					}
+				}
+				else if (mAnimationEvent == AnimationType.GetDefaultWeapon) {
+					for (var i = 0; i < 3; i++)
+					{
+						Task.Delay(500).Wait();
+						MovePlayer(mParty.XAxis - 1, mParty.YAxis);
 					}
 				}
 			});
@@ -7951,6 +7515,20 @@ namespace DarkUWP
 					mSpecialEvent = SpecialEventType.MeetLordAhn9;
 				else
 					mSpecialEvent = SpecialEventType.MeetLordAhn11;
+			}
+			else if (mAnimationEvent == AnimationType.GetDefaultWeapon) {
+				UpdateTileInfo(40, 78, 44);
+				AppendText(" 일행은 가장 기본적인 무기로  모두  무장을 하였다.");
+
+				foreach (var player in mPlayerList) {
+					if (player.Weapon == 0 && player.ClassType == ClassCategory.Sword && player.Class != 5) {
+						player.Weapon = 1;
+						player.WeaPower = 5;
+					}
+				}
+
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
 			}
 			else
 			{
@@ -8954,164 +8532,54 @@ namespace DarkUWP
 		//		}
 
 
-		//		private void ShowExitMenu()
-		//		{
-		//			AppendText(new string[] { $"[color={RGB.LightCyan}]여기서 나가기를 원합니까 ?[/color]" });
+		private void ShowExitMenu()
+		{
+			AppendText(new string[] { $"[color={RGB.LightCyan}]여기서 나가기를 원합니까?[/color]" });
 
-		//			ShowMenu(MenuMode.ConfirmExitMap, new string[] {
-		//			"예, 그렇습니다.",
-		//			"아니오, 원하지 않습니다."});
-		//		}
+			ShowMenu(MenuMode.ConfirmExitMap, new string[] {
+					"예, 그렇습니다.",
+					"아니오, 원하지 않습니다."});
+		}
 
-		//		private void ShowSign(int x, int y)
-		//		{
-		//			AppendText(new string[] { "푯말에 쓰여있기로 ...\r\n\r\n" });
+		private void ShowSign(int x, int y)
+		{
+			AppendText(new string[] { "푯말에 쓰여있기로 ...\r\n\r\n" });
 
-		//			if (mParty.Map == 2)
-		//			{
-		//				if (x == 30 && y == 43)
-		//					AppendText(new string[] { $"          [color={RGB.White}]와이번 가는길[/color]" }, true);
-		//				else if ((x == 28 && y == 49) || (x == 34 && y == 71))
-		//				{
+			if (mParty.Map == 6)
+			{
+				if (x == 50 && y == 83)
+				{
+					AppendText(new string[] { $"       [color={RGB.White}]여기는[/color] [color={RGB.LightCyan}]로어 성[/color]입니다",
+								$"         [color={RGB.White}]여러분을 환영합니다[/color]",
+								"",
+								"",
+								"",
+								$"               [color={RGB.LightMagenta}]로드 안[/color]" }, true);
+				}
+				else if (x == 23 && y == 30)
+				{
+					AppendText(new string[] { "",
+								$"             [color={RGB.White}]여기는 로어 주점[/color]",
+								$"       [color={RGB.White}]여러분 모두를 환영합니다!![/color]" }, true);
+				}
+				else if ((x == 50 && y == 17) || (x == 51 && y == 17))
+				{
+					AppendText(new string[] { "",
+							$"          [color={RGB.White}]로어 왕립 죄수 수용소[/color]" }, true);
+				}
+				else if (x == 76 && y == 47)
+					AppendText($"          [color={RGB.White}]여기는 로어 은행입니다[/color]", true);
+				else if (x == 76 && y == 41)
+					AppendText($"[color={RGB.White}]       허락 없이 들어가지 마시오!![/color]", true);
+				else if (x == 76 && y == 35)
+					AppendText($"[color={RGB.White}]           마법사 베텔규스의 집[/color]", true);
+				else if (x == 76 && y == 29)
+					AppendText($"[color={RGB.White}]   지금 집 주인인 저 레굴루스는 여행을 떠나고 없습니다. 저에게 용건이 있으신 분은 북쪽 해안으로 오십시오.[/color]", true);
+				else if (x == 76 && y == 23)
+					AppendText($"[color={RGB.White}]         여기는 헤라클레스의 집[/color]", true);
 
-		//					AppendText(new string[] { $"  [color={RGB.White}]북쪽 :[/color]",
-		//						$"       [color={RGB.White}]배리안트 피플즈 가는 길[/color]",
-		//						$"  [color={RGB.White}]남쪽 :[/color]",
-		//						$"       [color={RGB.White}]가이아 테라 가는 길[/color]" }, true);
-		//				}
-		//				else if (x == 43 && y == 76)
-		//				{
-		//					AppendText(new string[] { $"  [color={RGB.White}]북동쪽 :[/color]",
-		//						$"       [color={RGB.White}]퀘이크 가는 길[/color]",
-		//						$"  [color={RGB.White}]남서쪽 :[/color]",
-		//						$"       [color={RGB.White}]가이아 테라 가는 길[/color]" }, true);
-		//				}
-		//			}
-		//			else if (mParty.Map == 6)
-		//			{
-		//				if (x == 50 && y == 83)
-		//				{
-		//					AppendText(new string[] { $"       [color={RGB.White}]여기는[/color] '[color={RGB.LightCyan}]로어 성[/color]'",
-		//						$"         [color={RGB.White}]여러분을 환영합니다[/color]",
-		//						"",
-		//						$"[color={RGB.LightMagenta}]로드 안[/color]" }, true);
-		//				}
-		//				else if (x == 23 && y == 30)
-		//				{
-		//					AppendText(new string[] { "",
-		//						$"             [color={RGB.White}]여기는 로어 주점[/color]",
-		//						$"       [color={RGB.White}]여러분 모두를 환영합니다 !![/color]" }, true);
-		//				}
-		//				else if ((x == 50 && y == 17) || (x == 51 && y == 17))
-		//					AppendText(new string[] { "",
-		//					$"          [color={RGB.White}]로어 왕립 죄수 수용소[/color]" }, true);
-		//			}
-		//			else if (mParty.Map == 7)
-		//			{
-		//				if (x == 38 && y == 67)
-		//				{
-		//					AppendText(new string[] { $"        여기는 '[color={RGB.LightCyan}]라스트디치[/color]'성",
-		//						"         여러분을 환영합니다" }, true);
-		//				}
-		//				else if (x == 38 && y == 7)
-		//					AppendText(new string[] { $"       [color={RGB.LightRed}]여기는 피라미드의 입구[/color]" }, true);
-		//				else if (x == 53 && y == 8)
-		//					AppendText(new string[] { $"     [color={RGB.LightGreen}]여기는 지하 출입구의 입구[/color]" }, true);
-		//			}
-		//			else if (mParty.Map == 8)
-		//			{
-		//				if (x == 38 && y == 66)
-		//				{
-		//					AppendText(new string[] { $"      [color={RGB.White}]여기는 '[/color][color={RGB.LightCyan}]배리안트 피플즈[/color][color={RGB.White}]'성[/color]",
-		//					$"    [color={RGB.White}]우리의 미덕은 굽히지 않는 용기[/color]",
-		//					$"   [color={RGB.White}]우리는 어떤 악에도 굽히지 않는다[/color]" }, true);
-		//				}
-		//				else
-		//					AppendText(new string[] { $"     [color={RGB.LightRed}]여기는 이블 씰의 입구[/color]" }, true);
-		//			}
-		//			else if (mParty.Map == 9)
-		//			{
-		//				if (x == 23 && y == 25)
-		//					AppendText(new string[] { $"       [color={RGB.White}]여기는 국왕의 보물 창고[/color]" }, true);
-		//				else
-		//				{
-		//					AppendText(new string[] { $"         [color={RGB.White}]여기는 '[/color][color={RGB.LightCyan}]가이아 테라[/color][color={RGB.White}]'성[/color]",
-		//						$"          [color={RGB.White}]여러분을 환영합니다[/color]" }, true);
-		//				}
-		//			}
-		//			else if (mParty.Map == 12)
-		//			{
-		//				if (x == 23 && y == 67)
-		//					AppendText(new string[] { $"               [color={RGB.White}]X 는 7[/color]" }, true);
-		//				else if (x == 26 && y == 67)
-		//					AppendText(new string[] { $"               [color={RGB.White}]Y 는 9[/color]" }, true);
-		//				else if (x == 24 && y == 62)
-		//					AppendText(new string[] { $"       [color={RGB.White}]바른 문의 번호는 X + Y[/color]" }, true);
-		//				else if (y == 55)
-		//				{
-		//					var j = ((x + 1) - 6) / 7 + 12;
-		//					AppendText(new string[] { $"           [color={RGB.White}]문의 번호는 '[/color][color={RGB.LightCyan}]{j}[/color][color={RGB.White}]'[/color]" }, true);
-		//				}
-		//				else if (x == 25 && y == 41)
-		//					AppendText(new string[] { $"            [color={RGB.White}]Z 는 2 * Y + X[/color]" }, true);
-		//				else if (x == 25 && y == 32)
-		//				{
-		//					AppendText(new string[] { $"        [color={RGB.White}]패스코드 x 패스코드 는 Z 라면[/color]",
-		//						"",
-		//						$"            [color={RGB.White}]패스코드는 무엇인가 ?[/color]" }, true);
-		//				}
-		//				else if (y == 28)
-		//				{
-		//					var j = ((x + 1) - 3) / 5 + 2;
-		//					AppendText(new string[] { $"           [color={RGB.White}]패스코드는 '[/color][color={RGB.LightCyan}]{j}[/color][color={RGB.White}]'[/color]" }, true);
-		//				}
-		//			}
-		//			else if (mParty.Map == 15)
-		//			{
-		//				if (x == 25 && y == 62)
-		//					AppendText(new string[] { $"            [color={RGB.White}]길의 마지막[/color]" }, true);
-		//				else if (x == 21 && y == 14)
-		//					AppendText(new string[] { $"     [color={RGB.White}](12,15) 로 공간이동 하시오[/color]" }, true);
-		//				else if (x == 10 && y == 13)
-		//					AppendText(new string[] { $"     [color={RGB.White}](13,7) 로 공간이동 하시오[/color]" }, true);
-		//				else if (x == 26 && y == 13)
-		//					AppendText(new string[] { $"   [color={RGB.White}]황금의 갑옷은 (45,19) 에 숨겨져있음[/color]" }, true);
-
-		//			}
-		//			else if (mParty.Map == 17)
-		//			{
-		//				if (x == 67 && y == 46)
-		//					AppendText(new string[] { $"    [color={RGB.White}]하! 하! 하! 너는 우리에게 속았다[/color]" }, true);
-		//				else if (x == 57 && y == 52)
-		//				{
-		//					AppendText(new string[] { $"      [color={RGB.LightGreen}]이 게임을 만든 사람[/color]",
-		//						$"  [color={RGB.White}]: 동아 대학교 전기 공학과[/color]",
-		//						$"        [color={RGB.White}]92 학번  안 영기[/color]" }, true);
-		//				}
-		//				else if (x == 50 && y == 29)
-		//				{
-		//					AppendText(new string[] { "", $"       [color={RGB.White}]오른쪽 : 히드라의 보물창고[/color]",
-		//						$"         [color={RGB.White}]왼  쪽 : 히드라가 있는 방[/color]" }, true);
-		//				}
-		//				else if (x == 65 && y == 12)
-		//					AppendText($"     [color={RGB.White}]일찌감치 이곳 탐험을 포기해라[/color]", true);
-		//				else if (x == 8 && y == 27)
-		//					AppendText($"[color={RGB.White}]         위쪽이 진짜 보물창고임[/color]", true);
-		//			}
-		//			else if (mParty.Map == 19)
-		//			{
-		//				AppendText(new string[] { $"       [color={RGB.White}]이 길을 통과하고자 하는 사람은[/color]",
-		//					$"     [color={RGB.White}]양측의 늪 속에 있는 레버를 당기시오[/color]" }, true);
-		//			}
-		//			else if (mParty.Map == 23)
-		//			{
-		//				AppendText(new string[] { $"      [color={RGB.White}](25,27)에 있는 레버를 움직이면[/color]",
-		//				$"          [color={RGB.White}]성을 볼 수 있을 것이오.[/color]",
-		//				"",
-		//				$"             [color={RGB.LightGreen}]제작자 안 영기 씀[/color]" }, true);
-		//				mMapLayer[24 + mMapWidth * 26] = 52;
-		//			}
-		//		}
+			}
+		}
 
 		private void PlusTime(int hour, int min, int sec) {
 			mParty.Hour += hour;
@@ -9251,7 +8719,11 @@ namespace DarkUWP
 			None,
 			Game,
 			GameOptions,
-			ClassTraining,
+			TrainingCenter,
+			ChooseTrainSkillMember,
+			ChooseTrainSkill,
+			ChooseTrainMagicMember,
+			ChooseTrainMagic,
 			Hospital,
 			ChooseWeaponType,
 			ChooseFoodAmount,
@@ -9261,7 +8733,8 @@ namespace DarkUWP
 			ChooseSaveGame,
 			ChooseLoadGame,
 			ChooseGameOverLoadGame,
-			BattleLose
+			BattleLose,
+			ConfirmExitMap
 		}
 
 		private enum SpinnerType
@@ -9357,11 +8830,13 @@ namespace DarkUWP
 			SleepLoreCastle,
 			TalkLordAhn,
 			TalkLordAhn2,
+			GetDefaultWeapon
 		}
 
 		private enum SpecialEventType
 		{
 			None,
+			CantTrain,
 			LeaveSoldier,
 			ViewGeniusKieLetter,
 			ViewGeniusKieLetter2,
