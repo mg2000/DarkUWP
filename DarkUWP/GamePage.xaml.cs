@@ -84,6 +84,9 @@ namespace DarkUWP
 
 		private Lore mTrainPlayer;
 		private List<Tuple<int, int>> mTrainSkillList = new List<Tuple<int, int>>();
+		private List<string> mChangableClassList = new List<string>();
+		private List<int> mChangableClassIDList = new List<int>();
+
 
 		private SpecialEventType mSpecialEvent = SpecialEventType.None;
 
@@ -754,70 +757,156 @@ namespace DarkUWP
 					ShowMenu(MenuMode.ChooseTrainMagic, trainSkillMenuList.ToArray());
 				}
 
-				//				int GetWeaponPrice(int weapon)
-				//				{
-				//					switch (weapon)
-				//					{
-				//						case 1:
-				//							return 500;
-				//						case 2:
-				//							return 1500;
-				//						case 3:
-				//							return 3000;
-				//						case 4:
-				//							return 5000;
-				//						case 5:
-				//							return 10000;
-				//						case 6:
-				//							return 30000;
-				//						case 7:
-				//							return 60000;
-				//						case 8:
-				//							return 80000;
-				//						case 9:
-				//							return 100000;
-				//						default:
-				//							return 0;
-				//					}
-				//				}
+				void ShowChooseTrainSkillMemberMenu()
+				{
+					AppendText($"[color={RGB.White}]누가 훈련을 받겠습니까?[/color]");
+					ShowCharacterMenu(MenuMode.ChooseTrainSkillMember);
+				}
 
-				//				int GetShieldPrice(int shield)
-				//				{
-				//					switch (shield)
-				//					{
-				//						case 1:
-				//							return 1000;
-				//						case 2:
-				//							return 5000;
-				//						case 3:
-				//							return 25000;
-				//						case 4:
-				//							return 80000;
-				//						case 5:
-				//							return 100000;
-				//						default:
-				//							return 0;
-				//					}
-				//				}
+				void ShowChooseTrainMagicMemberMenu()
+				{
+					AppendText($"[color={RGB.White}]누가 가르침을 받겠습니까?[/color]");
+					ShowCharacterMenu(MenuMode.ChooseTrainMagicMember);
+				}
 
-				//				int GetArmorPrice(int shield)
-				//				{
-				//					switch (shield)
-				//					{
-				//						case 1:
-				//							return 5000;
-				//						case 2:
-				//							return 25000;
-				//						case 3:
-				//							return 80000;
-				//						case 4:
-				//							return 100000;
-				//						case 5:
-				//							return 200000;
-				//						default:
-				//							return 0;
-				//					}
-				//				}
+				bool EnoughMoneyToChangeJob() {
+					if (mParty.Gold < 10000)
+					{
+						Talk(" 그러나 일행에게는  직업을 바꿀때 드는 비용인 금 10000 개가 없습니다.");
+						return false;
+					}
+					else
+						return true;
+				}
+
+				void ShowChooseChangeSwordMemberMenu()
+				{
+					if (EnoughMoneyToChangeJob())
+					{
+						AppendText($"[color={RGB.White}]누가 전투사 계열의 직업을 바꾸겠습니까?[/color]");
+						ShowCharacterMenu(MenuMode.ChooseChangeSwordMember);
+					}
+				}
+
+				void ShowChooseChangeMagicMemberMenu()
+				{
+					if (EnoughMoneyToChangeJob())
+					{
+
+						AppendText($"[color={RGB.White}]누가 마법사 계열의 직업을 바꾸겠습니까?[/color]");
+						ShowCharacterMenu(MenuMode.ChooseChangeMagicMember);
+					}
+				}
+
+				bool IsUsableWeapon(Lore player, int weapon) {
+					if (player.ClassType == ClassCategory.Magic)
+						return false;
+					else {
+						if ((player.Class == 1 || player.Class == 2 || player.Class == 3 || player.Class == 6 || player.Class == 7) && 1 <= weapon && weapon <= 7)
+							return true;
+						else if ((player.Class == 1 || player.Class == 2 || player.Class == 4) && 8 <= weapon && weapon <= 14)
+							return true;
+						else if ((player.Class == 1 || player.Class == 2 || player.Class == 4 || player.Class == 6 || player.Class == 7) && 15 <= weapon && weapon <= 21)
+							return true;
+						else if ((player.Class == 1 || player.Class == 4 || player.Class == 6 || player.Class == 7) && 22 <= weapon && weapon <= 28)
+							return true;
+						else
+							return false;
+					}
+				}
+
+				bool IsUsableShield(Lore player)
+				{
+					if (player.ClassType == ClassCategory.Magic)
+						return false;
+					else
+					{
+						if (player.Class == 1 || player.Class == 2 || player.Class == 3 || player.Class == 7)
+							return true;
+						else
+							return false;
+					}
+				}
+
+				bool IsUsableArmor(Lore player, int armor)
+				{
+					if (player.ClassType == ClassCategory.Magic && armor == 1)
+						return true;
+					else if (player.ClassType == ClassCategory.Sword && ((1 <= armor && armor <= 10) || armor == 255))
+						return true;
+					else
+						return false;
+				}
+
+				void UpdateItem(Lore player)
+				{
+					var weaponData = new int[,,] {
+						{
+							{ 15, 15, 15, 15, 15, 25, 15 },
+							{ 30, 30, 25, 25, 25, 25, 30 },
+							{ 35, 40, 35, 35, 35, 35, 40 },
+							{ 45, 48, 50, 40, 40, 40, 40 },
+							{ 50, 55, 60, 50, 50, 50, 55 },
+							{ 60, 70, 70, 60, 60, 60, 65 },
+							{ 70, 70, 80, 70, 70, 70, 70 }
+						},
+						{
+							{ 15, 15, 15, 15, 15, 15, 15 },
+							{ 35, 30, 30, 37, 30, 30, 30 },
+							{ 35, 40, 35, 35, 35, 35, 35 },
+							{ 52, 45, 45, 45, 45, 45, 45 },
+							{ 60, 60, 55, 55, 55, 55, 55 },
+							{ 75, 70, 70, 70, 70, 70, 70 },
+							{ 80, 85, 80, 80, 80, 80, 80 }
+						},
+						{
+							{ 10, 10, 10, 25, 10, 20, 10 },
+							{ 35, 40, 35, 35, 35, 35, 40 },
+							{ 35, 30, 30, 35, 30, 30, 30 },
+							{ 40, 40, 40, 45, 40, 40, 40 },
+							{ 60, 60, 60, 60, 60, 60, 60 },
+							{ 80, 80, 80, 80, 80, 80, 80 },
+							{ 90, 90, 90, 90, 90, 90, 90 }
+						},
+						{
+							{ 10, 10, 10, 15, 10, 15, 10 },
+							{ 10, 10, 10, 10, 10, 20, 10 },
+							{ 20, 20, 20, 27, 20, 20, 20 },
+							{ 35, 35, 35, 40, 35, 38, 35 },
+							{ 45, 45, 45, 55, 45, 45, 45 },
+							{ 55, 55, 55, 65, 55, 55, 55 },
+							{ 70, 70, 70, 85, 70, 70, 70 }
+						}
+					};
+
+					if (IsUsableWeapon(player, player.Weapon))
+					{
+						if (player.Weapon > 0)
+						{
+							int sort = (player.Weapon - 1) / 7;
+							int order = player.Weapon % 7;
+							player.WeaPower = weaponData[sort, order, player.Class - 1];
+						}
+						else
+							player.WeaPower = 5;
+					}
+
+					if (IsUsableShield(player))
+						player.ShiPower = player.Shield;
+					else
+						player.ShiPower = 0;
+
+					if (IsUsableArmor(player, player.Armor))
+					{
+						player.ArmPower = player.Armor;
+						if (player.Armor == 255)
+							player.ArmPower = 20;
+					}
+					else
+						player.ArmPower = 0;
+
+					player.AC = player.PotentialAC + player.ArmPower;
+				}
 
 				//				void ShowHealType()
 				//				{
@@ -1368,6 +1457,24 @@ namespace DarkUWP
 							mSpecialEvent = SpecialEventType.None;
 							ShowTrainSkillMenu();
 						}
+						else if (mSpecialEvent == SpecialEventType.TrainSkill) {
+							mSpecialEvent = SpecialEventType.None;
+							ShowChooseTrainSkillMemberMenu();
+						}
+						else if (mSpecialEvent == SpecialEventType.TrainMagic)
+						{
+							mSpecialEvent = SpecialEventType.None;
+							ShowChooseTrainMagicMemberMenu();
+						}
+						else if (mSpecialEvent == SpecialEventType.ChangeJobForSword) {
+							mSpecialEvent = SpecialEventType.None;
+							ShowChooseChangeSwordMemberMenu();
+						}
+						else if (mSpecialEvent == SpecialEventType.ChangeJobForMagic)
+						{
+							mSpecialEvent = SpecialEventType.None;
+							ShowChooseChangeMagicMemberMenu();
+						}
 						else if (mSpecialEvent == SpecialEventType.LeaveSoldier)
 						{
 							InvokeAnimation(AnimationType.LeaveSoldier);
@@ -1852,6 +1959,43 @@ namespace DarkUWP
 				//				}
 				else if (mMenuMode != MenuMode.None)
 				{
+					void ShowTrainMessage() {
+						Talk(new string[] {
+							$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰것입니다.[/color]",
+						});
+
+						mSpecialEvent = SpecialEventType.TrainSkill;
+					}
+
+					void ShowTrainMagicMessage() {
+						Talk(new string[] {
+							$"[color={RGB.White}] 여기는 마법 학교 입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 충분한 실전 경험을 쌓았다면, 당신은 더욱 능숙하게 마법을 다룰것입니다.[/color]",
+						});
+
+						mSpecialEvent = SpecialEventType.TrainMagic;
+					}
+
+					void ShowChangeJobForSwordMessage() {
+						Talk(new string[] {
+							$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 원한다면 새로운 계급으로 바꿀 수가 있습니다.[/color]",
+						});
+
+						mSpecialEvent = SpecialEventType.ChangeJobForSword;
+					}
+
+					void ShowChangeJobForMagicMessage()
+					{
+						Talk(new string[] {
+							$"[color={RGB.White}] 여기는 마법 학교 입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 원한다면 새로운 계급으로 바꿀 수가 있습니다.[/color]",
+						});
+
+						mSpecialEvent = SpecialEventType.ChangeJobForMagic;
+					}
+
 					//					void ShowCastOneMagicMenu()
 					//					{
 					//						string[] menuStr;
@@ -2024,7 +2168,11 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
 					{
-						if (mMenuMode != MenuMode.None && mMenuMode != MenuMode.BattleLose && mMenuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
+						if (mMenuMode == MenuMode.ChooseTrainSkill)
+							ShowChooseTrainSkillMemberMenu();
+						else if (mMenuMode == MenuMode.ChooseTrainMagic)
+							ShowChooseTrainMagicMemberMenu();
+						else if (mMenuMode != MenuMode.None && mMenuMode != MenuMode.BattleLose && mMenuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
 						{
 							AppendText("");
 							HideMenu();
@@ -2063,7 +2211,8 @@ namespace DarkUWP
 							//		mMenuMode == MenuMode.JoinSkeleton)
 							//		return;
 							//else 
-							if (mMenuMode == MenuMode.ConfirmExitMap) {
+							if (mMenuMode == MenuMode.ConfirmExitMap)
+							{
 								mParty.YAxis--;
 
 								mMenuMode = MenuMode.None;
@@ -3466,46 +3615,37 @@ namespace DarkUWP
 							//		}
 							//	}
 							//}
-							else if (mMenuMode == MenuMode.TrainingCenter) {
+							else if (mMenuMode == MenuMode.TrainingCenter)
+							{
 								mMenuMode = MenuMode.None;
 
-								if (mMenuFocusID == 0) {
-									AppendText(new string[] {
-										$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
-										$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰것입니다.[/color]",
-										"",
-										$"[color={RGB.White}]누가 훈련을 받겠습니까?[/color]"
-									});
-
-									ShowCharacterMenu(MenuMode.ChooseTrainSkillMember);
-								}
-								else if (mMenuFocusID == 1) {
-									mMenuMode = MenuMode.None;
-
-									AppendText(new string[] {
-										$"[color={RGB.White}] 여기는 마법 학교 입니다.[/color]",
-										$"[color={RGB.White}] 만약 당신이 충분한 실전 경험을 쌓았다면, 당신은 더욱 능숙하게 마법을 다룰것입니다.[/color]",
-										"",
-										$"[color={RGB.White}]누가 가르침을 받겠습니까?[/color]"
-									});
-
-									ShowCharacterMenu(MenuMode.ChooseTrainMagicMember);
-								}
+								if (mMenuFocusID == 0)
+									ShowTrainMessage();
+								else if (mMenuFocusID == 1)
+									ShowTrainMagicMessage();
+								else if (mMenuFocusID == 2)
+									ShowChangeJobForSwordMessage();
+								else if (mMenuFocusID == 3)
+									ShowChangeJobForMagicMessage();
 							}
-							else if (mMenuMode == MenuMode.ChooseTrainSkillMember) {
+							else if (mMenuMode == MenuMode.ChooseTrainSkillMember)
+							{
 								mMenuMode = MenuMode.None;
 
 								mTrainPlayer = mPlayerList[mMenuFocusID];
 
-								if (mTrainPlayer.ClassType != ClassCategory.Sword) {
+								if (mTrainPlayer.ClassType != ClassCategory.Sword)
+								{
 									AppendText(" 당신은 전투사 계열이 아닙니다.");
 									return;
 								}
 
 								var readyToLevelUp = true;
-								for (var i = 0; i < 6; i++) {
+								for (var i = 0; i < 6; i++)
+								{
 									int skill;
-									switch (i) {
+									switch (i)
+									{
 										case 0:
 											skill = mTrainPlayer.SwordSkill;
 											break;
@@ -3524,18 +3664,21 @@ namespace DarkUWP
 										default:
 											skill = mTrainPlayer.FistSkill;
 											break;
-											
+
 									}
 
-									if (swordEnableClass[mTrainPlayer.Class - 1, i] > 0) {
-										if (skill < swordEnableClass[mTrainPlayer.Class - 1, i]) {
+									if (swordEnableClass[mTrainPlayer.Class - 1, i] > 0)
+									{
+										if (skill < swordEnableClass[mTrainPlayer.Class - 1, i])
+										{
 											readyToLevelUp = false;
 											break;
 										}
 									}
 								}
 
-								if (readyToLevelUp) {
+								if (readyToLevelUp)
+								{
 									AppendText(" 당신은 모든 과정을 수료했으므로 모든 경험치를 레벨로 바꾸겠습니다.");
 
 									mTrainPlayer.PotentialExperience += mTrainPlayer.Experience;
@@ -3546,11 +3689,13 @@ namespace DarkUWP
 
 								ShowTrainSkillMenu();
 							}
-							else if (mMenuMode == MenuMode.ChooseTrainSkill) {
+							else if (mMenuMode == MenuMode.ChooseTrainSkill)
+							{
 								mMenuMode = MenuMode.None;
 
 								int skill;
-								switch (mTrainSkillList[mMenuFocusID].Item1) {
+								switch (mTrainSkillList[mMenuFocusID].Item1)
+								{
 									case 0:
 										skill = mTrainPlayer.SwordSkill;
 										break;
@@ -3571,7 +3716,8 @@ namespace DarkUWP
 										break;
 								}
 
-								if (skill >= mTrainSkillList[mMenuFocusID].Item2) {
+								if (skill >= mTrainSkillList[mMenuFocusID].Item2)
+								{
 									Talk("이 분야는 더 배울 것이 없습니다");
 									mSpecialEvent = SpecialEventType.CantTrain;
 
@@ -3580,7 +3726,8 @@ namespace DarkUWP
 
 								var needExp = 15 * skill * skill;
 
-								if (needExp > mTrainPlayer.Experience) {
+								if (needExp > mTrainPlayer.Experience)
+								{
 									Talk("아직 경험치가 모자랍니다");
 									mSpecialEvent = SpecialEventType.CantTrain;
 
@@ -3761,12 +3908,84 @@ namespace DarkUWP
 
 										await RefreshGame();
 									}
-									
+
 								}
 								else
 								{
 									AppendText("");
 									mParty.YAxis--;
+								}
+							}
+							else if (mMenuMode == MenuMode.ChooseChangeSwordMember)
+							{
+								mMenuMode = MenuMode.None;
+
+								mTrainPlayer = mPlayerList[mMenuFocusID];
+
+								mChangableClassList.Clear();
+								mChangableClassIDList.Clear();
+
+								var swordEnableClassMin = new int[,] {
+									{  10,  10,  10,  10,  10,   0 },
+									{  10,  10,   5,   0,  20,   0 },
+									{  40,   0,   0,   0,   0,   0 },
+									{   0,   5,   5,  40,   0,   0 },
+									{   0,   0,   0,   0,   0,  40 },
+									{  10,   0,   0,  10,   0,  20 },
+									{  25,   0,   5,   0,  20,  10 }
+								};
+
+								for (var i = 0; i < swordEnableClass.GetLength(0); i++)
+								{
+									var changable = true;
+
+									if (swordEnableClassMin[i, 0] > mTrainPlayer.SwordSkill)
+										changable = false;
+
+									if (swordEnableClassMin[i, 1] > mTrainPlayer.AxeSkill)
+										changable = false;
+
+									if (swordEnableClassMin[i, 2] > mTrainPlayer.SpearSkill)
+										changable = false;
+
+									if (swordEnableClassMin[i, 3] > mTrainPlayer.BowSkill)
+										changable = false;
+
+									if (swordEnableClassMin[i, 4] > mTrainPlayer.ShieldSkill)
+										changable = false;
+
+									if (swordEnableClassMin[i, 5] > mTrainPlayer.FistSkill)
+										changable = false;
+
+									if (changable)
+									{
+										mChangableClassIDList.Add(i + 1);
+										mChangableClassList.Add(Common.SwordClass[i]);
+									}
+								}
+
+								AppendText(new string[] { 
+									$"[color={RGB.LightRed}]당신이 바뀌고 싶은 계급을 고르시오.[/color]",
+									$"[color={RGB.White}]비용 : 금 10000 개[/color]"
+								});
+
+								ShowMenu(MenuMode.ChooseSwordJob, mChangableClassList.ToArray());
+							}
+							else if (mMenuMode == MenuMode.ChooseSwordJob)
+							{
+								mMenuMode = MenuMode.None;
+
+								if (mTrainPlayer.Class != mChangableClassIDList[mMenuFocusID]) {
+									mTrainPlayer.Class = mChangableClassIDList[mMenuFocusID];
+
+									AppendText($"[color={RGB.LightGreen}]{mTrainPlayer.NameJosa} 이제 {mTrainPlayer.ClassStr} 계급이 되었다.");
+
+									if (mTrainPlayer.Class < 7)
+										mTrainPlayer.SP = 0;
+
+									mParty.Gold -= 10000;
+									UpdateItem(mTrainPlayer);
+									DisplaySP();
 								}
 							}
 							//else if (mMenuMode == MenuMode.BattleCommand)
@@ -4383,8 +4602,9 @@ namespace DarkUWP
 								//							});
 								//}
 							}
-							else if (mMenuMode == MenuMode.JoinMadJoe) {
-								
+							else if (mMenuMode == MenuMode.JoinMadJoe)
+							{
+
 							}
 						}
 					}
@@ -6547,6 +6767,8 @@ namespace DarkUWP
 
 		private void ShowCharacterMenu(MenuMode menuMode)
 		{
+			AppendText($"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]", true);
+
 			var menuStr = new string[mPlayerList.Count];
 			for (var i = 0; i < mPlayerList.Count; i++)
 				menuStr[i] = mPlayerList[i].Name;
@@ -8724,6 +8946,9 @@ namespace DarkUWP
 			ChooseTrainSkill,
 			ChooseTrainMagicMember,
 			ChooseTrainMagic,
+			ChooseChangeSwordMember,
+			ChooseChangeMagicMember,
+			ChooseSwordJob,
 			Hospital,
 			ChooseWeaponType,
 			ChooseFoodAmount,
@@ -8837,6 +9062,10 @@ namespace DarkUWP
 		{
 			None,
 			CantTrain,
+			TrainSkill,
+			TrainMagic,
+			ChangeJobForSword,
+			ChangeJobForMagic,
 			LeaveSoldier,
 			ViewGeniusKieLetter,
 			ViewGeniusKieLetter2,

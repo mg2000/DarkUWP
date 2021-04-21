@@ -8,49 +8,14 @@ namespace DarkUWP
 {
 	class Common
 	{
+		public static string[] SwordClass = new string[] { "투사", "기사", "검사", "사냥꾼", "전투승", "암살자", "전사", "불확실함" };
+		public static string[] MagicClass = new string[] { "메이지", "컨져러", "주술사", "위저드", "강령술사", "대마법사", "타임워커", "불확실함" };
+
 		public static string GetClass(ClassCategory category, int playerClass) {
-			if (category == ClassCategory.Sword) {
-				switch (playerClass)
-				{
-					case 1:
-						return "투  사";
-					case 2:
-						return "기  사";
-					case 3:
-						return "검  사";
-					case 4:
-						return "사냥꾼";
-					case 5:
-						return "전투승";
-					case 6:
-						return "암살자";
-					case 7:
-						return "전  사";
-					default:
-						return "불확실함";
-				};
-			}
-			else {
-				switch (playerClass)
-				{
-					case 1:
-						return "메이지";
-					case 2:
-						return "컨져러";
-					case 3:
-						return "주술사";
-					case 4:
-						return "위저드";
-					case 5:
-						return "강령술사";
-					case 6:
-						return "대마법사";
-					case 7:
-						return "타임워커";
-					default:
-						return "불확실함";
-				};
-			}
+			if (category == ClassCategory.Sword)
+				return SwordClass[playerClass - 1];
+			else
+				return MagicClass[playerClass - 1];
 		}
 	}
 }
