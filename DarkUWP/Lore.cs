@@ -222,6 +222,17 @@ namespace DarkUWP
 			}
 		}
 
+		public string NameSubjectJosa
+		{
+			get
+			{
+				if ((Name[Name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
+					return Name + "는";
+				else
+					return Name + "은";
+			}
+		}
+
 		public ClassCategory ClassType {
 			get;
 			set;
@@ -406,6 +417,17 @@ namespace DarkUWP
 				PotentialExperience = mLevelUpExerpience[Level - 1];
 			else
 				PotentialExperience = 0;
+		}
+
+		public bool IsAvailable
+		{
+			get
+			{
+				if (Unconscious == 0 && Dead == 0 && HP > 0)
+					return true;
+				else
+					return false;
+			}
 		}
 	}
 
