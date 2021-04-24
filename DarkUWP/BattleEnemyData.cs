@@ -134,5 +134,14 @@ namespace DarkUWP
 			get;
 			set;
 		}
+
+		public string NameJosa {
+			get {
+				if ((Name[Name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
+					return Name + "를";
+				else
+					return Name + "을";
+			}
+		}
 	}
 }

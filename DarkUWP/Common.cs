@@ -51,12 +51,7 @@ namespace DarkUWP
 		}
 
 		public static string GetWeaponNameJosa(int weapon) {
-			var weaponName = GetWeaponName(weapon);
-
-			if ((weaponName[weaponName.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
-				return weaponName;
-			else
-				return weaponName + "으";
+			return AddJosa(GetWeaponName(weapon));
 		}
 
 		public static string GetMagicName(int playerClass, int magic) {
@@ -64,6 +59,27 @@ namespace DarkUWP
 				return mMagicNames[playerClass, magic - 1];
 			else
 				return "알수 없는 마법";
+		}
+
+		public static string GetMagicNameJosa(int playerClass, int magic) {
+			return AddJosa(GetMagicName(playerClass, magic));
+		}
+
+		public static string GetMagicNameMokjukJosa(int playerClass, int magic) {
+			var magicName = GetMagicName(playerClass, magic);
+
+			if ((magicName[magicName.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
+				return magicName + "를";
+			else
+				return magicName + "을";
+		}
+
+
+		private static string AddJosa(string name) {
+			if ((name[name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
+				return name;
+			else
+				return name + "으";
 		}
 	}
 }

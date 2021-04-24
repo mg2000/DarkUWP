@@ -83,5 +83,10 @@ namespace DarkUWP
 			get;
 			set;
 		}
+
+		public bool Cruel {
+			get;
+			set;
+		}
 	}
 }

@@ -113,7 +113,7 @@ namespace DarkUWP
 		private int mBattleToolID = 0;
 		private int mEnemyFocusID = 0;
 		private Queue<BattleCommand> mBattleCommandQueue = new Queue<BattleCommand>();
-		//private Queue<BattleEnemyData> mBatteEnemyQueue = new Queue<BattleEnemyData>();
+		private Queue<BattleEnemyData> mBatteEnemyQueue = new Queue<BattleEnemyData>();
 		private BattleTurn mBattleTurn = BattleTurn.None;
 
 		private bool mLoading = true;
@@ -145,6 +145,8 @@ namespace DarkUWP
 
 		private readonly List<string> mCureResult = new List<string>();
 		private readonly List<string> mRemainDialog = new List<string>();
+
+		private WizardEye mWizardEye = new WizardEye();
 
 		public GamePage()
 		{
@@ -1331,7 +1333,7 @@ namespace DarkUWP
 				//					Talk(resultPart.ToArray());
 				//				}
 
-				if (mLoading || (mAnimationEvent != AnimationType.None && ContinueText.Visibility != Visibility.Visible && menuMode == MenuMode.None) || mTriggeredDownEvent)
+				if (mLoading || (mAnimationEvent != AnimationType.None && ContinueText.Visibility != Visibility.Visible && mMenuMode == MenuMode.None) || mTriggeredDownEvent)
 				{
 					mTriggeredDownEvent = false;
 					return;
@@ -2269,6 +2271,190 @@ namespace DarkUWP
 									AppendText(result);
 									break;
 							}
+						}
+
+						void ShowWizardEye() {
+							var xInit = 0;
+							var yInit = 0;
+							var width = 0;
+							var height = 0;
+							
+							if (mMapWidth <= 100) {
+								xInit = 0;
+								width = mMapWidth;
+							}
+
+							if (mMapHeight <= 80) {
+								yInit = 0;
+								Height = mMapHeight;
+							}
+
+							if (width == 0 || height == 0) {
+								xInit = mParty.XAxis - 50;
+								yInit = mParty.YAxis - 50;
+
+								if (xInit <= 0)
+								{
+									xInit = 0;
+
+									if (mMapWidth > 100)
+										width = 100;
+									else
+										width = mMapWidth;
+								}
+
+								if (yInit <= 0)
+								{
+									yInit = 0;
+
+									if (mMapHeight > 100)
+										height = 100;
+									else
+										height = mMapHeight;
+								}
+
+
+								if (xInit + 50 > mMapWidth)
+								{
+									if (mMapWidth > 100) {
+										xInit = mMapWidth - 100;
+										width = 100;
+									}
+									else {
+										xInit = 0;
+										width = mMapWidth;
+									}
+								}
+
+								if (yInit + 50 > mMapHeight)
+								{
+									if (mMapWidth > 100)
+									{
+										yInit = mMapHeight - 100;
+										height = 100;
+									}
+									else
+									{
+										yInit = 0;
+										height = mMapHeight;
+									}
+								}
+							}
+
+							lock(mWizardEye) {
+								mWizardEye.Set(width, height);
+
+								var offset = 0;
+
+								const int BLACK = 0;
+								const int BLUE = 1;
+								const int GREEN = 2;
+								const int CYAN = 3;
+								const int RED = 4;
+								const int MAGENTA = 5;
+								const int BROWN = 6;
+								const int LIGHTGRAY = 7;
+								const int DARKGRAY = 8;
+								const int LIGHTBLUE = 9;
+								const int LIGHTGREEN = 10;
+								const int LIGHTCYAN = 11;
+								const int LIGHTRED = 12;
+								const int LIGHTMAGENTA = 13;
+								const int YELLOW = 14;
+								const int WHITE = 15;
+
+								for (var y = yInit; y < yInit + height; y++) {
+									for (var x = xInit; x < xInit + width; x++) {
+										var tileInfo = GetTileInfo(x, y);
+										if (mPosition == PositionType.Town)  {
+											if ((1 <= tileInfo && tileInfo <= 18) || tileInfo == 20 || tileInfo == 21)
+												mWizardEye.Data[offset] = WHITE;
+											else if (tileInfo == 22)
+												mWizardEye.Data[offset] = LIGHTGREEN;
+											else if (tileInfo == 23)
+												mWizardEye.Data[offset] = LIGHTCYAN;
+											else if (tileInfo == 24)
+												mWizardEye.Data[offset] = LIGHTBLUE;
+											else if (tileInfo == 25)
+												mWizardEye.Data[offset] = CYAN;
+											else if (tileInfo == 26)
+												mWizardEye.Data[offset] = LIGHTRED;
+											else if (tileInfo == 0 || tileInfo == 19 || (27 <= tileInfo && tileInfo <= 47))
+												mWizardEye.Data[offset] = BLACK;
+											else
+												mWizardEye.Data[offset] = LIGHTMAGENTA;
+										}
+										else if (mPosition == PositionType.Ground) {
+											if (1 <= tileInfo && tileInfo <= 20)
+												mWizardEye.Data[offset] = WHITE;
+											else if (tileInfo == 22)
+												mWizardEye.Data[offset] = LIGHTCYAN;
+											else if (tileInfo == 48)
+												mWizardEye.Data[offset] = LIGHTBLUE;
+											else if (tileInfo == 23 || tileInfo == 49)
+												mWizardEye.Data[offset] = CYAN;
+											else if (tileInfo == 50)
+												mWizardEye.Data[offset] = LIGHTRED;
+											else if (tileInfo == 0) {
+												if (mParty.Map == 4)
+													mWizardEye.Data[offset] = WHITE;
+												else
+													mWizardEye.Data[offset] = BLACK;
+											}
+											else if (24 <= tileInfo && tileInfo <= 47)
+												mWizardEye.Data[offset] = BLACK;
+											else
+												mWizardEye.Data[offset] = LIGHTGREEN;
+
+										}
+										else if (mPosition == PositionType.Den) {
+											if ((1 <= tileInfo && tileInfo <= 40) || tileInfo == 51)
+												mWizardEye.Data[offset] = WHITE;
+											else if (tileInfo == 54)
+												mWizardEye.Data[offset] = LIGHTGREEN;
+											else if (tileInfo == 53)
+												mWizardEye.Data[offset] = LIGHTCYAN;
+											else if (tileInfo == 48)
+												mWizardEye.Data[offset] = LIGHTBLUE;
+											else if (tileInfo == 49)
+												mWizardEye.Data[offset] = CYAN;
+											else if (tileInfo == 50)
+												mWizardEye.Data[offset] = LIGHTRED;
+											else if (tileInfo == 52)
+											{
+												if (mParty.Map == 2)
+													mWizardEye.Data[offset] = LIGHTBLUE;
+												else
+													mWizardEye.Data[offset] = BLACK;
+											}
+											else if (tileInfo == 0 || (41 <= tileInfo && tileInfo <= 47))
+												mWizardEye.Data[offset] = BLACK;
+											else
+												mWizardEye.Data[offset] = LIGHTMAGENTA;
+										}
+										else if (mPosition == PositionType.Keep) {
+											if ((1 <= tileInfo && tileInfo <= 39) || tileInfo == 51)
+												mWizardEye.Data[offset] = WHITE;
+											else if (tileInfo == 54)
+												mWizardEye.Data[offset] = LIGHTGREEN;
+											else if (tileInfo == 53)
+												mWizardEye.Data[offset] = LIGHTCYAN;
+											else if (tileInfo == 48)
+												mWizardEye.Data[offset] = LIGHTBLUE;
+											else if (tileInfo == 49)
+												mWizardEye.Data[offset] = CYAN;
+											else if (tileInfo == 50)
+												mWizardEye.Data[offset] = LIGHTRED;
+											else if (tileInfo == 0 || tileInfo == 52 || (40 <= tileInfo && tileInfo <= 47))
+												mWizardEye.Data[offset] = BLACK;
+											else
+												mWizardEye.Data[offset] = LIGHTMAGENTA;
+										}
+									}
+								}
+							}
+
+							MapCanvas.Visibility = Visibility.Visible;
 						}
 
 						//void ShowCureSpellMenu(Lore player, int whomID, MenuMode applyCureMode, MenuMode applyAllCureMode)
@@ -4059,10 +4245,7 @@ namespace DarkUWP
 							else if (mMenuFocusID == 7) {
 								UseItem(mPlayerList[mBattlePlayerID], true);
 							}
-							else if (mMenuFocusID == 8) {
-
-							}
-							else if (mMenuFocusID == 6)
+							else if (mMenuFocusID == 8)
 							{
 								if (mBattlePlayerID == 0)
 								{
@@ -4074,43 +4257,18 @@ namespace DarkUWP
 											var tool = 0;
 											var enemyID = 0;
 
-											if (player.Class == 0 || player.Class == 1 || (4 <= player.Class && player.Class <= 8) || player.Class == 10)
-											{
+											if (player.ClassType == ClassCategory.Sword) {
 												method = 0;
 												tool = 0;
 											}
-											else if (player.Class == 2 || player.Class == 9)
-											{
-												method = 1;
-												if (0 <= player.Level[1] && player.Level[1] <= 1)
-													tool = 1;
-												else if (2 <= player.Level[1] && player.Level[1] <= 3)
-													tool = 2;
-												else if (4 <= player.Level[1] && player.Level[1] <= 7)
-													tool = 3;
-												else if (8 <= player.Level[1] && player.Level[1] <= 11)
-													tool = 4;
-												else if (12 <= player.Level[1] && player.Level[1] <= 15)
-													tool = 5;
-												else
-													tool = 6;
-
-												tool = (int)Math.Round((double)tool / 2);
-												if (tool == 0)
-													tool = 1;
-											}
-											else if (player.Class == 3)
-											{
-												method = 5;
-												tool = 4;
-
-												for (var i = 0; i < mEncounterEnemyList.Count; i++)
-												{
-													if (!mEncounterEnemyList[i].Unconscious && !mEncounterEnemyList[i].Dead)
-													{
-														enemyID = i;
-														break;
-													}
+											else if (player.ClassType == ClassCategory.Magic) {
+												if (player.AttackMagic > 9 || player.SP > player.AttackMagic) {
+													method = 1;
+													tool = 0;
+												}
+												else {
+													method = 0;
+													tool = 0;
 												}
 											}
 
@@ -4771,11 +4929,14 @@ namespace DarkUWP
 
 								DisplayHP();
 							}
-							else if (itemID == 1) {
+							else if (itemID == 1)
+							{
 								if (mItemUsePlayer.ClassType != ClassCategory.Magic && mItemUsePlayer.Class != 7)
 									ShowApplyItemResult(menuMode, $" {mItemUsePlayer.NameSubjectJosa} 마법사 계열이 아닙니다.");
-								else {
-									if (mItemUsePlayer.ClassType == ClassCategory.Magic) {
+								else
+								{
+									if (mItemUsePlayer.ClassType == ClassCategory.Magic)
+									{
 										mItemUsePlayer.SP += 1_000;
 										if (mItemUsePlayer.SP > mItemUsePlayer.Mentality * mItemUsePlayer.Level * 10)
 										{
@@ -4800,32 +4961,39 @@ namespace DarkUWP
 									DisplaySP();
 								}
 							}
-							else if (itemID == 2) {
+							else if (itemID == 2)
+							{
 								if (mItemUsePlayer.Poison == 0)
 									ShowApplyItemResult(menuMode, $" {mItemUsePlayer.NameSubjectJosa} 중독 되지 않았습니다.");
-								else {
+								else
+								{
 									mItemUsePlayer.Poison = 0;
 									ShowApplyItemResult(menuMode, $" [color={RGB.White}]{mItemUsePlayer.NameSubjectJosa} 해독 되었습니다.[/color]");
 								}
 
 								DisplayCondition();
 							}
-							else if (itemID == 3 || itemID == 4) {
+							else if (itemID == 3 || itemID == 4)
+							{
 								mUseItemID = itemID;
 								if (menuMode == MenuMode.BattleChooseItem)
 									ShowCharacterMenu(MenuMode.BattleUseItemWhom);
 								else
 									ShowCharacterMenu(MenuMode.UseItemWhom);
 							}
-							else if (itemID == 5) {
-								int GetBonusPoint(int seed) {
+							else if (itemID == 5)
+							{
+								int GetBonusPoint(int seed)
+								{
 									return mRand.Next(seed * 2 + 1) - seed;
 								}
-								
+
 								var ability = 0;
 								var livePlayerCount = 0;
-								foreach (var player in mPlayerList) {
-									if (player.IsAvailable) {
+								foreach (var player in mPlayerList)
+								{
+									if (player.IsAvailable)
+									{
 										livePlayerCount++;
 										ability += player.Level;
 									}
@@ -4834,7 +5002,8 @@ namespace DarkUWP
 								ability /= (int)Math.Round((double)ability * 5 / livePlayerCount);
 
 								var summonPlayer = new Lore();
-								switch (mRand.Next(8)) {
+								switch (mRand.Next(8))
+								{
 									case 0:
 										summonPlayer.Name = "밴더스내치";
 										summonPlayer.Endurance = 15 + GetBonusPoint(5);
@@ -4950,6 +5119,29 @@ namespace DarkUWP
 								DisplayPlayerInfo();
 
 								ShowApplyItemResult(menuMode, $" [color={RGB.White}]{summonPlayer.NameSubjectJosa} 다른 차원으로 부터 소환 되어졌습니다.[/color]");
+							}
+							else if (itemID == 6)
+							{
+								if (mParty.Etc[0] + 10 > 255)
+									mParty.Etc[0] = 255;
+								else
+									mParty.Etc[0] = 255;
+
+								UpdateView();
+
+								ShowApplyItemResult(menuMode, $"[color={RGB.White}] 일행은 대형 횃불을 켰습니다.[/color]");
+							}
+							else if (itemID == 7)
+								ShowWizardEye();
+							else if (itemID == 8) {
+								mParty.Etc[1] = 255;
+								mParty.Etc[2] = 255;
+								mParty.Etc[3] = 255;
+
+								ShowApplyItemResult(menuMode, $"[color={RGB.White}] 일행은 모두 비행 부츠를 신었습니다.[/color]");
+							}
+							else if (itemID == 9) {
+								// 공간 이동 구현 필요
 							}
 						}
 						else if (menuMode == MenuMode.BattleUseItemWhom || menuMode == MenuMode.UseItemWhom) {
@@ -5274,7 +5466,7 @@ namespace DarkUWP
 					{
 						for (var i = 0; i < mEncounterEnemyList.Count; i++)
 						{
-							if (!mEncounterEnemyList[i].Dead)
+							if (!mEncounterEnemyList[i].Dead && (mParty.Cruel)
 								return false;
 						};
 
@@ -5295,31 +5487,63 @@ namespace DarkUWP
 
 				void GetBattleStatus(BattleEnemyData enemy)
 				{
+					var player = battleCommand.Player;
+
 					switch (battleCommand.Method)
 					{
 						case 0:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 {Common.GetWeaponName(battleCommand.Player.Weapon)}{Common.GetWeaponJosaStr(battleCommand.Player.Weapon)}로 {enemy.Name}(을)를 공격했다[/color]");
+							int messageType;
+							if (player.Weapon - 1 >= 0)
+								messageType = (player.Weapon - 1) / 7;
+							else
+								messageType = 0;
+
+
+							switch (messageType)
+							{
+								case 1:
+									battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 내려쳤다[/color]");
+									break;
+								case 2:
+									battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 찔렀다[/color]");
+									break;
+								case 3:
+									if (mParty.Arrow > 0)
+										battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 쏘았다[/color]");
+									else
+										battleResult.Add($"[color={RGB.White}]화살이 다 떨어져 공격할 수 없었다[/color]");
+									break;
+								default:
+									battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 공격했다[/color]");
+									break;
+							}
 							break;
 						case 1:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 '{Common.GetMagicStr(battleCommand.Tool)}'{Common.GetMagicJosaStr(battleCommand.Tool)}로 {enemy.Name}(을)를 공격했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameJosa(0, battleCommand.Tool)}로 {enemy.Name}에게 공격했다[/color]");
 							break;
 						case 2:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 '{Common.GetMagicStr(battleCommand.Tool + 6)}'{Common.GetMagicJosaStr(battleCommand.Tool + 6)}로 {enemy.Name}(을)를 공격했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameJosa(1, battleCommand.Tool)}로 {enemy.Name}에게 공격했다[/color]");
 							break;
 						case 3:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 {enemy.Name}에게 {Common.GetMagicStr(battleCommand.Tool + 12)}{Common.GetMagicJosaStr(battleCommand.Tool + 12)}로 특수 공격을 했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {enemy.Name}에게 {Common.GetMagicNameJosa(4, battleCommand.Tool)}로 특수 공격을 했다[/color]");
 							break;
 						case 4:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 {mPlayerList[battleCommand.FriendID].Name}에게 '{Common.GetMagicStr(battleCommand.Tool + 18)}'{Common.GetMagicJosaStr(battleCommand.Tool + 18)} 사용했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {mPlayerList[battleCommand.FriendID].Name}에게 {Common.GetMagicNameMokjukJosa(3, battleCommand.Tool)} 사용했다[/color]");
 							break;
 						case 5:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 {enemy.Name}에게 '{Common.GetMagicStr(battleCommand.Tool + 41)}'{Common.GetMagicMokjukStr(battleCommand.Tool + 40)} 사용했다[/color]");
+							if (enemy == null)
+								battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} 모든 적에게 {Common.GetMagicNameMokjukJosa(5, battleCommand.Tool)} 사용했다[/color]");
+							else
+								battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {enemy.Name}에게 {Common.GetMagicNameMokjukJosa(5, battleCommand.Tool)} 사용했다[/color]");
 							break;
 						case 6:
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameMokjukJosa(6, battleCommand.Tool)} 사용했다[/color]");
+							break;
+						case 7:
 							battleResult.Add($"[color={RGB.White}]일행은 도망을 시도했다[/color]");
 							break;
 						default:
-							battleResult.Add($"[color={RGB.White}]{battleCommand.Player.Name}(은)는 잠시 주저했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.Name}(은)는 잠시 주저했다[/color]");
 							break;
 					}
 				}
@@ -5356,6 +5580,9 @@ namespace DarkUWP
 						return;
 
 					GetBattleStatus(enemy);
+
+					var player = battleCommand.Player;
+
 
 					if (enemy.Unconscious)
 					{
@@ -5430,6 +5657,10 @@ namespace DarkUWP
 						return;
 
 					GetBattleStatus(enemy);
+
+					var player = battleCommand.Player;
+
+					battleResult.Add($"[color={RGB.White}]{Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 공격했다[/color]");
 
 					if (enemy.Unconscious)
 					{
@@ -9506,6 +9737,34 @@ namespace DarkUWP
 				mUnconscious.Text = "";
 				mDead.Text = "";
 			}
+		}
+
+		private class WizardEye {
+			public void Set(int width, int height) {
+				Data = new byte[width * height];
+				Width = width;
+				Height = height;
+			}
+
+			public byte[] Data {
+				get;
+				private set;
+			}
+
+			public int Width {
+				get;
+				private set;
+			}
+
+			public int Height {
+				get;
+				private set;
+			}
+		}
+
+		private void MapCanvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
+		{
+
 		}
 	}
 }
