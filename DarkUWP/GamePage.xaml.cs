@@ -6332,13 +6332,13 @@ namespace DarkUWP
 							liveEnemyCount++;
 					}
 
-					if (enemy.SpecialCastLevel > 0 && enemy.ENumber == 0)
+					if (enemy.SpecialCastLevel > 0 && enemy.ENumber > 0)
 					{
 						if (liveEnemyCount < (mRand.Next(3) + 2) && mRand.Next(3) == 0)
 						{
 							var newEnemy = JoinEnemy(enemy.ENumber + mRand.Next(4) - 20);
 							DisplayEnemy();
-							battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {newEnemy.Name}(을)를 생성시켰다[/color]");
+							battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {newEnemy.NameJosa} 생성시켰다[/color]");
 						}
 
 						if (enemy.SpecialCastLevel > 1)
@@ -6358,7 +6358,7 @@ namespace DarkUWP
 								DisplayPlayerInfo();
 								DisplayEnemy();
 
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {turnEnemy.Name}(을)를 자기편으로 끌어들였다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {turnEnemy.NameJosa} 자기편으로 끌어들였다[/color]");
 							}
 						}
 
@@ -6373,10 +6373,10 @@ namespace DarkUWP
 									if (mRand.Next(60) > player.Agility)
 										battleResult.Add($"죽음의 공격은 실패했다");
 									else if (mRand.Next(20) < player.Luck)
-										battleResult.Add($"그러나, {player.Name}(은)는 죽음의 공격을 피했다");
+										battleResult.Add($"그러나, {player.NameSubjectJosa} 죽음의 공격을 피했다");
 									else
 									{
-										battleResult.Add($"[color={RGB.Red}]{player.Name}(은)는 죽었다 !![/color]");
+										battleResult.Add($"[color={RGB.Red}]{player.NameSubjectJosa} 죽었다!![/color]");
 
 										if (player.Dead == 0)
 										{
@@ -6536,21 +6536,20 @@ namespace DarkUWP
 
 							var destPlayer = normalList[mRand.Next(normalList.Count)];
 
-							var attackPoint = enemy.Strength * enemy.Level * (mRand.Next(10) + 1) / 10;
-
-							if (mRand.Next(50) < destPlayer.Resistance)
-							{
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}(을)를 공격했다[/color]");
-								battleResult.Add($"그러나, {destPlayer.Name}(은)는 적의 공격을 저지했다");
-								return;
+							if (destPlayer.ClassType == ClassCategory.Sword && destPlayer.Shield > 0) {
+								if (mRand.Next(550) < destPlayer.ShieldSkill * destPlayer.ShiPower) {
+									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {destPlayer.NameJosa} 공격했다[/color]");
+									battleResult.Add($"그러나, {destPlayer.NameSubjectJosa} 방패로 적의 공격을 저지했다");
+									return;
+								}
 							}
 
-							attackPoint -= destPlayer.AC * destPlayer.Level[0] * (mRand.Next(10) + 1) / 10;
+							var attackPoint = enemy.Strength * enemy.Level * (mRand.Next(10) + 1) / 5 - (destPlayer.AC * destPlayer.Level * (mRand.Next(10) + 1) / 10);
 
 							if (attackPoint <= 0)
 							{
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}(을)를 공격했다[/color]");
-								battleResult.Add($"그러나, {destPlayer.Name}(은)는 적의 공격을 방어했다");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {destPlayer.NameJosa} 공격했다[/color]");
+								battleResult.Add($"그러나, {destPlayer.NameSubjectJosa} 적의 공격을 방어했다");
 								return;
 							}
 
@@ -6563,11 +6562,11 @@ namespace DarkUWP
 							if (destPlayer.HP > 0)
 								destPlayer.HP -= attackPoint;
 
-							battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}에게 공격 받았다[/color]");
-							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.Name}(은)는[/color] [color={RGB.LightMagenta}]{attackPoint}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
+							battleResult.Add($"[color={RGB.LightMagenta}]{destPlayer.NameSubjectJosa} {enemy.Name}에게 공격받았다[/color]");
+							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{attackPoint}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 						}
 
-						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0 || enemy.CastLevel == 0)
+						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0)
 						{
 							EnemyAttack();
 						}
@@ -6581,11 +6580,17 @@ namespace DarkUWP
 									return;
 								}
 
+								if (mRand.Next(50) < player.Resistance)
+								{
+									battleResult.Add($"그러나, {player.NameSubjectJosa} 적의 마법을 저지했다");
+									return;
+								}
+
 								castPower -= mRand.Next(castPower / 2);
-								castPower -= player.AC * player.Level[0] * (mRand.Next(10) + 1) / 10;
+								castPower -= player.AC * player.Level * (mRand.Next(10) + 1) / 10;
 								if (castPower <= 0)
 								{
-									battleResult.Add($"그러나, {player.Name}(은)는 적의 마법을 막아냈다");
+									battleResult.Add($"그러나, {player.NameSubjectJosa} 적의 마법을 막아냈다");
 									return;
 								}
 
@@ -6598,10 +6603,10 @@ namespace DarkUWP
 								if (player.HP > 0)
 									player.HP -= castPower;
 
-								battleResult.Add($"[color={RGB.Magenta}]{player.Name}(은)는[/color] [color={RGB.LightMagenta}]{castPower}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
+								battleResult.Add($"[color={RGB.Magenta}]{player.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{castPower}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 							}
 
-							void CastAttckOne(Lore player)
+							void CastAttackOne(Lore player)
 							{
 								string castName;
 								int castPower;
@@ -6622,12 +6627,12 @@ namespace DarkUWP
 								}
 								else if (11 <= enemy.Mentality && enemy.Mentality <= 14)
 								{
-									castName = "고통";
+									castName = "혹한";
 									castPower = 6;
 								}
 								else if (15 <= enemy.Mentality && enemy.Mentality <= 18)
 								{
-									castName = "고통";
+									castName = "화염";
 									castPower = 7;
 								}
 								else
@@ -6637,7 +6642,7 @@ namespace DarkUWP
 								}
 
 								castPower *= enemy.Level;
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {player.Name}에게 '{castName}'마법을 사용했다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {player.Name}에게 {castName}마법을 사용했다[/color]");
 
 								CastAttack(castPower, player);
 							}
@@ -6673,7 +6678,7 @@ namespace DarkUWP
 								}
 
 								castPower *= enemy.Level;
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 일행 모두에게 '{castName}'마법을 사용했다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} 일행 모두에게 {castName}마법을 사용했다[/color]");
 
 								foreach (var player in destPlayerList)
 									CastAttack(castPower, player);
@@ -6682,9 +6687,9 @@ namespace DarkUWP
 							void CureEnemy(BattleEnemyData whomEnemy, int curePoint)
 							{
 								if (enemy == whomEnemy)
-									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 자신을 치료했다[/color]");
+									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} 자신을 치료했다[/color]");
 								else
-									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {whomEnemy.Name}(을)를 치료했다[/color]");
+									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {whomEnemy.NameMokjukJosa} 치료했다[/color]");
 
 								if (whomEnemy.Dead)
 									whomEnemy.Dead = false;
@@ -6697,16 +6702,16 @@ namespace DarkUWP
 								else
 								{
 									whomEnemy.HP += curePoint;
-									if (whomEnemy.HP > whomEnemy.Endurance * whomEnemy.Level)
-										whomEnemy.HP = whomEnemy.Endurance * whomEnemy.Level;
+									if (whomEnemy.HP > whomEnemy.Endurance * whomEnemy.Level * 10)
+										whomEnemy.HP = whomEnemy.Endurance * whomEnemy.Level * 10;
 								}
 							}
 
 							void CastHighLevel(List<Lore> destPlayerList)
 							{
-								if ((enemy.HP < enemy.Endurance * enemy.Level / 3) && mRand.Next(3) == 0)
+								if ((enemy.HP < enemy.Endurance * enemy.Level * 4) && mRand.Next(3) == 0)
 								{
-									CureEnemy(enemy, enemy.Level * enemy.Mentality / 4);
+									CureEnemy(enemy, enemy.Level * enemy.Mentality * 3);
 									return;
 								}
 
@@ -6728,9 +6733,9 @@ namespace DarkUWP
 								{
 									foreach (var player in mPlayerList)
 									{
-										battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {player.Name}의 갑옷파괴를 시도했다[/color]");
+										battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {player.Name}의 갑옷파괴를 시도했다[/color]");
 										if (player.Luck > mRand.Next(21))
-											battleResult.Add($"그러나, {enemy.Name}(은)는 성공하지 못했다");
+											battleResult.Add($"그러나, {enemy.NameSubjectJosa} 성공하지 못했다");
 										else
 										{
 											battleResult.Add($"[color={RGB.Magenta}]{player.Name}의 갑옷은 파괴되었다[/color]");
@@ -6750,15 +6755,15 @@ namespace DarkUWP
 									foreach (var enemyOne in mEncounterEnemyList)
 									{
 										totalCurrentHP += enemyOne.HP;
-										totalFullHP += enemyOne.Endurance * enemyOne.Level;
+										totalFullHP += enemyOne.Endurance * enemyOne.Level * 10;
 									}
 
 									totalFullHP /= 3;
 
-									if (mEncounterEnemyList.Count > 2 && totalCurrentHP < totalFullHP && mRand.Next(3) == 0)
+									if (mEncounterEnemyList.Count > 2 && totalCurrentHP < totalFullHP && mRand.Next(3) != 0)
 									{
 										foreach (var enemyOne in mEncounterEnemyList)
-											CureEnemy(enemyOne, enemy.Level * enemy.Mentality / 6);
+											CureEnemy(enemyOne, enemy.Level * enemy.Mentality * 2);
 									}
 									else if (mRand.Next(destPlayerList.Count) < 2)
 									{
@@ -6770,7 +6775,7 @@ namespace DarkUWP
 												weakestPlayer = player;
 										}
 
-										CastAttckOne(weakestPlayer);
+										CastAttackOne(weakestPlayer);
 									}
 									else
 										CastAttackAll(destPlayerList);
@@ -6790,32 +6795,32 @@ namespace DarkUWP
 
 							if (enemy.CastLevel == 1)
 							{
-								CastAttckOne(destPlayer);
+								CastAttackOne(destPlayer);
 							}
 							else if (enemy.CastLevel == 2)
 							{
-								CastAttckOne(destPlayer);
+								CastAttackOne(destPlayer);
 							}
 							else if (enemy.CastLevel == 3)
 							{
 								if (mRand.Next(normalList.Count) < 2)
-									CastAttckOne(destPlayer);
+									CastAttackOne(destPlayer);
 								else
 									CastAttackAll(normalList);
 							}
 							else if (enemy.CastLevel == 4)
 							{
-								if ((enemy.HP < enemy.Endurance * enemy.Level / 3) && mRand.Next(2) == 0)
-									CureEnemy(enemy, enemy.Level * enemy.Mentality / 4);
+								if ((enemy.HP < enemy.Endurance * enemy.Level * 3) && mRand.Next(2) == 0)
+									CureEnemy(enemy, enemy.Level * enemy.Mentality * 3);
 								else if (mRand.Next(normalList.Count) < 2)
-									CastAttckOne(destPlayer);
+									CastAttackOne(destPlayer);
 								else
 									CastAttackAll(normalList);
 							}
 							else if (enemy.CastLevel == 5)
 							{
-								if ((enemy.HP < enemy.Endurance * enemy.Level / 3) && mRand.Next(3) == 0)
-									CureEnemy(enemy, enemy.Level * enemy.Mentality / 4);
+								if ((enemy.HP < enemy.Endurance * enemy.Level * 3) && mRand.Next(3) == 0)
+									CureEnemy(enemy, enemy.Level * enemy.Mentality * 3);
 								else if (mRand.Next(normalList.Count) < 2)
 								{
 									var totalCurrentHP = 0;
@@ -6824,7 +6829,7 @@ namespace DarkUWP
 									foreach (var enemyOne in mEncounterEnemyList)
 									{
 										totalCurrentHP += enemyOne.HP;
-										totalFullHP += enemyOne.Endurance * enemyOne.Level;
+										totalFullHP += enemyOne.Endurance * enemyOne.Level * 10;
 									}
 
 									totalFullHP /= 3;
@@ -6832,7 +6837,7 @@ namespace DarkUWP
 									if (mEncounterEnemyList.Count > 2 && totalCurrentHP < totalFullHP && mRand.Next(2) == 0)
 									{
 										foreach (var enemyOne in mEncounterEnemyList)
-											CureEnemy(enemyOne, enemy.Level * enemy.Mentality / 6);
+											CureEnemy(enemyOne, enemy.Level * enemy.Mentality * 2);
 									}
 									else
 									{
@@ -6844,7 +6849,7 @@ namespace DarkUWP
 												weakestPlayer = player;
 										}
 
-										CastAttckOne(weakestPlayer);
+										CastAttackOne(weakestPlayer);
 									}
 								}
 								else
@@ -9142,28 +9147,33 @@ namespace DarkUWP
 			return enemy;
 		}
 
-		//		private BattleEnemyData TurnMind(Lore player)
-		//		{
-		//			var enemy = new BattleEnemyData(1, new EnemyData()
-		//			{
-		//				Name = player.Name,
-		//				Strength = player.Strength,
-		//				Mentality = player.Mentality,
-		//				Endurance = player.Endurance,
-		//				Resistance = player.Resistance,
-		//				Agility = player.Agility,
-		//				Accuracy = new int[] { player.Accuracy[0], player.Accuracy[1] },
-		//				AC = player.AC,
-		//				Special = player.Class == 7 ? 2 : 0,
-		//				CastLevel = player.Level[1] / 4,
-		//				SpecialCastLevel = 0,
-		//				Level = player.Level[0],
-		//			});
+		private BattleEnemyData TurnMind(Lore player)
+		{
+			var enemy = new BattleEnemyData(0, new EnemyData()
+			{
+				Name = player.Name,
+				Strength = player.Strength,
+				Mentality = player.Mentality,
+				Endurance = player.Endurance,
+				Resistance = player.Resistance * 5 > 99 ? 99 : player.Resistance * 5,
+				Agility = player.Agility,
+				Accuracy = new int[] { player.Accuracy, player.Accuracy },
+				AC = player.AC,
+				Special = player.Class == 7 ? 2 : 0,
+				CastLevel = player.Level / 4,
+				SpecialCastLevel = 0,
+				Level = player.Level,
+			});
 
-		//			AssignEnemy(enemy);
+			enemy.HP = enemy.Endurance * enemy.Level * 10;
+			enemy.Posion = false;
+			enemy.Unconscious = false;
+			enemy.Dead = false;
 
-		//			return enemy;
-		//		}
+			AssignEnemy(enemy);
+
+			return enemy;
+		}
 
 		private void AssignEnemy(BattleEnemyData enemy)
 		{
