@@ -233,6 +233,15 @@ namespace DarkUWP
 			}
 		}
 
+		public string GenderPronoun {
+			get {
+				if (Gender == GenderType.Male)
+					return "그";
+				else
+					return "그녀";
+			}
+		}
+
 		public ClassCategory ClassType {
 			get;
 			set;
