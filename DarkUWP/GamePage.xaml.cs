@@ -235,9 +235,9 @@ namespace DarkUWP
 			mHealthTextList.Add(new HealthTextBlock(HealthPlayerName5, HealthPoison5, HealthUnconscious5, HealthDead5));
 			mHealthTextList.Add(new HealthTextBlock(HealthPlayerName6, HealthPoison6, HealthUnconscious6, HealthDead6));
 
-			gamePageKeyDownEvent = (sender, args) =>
+			gamePageKeyDownEvent = async (sender, args) =>
 			{
-				if (mLoading || mSpecialEvent > 0 || mAnimationEvent != AnimationType.None || ContinueText.Visibility == Visibility.Visible)
+				if (mLoading || mSpecialEvent > 0 || mAnimationEvent != AnimationType.None || ContinueText.Visibility == Visibility.Visible || mTriggeredDownEvent)
 					return;
 
 				if (mMenuMode == MenuMode.None && mSpinnerType == SpinnerType.None && (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.Left || args.VirtualKey == VirtualKey.Right ||
@@ -307,8 +307,8 @@ namespace DarkUWP
 								var oriX = mParty.XAxis;
 								var oriY = mParty.YAxis;
 								MovePlayer(x, y);
-								InvokeSpecialEvent(oriX, oriY);
-								mTriggeredDownEvent = true;
+								if (await InvokeSpecialEvent(oriX, oriY))
+									mTriggeredDownEvent = true;
 							}
 							else if (1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 18 || GetTileInfo(x, y) == 20 || GetTileInfo(x, y) == 21)
 							{
@@ -357,9 +357,8 @@ namespace DarkUWP
 								var oriX = mParty.XAxis;
 								var oriY = mParty.YAxis;
 								MovePlayer(x, y);
-								InvokeSpecialEvent(oriX, oriY);
-
-								mTriggeredDownEvent = true;
+								if (await InvokeSpecialEvent(oriX, oriY))
+									mTriggeredDownEvent = true;
 							}
 							else if (1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 19)
 							{
@@ -404,9 +403,8 @@ namespace DarkUWP
 								var oriX = mParty.XAxis;
 								var oriY = mParty.YAxis;
 								MovePlayer(x, y);
-								InvokeSpecialEvent(oriX, oriY);
-
-								mTriggeredDownEvent = true;
+								if (await InvokeSpecialEvent(oriX, oriY))
+									 mTriggeredDownEvent = true;
 							}
 							else if ((1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 40) || GetTileInfo(x, y) == 51)
 							{
@@ -820,466 +818,97 @@ namespace DarkUWP
 				//					await RefreshGame();
 				//				}
 
-				//				async Task EndBattle()
-				//				{
-				//					void DefeatAstralMud()
-				//					{
-				//						mEncounterEnemyList.Clear();
-				//						mBattleEvent = 0;
-
-				//						ShowMap();
-
-				//						Talk(" 당신은 이 동굴에 보관되어 있는 봉인을 발견했다. 그리고는 봉쇄 되었던 봉인을 풀어버렸다.");
-				//						mSpecialEvent = SpecialEventType.DefeatAstralMud;
-				//					}
-
-				//					async Task CheckPassSwampKeepExitEvent()
-				//					{
-				//						if (mEncounterEnemyList[0].Dead)
-				//							mParty.Etc[41] |= 1 << 2;
-
-				//						if (mEncounterEnemyList[1].Dead)
-				//							mParty.Etc[41] |= 1 << 3;
-
-				//						if (mEncounterEnemyList[0].Dead && mEncounterEnemyList[1].Dead)
-				//							mParty.Etc[41] |= 1;
-
-				//						mParty.Map = 4;
-				//						mParty.XAxis = 47;
-				//						mParty.YAxis = 35;
-
-				//						await RefreshGame();
-				//					}
-
-				//					void SwampKeepBattleEvent()
-				//					{
-				//						if (mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] == 0)
-				//							mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] = 40;
-				//						else
-				//							mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] = 46;
-				//					}
-
-				//					async Task DefeatImperiumMinorKeeper()
-				//					{
-				//						if (mEncounterEnemyList[6].Dead)
-				//							mParty.Etc[42] |= 1 << 2;
-
-				//						mParty.Map = 5;
-				//						mParty.XAxis = 14;
-				//						mParty.YAxis = 31;
-
-				//						await RefreshGame();
-				//					}
-
-				//					void WinNecromancer()
-				//					{
-				//						Talk(new string[] {
-				//							$" [color={RGB.LightMagenta}]욱!!! 역시 너희들의 능력으로 여기까지 뚫고 들어왔다는게 믿어지는구나. 대단한 힘이다.[/color]",
-				//							$" [color={RGB.LightMagenta}]내가 졌다는걸 인정하마. 하지만 나는 완전히 너에게 진것은 아니야. 나에게는 탈출할 수단이 있기 때문이지. 안심해라." +
-				//							" 그렇지만 다시는 나와 만날 인연은 없으니까. 블랙홀이 생기기 시작하는구나. 다음 공간에서 또다시 힘을 길러야 겠군." +
-				//							" 내가 이 블랙홀로 들어간다면 다시 이 공간으로 올 확률이 거의 제로이지. 흠, 멋진 나의 도전자여 안녕. 나는 이런 공간의 패러독스를 운명적으로 반복하는 생명체로 태어난 내가 참으로 비참하지." +
-				//							" 무한히 많은 3 차원의 공간중에서 내가 여기로 온것도 이 공간의 생명이 끝날때까지도 한번 있을까 말까한 희귀한 일이었다고 기억해다오." +
-				//							" 이제 블랙홀이 완전히 생겼군. 자! 나의 멋진 도전자 친구여 영원히 안녕 ! !'[/color]",
-				//						});
-
-				//						mSpecialEvent = SpecialEventType.Ending;
-				//					}
-
-				//					async Task CheckImperiumMinorEntraceBattleResult()
-				//					{
-				//						var allDead = true;
-				//						foreach (var enemy in mEncounterEnemyList)
-				//						{
-				//							if (enemy.ENumber == 64 && enemy.Dead)
-				//								mParty.Etc[41] |= 1 << 4;
-				//							else if (enemy.ENumber == 63 && enemy.Dead)
-				//								mParty.Etc[41] |= 1 << 5;
-
-				//							if (!allDead)
-				//								allDead = false;
-				//						}
-
-				//						if (allDead)
-				//							mParty.Etc[41] |= 1 << 1;
-
-				//						mEncounterEnemyList.Clear();
-				//						mBattleEvent = 0;
-
-				//						mParty.Map = 22;
-				//						mParty.XAxis = 24;
-				//						mParty.YAxis = 5;
-
-				//						if ((mParty.Etc[41] & (1 << 6)) == 0)
-				//						{
-				//							JoinEnemy(67);
-
-				//							DisplayEnemy();
-
-				//							Talk(new string[] { " 역시 당신들은 나의 예상대로 마지막 대륙까지 무난하게 왔군요. 이번에 가게될 라바 대륙은 이 세계에 있는 모든 대륙중에서 가장 작은 대륙이오." +
-				//							" 적의 요새도 또한 2개 밖에 없는 곳이오. 하지만 이번에 도착할 임페리움 마이너나 마지막으로 거칠 이블 컨센츄레이션 은 말 그대로 악의 집결지인 것이오." +
-				//							" 거기에는 최강의 괴물들과 네크로맨서 의 심복들로 가득차있는 곳이지만 임페리움 마이너의 지하에는 마지막으로 살아남은 사람들의 도시가 있소." +
-				//							" 원래 거기는 에인션트 이블이 전에 세운 악의 동굴이었지만 네크로맨서의 침략으로 지상의 도시가 함락되자 그 곳의 사람들은 모두 거기로 피난 했던 것이고" +
-				//							" 거기는 에인션트 이블의 영적인 힘으로 보호되고 있어서 적들이 침략을 하지 못하는 이유가 되지요. 그러므로 모든 도움과 물자는 거기서 받도록 하시오.",
-				//							" 그러면, 나는 당신이 네크로맨서와 상대하게 될 때 다시 에인션트 이블과 같이 나타나겠소."});
-
-				//							mSpecialEvent = SpecialEventType.EnterImperiumMinor;
-				//						}
-				//						else
-				//						{
-				//							await RefreshGame();
-				//						}
-				//					}
-
-				//					async Task CheckDungeonOfEvilBattleResult()
-				//					{
-				//						if (mEncounterEnemyList[2].Dead)
-				//							mParty.Etc[43] |= 1 << 1;
-
-				//						mParty.Map = 25;
-				//						mParty.XAxis = 24;
-				//						mParty.YAxis = 44;
-
-				//						await RefreshGame();
-				//					}
-
-				//					mBattleCommandQueue.Clear();
-				//					mBatteEnemyQueue.Clear();
-
-				//					if (mBattleTurn == BattleTurn.Win)
-				//					{
-
-				//						var endMessage = "";
-
-				//						if (mParty.Etc[5] == 2)
-				//							endMessage = "";
-				//						else
-				//						{
-				//#if DEBUG
-				//							var goldPlus = 10000;
-				//#else
-				//							var goldPlus = 0;
-				//							foreach (var enemy in mEncounterEnemyList)
-				//							{
-				//								var enemyInfo = mEnemyDataList[enemy.ENumber];
-				//								var point = enemyInfo.AC == 0 ? 1 : enemyInfo.AC;
-				//								var plus = enemyInfo.Level;
-				//								plus *= enemyInfo.Level;
-				//								plus *= enemyInfo.Level;
-				//								plus *= point;
-				//								goldPlus += plus;
-				//							}
-				//#endif
-
-				//							mParty.Gold += goldPlus;
-
-				//							endMessage = $"일행은 {goldPlus}개의 금을 얻었다.";
-
-				//							AppendText(new string[] { endMessage, "" });
-				//						}
-
-				//						if (mBattleEvent == 1)
-				//						{
-				//							AppendText(new string[] { $"[color={RGB.White}]당신들은 수감소 병사들을 물리쳤다.[/color]" }, true);
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[49] |= 1 << 2;
-				//							mMapLayer[50 + mMapWidth * 11] = 44;
-				//							mMapLayer[51 + mMapWidth * 11] = 44;
-				//							mMapLayer[49 + mMapWidth * 10] = 44;
-				//							mMapLayer[52 + mMapWidth * 10] = 44;
-				//						}
-				//						else if (mBattleEvent == 2)
-				//						{
-				//							if (mParty.Etc[5] != 255)
-				//							{
-				//								if (mParty.Etc[5] == 0)
-				//								{
-				//									AppendText(new string[] {
-				//										$"[color={RGB.White}]당신들은 미이라 장군을 물리쳤다.[/color]",
-				//										$"[color={RGB.LightCyan}]그리고 당신은 이 임무에 성공했다.[/color]"
-				//									}, true);
-
-				//									ContinueText.Visibility = Visibility.Visible;
-
-				//									mParty.Etc[12]++;
-				//								}
-				//							}
-				//						}
-				//						else if (mBattleEvent == 3)
-				//						{
-				//							mParty.Etc[43] |= 1;
-
-				//							mParty.Map = 23;
-				//							mParty.XAxis = 24;
-				//							mParty.YAxis = 44;
-
-				//							await RefreshGame();
-				//						}
-				//						else if (mBattleEvent == 4)
-				//						{
-				//							AppendText(new string[] { $"[color={RGB.White}]당신은 아키가고일을 물리쳤다.[/color]" }, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[13]++;
-				//						}
-				//						else if (mBattleEvent == 5)
-				//						{
-				//							mParty.Etc[36] = 3;
-				//						}
-				//						else if (mBattleEvent == 6)
-				//						{
-				//							AppendText(new string[] {
-				//								$"[color={RGB.White}]당신들은 히드라를 물리쳤다.[/color]",
-				//								$"[color={RGB.LightCyan}]그리고 당신은 이 임무에 성공했다.[/color]",
-				//								$"[color={RGB.White}]다시 워터 필드의 군주에게로 돌아가라.[/color]",
-				//							}, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[14] = 2;
-				//							mSpecialEvent = SpecialEventType.AfterBattleHydra;
-				//						}
-				//						else if (mBattleEvent == 7)
-				//							mParty.Etc[38] |= 1 << 2;
-				//						else if (mBattleEvent == 8)
-				//						{
-				//							AppendText(new string[] {
-				//								$"[color={RGB.White}]당신들은 거대 드래곤을 물리쳤다.[/color]",
-				//								$"[color={RGB.LightCyan}]그리고 당신은 이 임무에 성공했다.[/color]",
-				//								$"[color={RGB.White}]다시 워터 필드의 군주에게로 돌아가라.[/color]",
-				//							}, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[14] = 4;
-				//						}
-				//						else if (mBattleEvent == 9)
-				//						{
-				//							mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] = 49;
-				//						}
-				//						else if (mBattleEvent == 10)
-				//						{
-				//							AppendText(new string[] { " 당신은 이 동굴에 보관되어 있는 봉인을 발견했다. 그러고는 봉쇄되었던 봉인을 풀어버렸다." }, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[39] |= 1;
-				//						}
-				//						else if (mBattleEvent == 11)
-				//							mParty.Etc[40] |= 1 << 3;
-				//						else if (mBattleEvent == 12)
-				//						{
-				//							mParty.Etc[40] |= 1 << 1;
-				//							await CheckMuddyFinalBattle();
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 13)
-				//						{
-				//							mParty.Etc[40] |= 1 << 2;
-				//							await CheckMuddyFinalBattle();
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 14)
-				//						{
-				//							DefeatAstralMud();
-				//						}
-				//						else if (mBattleEvent == 15)
-				//							await CheckPassSwampKeepExitEvent();
-				//						else if (mBattleEvent == 16)
-				//							SwampKeepBattleEvent();
-				//						else if (mBattleEvent == 17)
-				//							await DefeatImperiumMinorKeeper();
-				//						else if (mBattleEvent == 18)
-				//							mParty.Etc[42] |= 1 << 1;
-				//						else if (mBattleEvent == 19)
-				//							mParty.Etc[42] |= 1;
-				//						else if (mBattleEvent == 20)
-				//							mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] = 40;
-				//						else if (mBattleEvent == 21)
-				//						{
-				//							mBattleTurn = BattleTurn.None;
-
-				//							mEncounterEnemyList.Clear();
-
-				//							var enemy = JoinEnemy(60);
-				//							enemy.Name = "네크로맨서";
-				//							enemy.ENumber = 0;
-
-				//							DisplayEnemy();
-
-				//							AppendText(new string[] {
-				//								$"[color={RGB.LightMagenta}] 환상에서 벗어나다니 대단한 의지력이군.[/color]",
-				//								$"[color={RGB.LightMagenta}] 하지만 진짜 적은 바로 나다. 받아라 !![/color]"
-				//							}, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mBattleEvent = 0;
-				//							mSpecialEvent = SpecialEventType.BattleFackNecromancer;
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 22)
-				//						{
-				//							AppendText(new string[] { $"[color={RGB.LightMagenta}] 욱! 너의 힘은 대단하구나. 나는 너에게 졌다고 인정하겠다. 흐흐, 그러나 사실 나는 너희 찾던 네크로맨서님이 아니다. 만약 그분이라 이렇게 쉽게 당하지는 않았을 테니까." +
-				//							" 내 생명이 얼마 안남았구나. 네크로맨서님 만세 !![/color]" }, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mSpecialEvent = SpecialEventType.AfterBattleFakeNecromancer;
-				//						}
-				//						else if (mBattleEvent == 23)
-				//						{
-				//							for (var x = 23; x < 27; x++)
-				//								mMapLayer[x + mMapWidth * mParty.YAxis] = 41;
-
-				//							AppendText(new string[] { " 당신이 적을 물리치자 조금후에 이상하리만큼 편안한 기운이 일행을 감쌌다." }, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mSpecialEvent = SpecialEventType.AfterBattlePanzerViper;
-				//						}
-				//						else if (mBattleEvent == 24)
-				//							WinNecromancer();
-				//						else if (mBattleEvent == 25)
-				//						{
-				//							AppendText(new string[] { $"[color={RGB.White}]당신들은 고르곤을 물리쳤다.[/color]" }, true);
-
-				//							ContinueText.Visibility = Visibility.Visible;
-
-				//							mParty.Etc[37] |= 1 << 4;
-				//						}
-				//						else if (mBattleEvent == 26)
-				//						{
-				//							await CheckImperiumMinorEntraceBattleResult();
-
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 27)
-				//							await CheckDungeonOfEvilBattleResult();
-				//						else if (mBattleEvent == 28)
-				//						{
-				//							mParty.Map = 26;
-				//							mParty.XAxis = 24;
-				//							mParty.YAxis = 14;
-
-				//							await RefreshGame();
-
-				//							mFace = 5;
-
-				//							InvokeAnimation(AnimationType.EnterChamberOfNecromancer);
-				//						}
-
-				//						mEncounterEnemyList.Clear();
-				//						mBattleEvent = 0;
-
-				//						ShowMap();
-
-				//					}
-				//					else if (mBattleTurn == BattleTurn.RunAway)
-				//					{
-				//						AppendText(new string[] { "" });
-
-				//						if (mBattleEvent == 5)
-				//						{
-				//							var aliveWivernCount = 0;
-				//							foreach (var enemy in mEncounterEnemyList)
-				//							{
-				//								if (!enemy.Dead)
-				//									aliveWivernCount++;
-				//							}
-
-				//							mParty.Etc[36] = 3 - aliveWivernCount;
-				//						}
-				//						else if (mBattleEvent == 6)
-				//						{
-				//							mParty.XAxis++;
-				//						}
-				//						else if (mBattleEvent == 8)
-				//						{
-				//							mParty.XAxis = 24;
-				//							mParty.YAxis = 93;
-				//						}
-				//						else if (mBattleEvent == 10)
-				//							mParty.YAxis++;
-				//						else if (mBattleEvent == 12)
-				//							mParty.YAxis++;
-				//						else if (mBattleEvent == 13)
-				//							mParty.YAxis++;
-				//						else if (mBattleEvent == 14)
-				//						{
-				//							if (mEncounterEnemyList[6].Dead)
-				//								DefeatAstralMud();
-				//							else
-				//								mParty.YAxis++;
-				//						}
-				//						else if (mBattleEvent == 15)
-				//							await CheckPassSwampKeepExitEvent();
-				//						else if (mBattleEvent == 16)
-				//							SwampKeepBattleEvent();
-				//						else if (mBattleEvent == 17)
-				//							await DefeatImperiumMinorKeeper();
-				//						else if (mBattleEvent == 20)
-				//							mMapLayer[mParty.XAxis + mMapWidth * mParty.YAxis] = 40;
-				//						else if (mBattleEvent == 21)
-				//						{
-				//							Talk(" 하지만 당신은 환상에서 벗어나지 못했다.");
-				//							mSpecialEvent = SpecialEventType.FailRunawayBattleFakeNecromancer;
-
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 22)
-				//							mParty.YAxis++;
-				//						else if (mBattleEvent == 23)
-				//							mParty.YAxis++;
-				//						else if (mBattleEvent == 24)
-				//						{
-				//							if (!mEncounterEnemyList[6].Dead)
-				//							{
-				//								Talk($" [color={RGB.LightMagenta}]하지만 나에게 도전한 이상 도주는 허용할 수 없다는 점이 안타깝군.[/color]");
-
-				//								mSpecialEvent = SpecialEventType.FailRunawayBattleNecromancer;
-				//								return;
-				//							}
-				//							else
-				//								WinNecromancer();
-				//						}
-				//						else if (mBattleEvent == 25)
-				//						{
-				//							mParty.YAxis++;
-				//						}
-				//						else if (mBattleEvent == 26)
-				//						{
-				//							await CheckImperiumMinorEntraceBattleResult();
-				//							return;
-				//						}
-				//						else if (mBattleEvent == 27)
-				//							await CheckDungeonOfEvilBattleResult();
-				//						else if (mBattleEvent == 28)
-				//						{
-				//							mParty.XAxis = 24;
-				//							mParty.YAxis = 44;
-				//						}
-
-				//						mEncounterEnemyList.Clear();
-				//						mBattleEvent = 0;
-				//						ShowMap();
-				//					}
-				//					else if (mBattleTurn == BattleTurn.Lose)
-				//					{
-				//						ShowGameOver(new string[] {
-				//							$"[color={RGB.LightMagenta}]일행은 모두 전투에서 패했다 !![/color]",
-				//							$"[color={RGB.LightGreen}]    어떻게 하시겠습니까 ?[/color]"
-				//						});
-				//					}
-
-				//					mBattleTurn = BattleTurn.None;
-				//				}
+				async Task EndBattle()
+				{
+					var battleEvent = mBattleEvent;
+					mBattleEvent = BattleEvent.None;
+
+					if (mBattleTurn == BattleTurn.Win)
+					{
+						mBattleCommandQueue.Clear();
+						mBatteEnemyQueue.Clear();
+
+						var endMessage = "";
+
+						if (mParty.Etc[5] == 2)
+							endMessage = "";
+						else
+						{
+#if DEBUG
+							var goldPlus = 10000;
+#else
+							var goldPlus = 0;
+							foreach (var enemy in mEncounterEnemyList)
+							{
+								var enemyInfo = mEnemyDataList[enemy.ENumber];
+								var point = enemyInfo.AC == 0 ? 1 : enemyInfo.AC;
+								var plus = enemyInfo.Level;
+								plus *= enemyInfo.Level;
+								plus *= enemyInfo.Level;
+								plus *= point;
+								goldPlus += plus;
+							}
+#endif
+
+							mParty.Gold += goldPlus;
+
+							endMessage = $"[color={RGB.White}]일행은 {goldPlus}개의 금을 얻었다.[/color]";
+
+							AppendText(new string[] { endMessage, "" });
+						}
+
+						if (battleEvent == BattleEvent.MenaceMurder) {
+							StartBattleEvent(BattleEvent.MenaceMurder);
+							return;
+						}
+
+						mEncounterEnemyList.Clear();
+						mBattleEvent = 0;
+
+						ShowMap();
+
+					}
+					else if (mBattleTurn == BattleTurn.RunAway)
+					{
+						AppendText(new string[] { "" });
+
+						mBattlePlayerID = 0;
+						while (!mPlayerList[mBattlePlayerID].IsAvailable && mBattlePlayerID < mPlayerList.Count)
+							mBattlePlayerID++;
+
+						if (battleEvent == BattleEvent.MenaceMurder)
+						{
+							ShowMap();
+							Talk(" 하지만 너무 많은 적들에게 포위되어 도망 갈수가 없었다.");
+
+							mBattleEvent = BattleEvent.MenaceMurder;
+							mSpecialEvent = SpecialEventType.BackToBattleMode;
+							return;
+						}
+						
+						mEncounterEnemyList.Clear();
+						ShowMap();
+					}
+					else if (mBattleTurn == BattleTurn.Lose)
+					{
+						if (battleEvent == BattleEvent.MenaceMurder)
+						{
+
+						}
+						else
+						{
+							ShowGameOver(new string[] {
+								$"[color={RGB.LightMagenta}]일행은 모두 전투에서 패했다 !![/color]",
+								$"[color={RGB.LightGreen}]    어떻게 하시겠습니까 ?[/color]"
+							});
+						}
+					}
+
+					mBattleTurn = BattleTurn.None;
+				}
 
 				void AddBattleCommand(bool skip = false)
 				{
-					mMenuMode = MenuMode.None;
-
 					if (!skip)
 					{
 						mBattleCommandQueue.Enqueue(new BattleCommand()
@@ -1540,7 +1169,7 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn10)
 							InvokeAnimation(AnimationType.TalkLordAhn2);
-						else if (mSpecialEvent == SpecialEventType.MeetLordAhn11)
+						else if (specialEvent == SpecialEventType.MeetLordAhn11)
 						{
 							mAnimationEvent = AnimationType.None;
 							mAnimationFrame = 0;
@@ -1608,14 +1237,17 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.EnterUnderworld) {
 							InvokeAnimation(AnimationType.EnterUnderworld);
 						}
-						else if (mSpecialEvent == SpecialEventType.SeeDeadBody) {
+						else if (specialEvent == SpecialEventType.SeeDeadBody) {
 							mFace = 5;
 							InvokeAnimation(AnimationType.GoInsideMenace);
 						}
-						else if (mSpecialEvent == SpecialEventType.BattleMenace) {
-							
+						else if (specialEvent == SpecialEventType.BattleMenace) {
+							mBattleEvent = BattleEvent.MenaceMurder;
+							StartBattle(false);
 						}
-						else if (mSpecialEvent == SpecialEventType.BackToBattleMode) {
+						else if (specialEvent == SpecialEventType.BackToBattleMode) {
+							if (BattlePanel.Visibility == Visibility.Collapsed)
+								DisplayEnemy();
 							BattleMode();
 						}
 					}
@@ -1700,36 +1332,36 @@ namespace DarkUWP
 					}
 					else if (mBattleTurn == BattleTurn.Player)
 					{
-						//if (mBattleCommandQueue.Count == 0)
-						//{
-						//	var allUnavailable = true;
-						//	foreach (var enemy in mEncounterEnemyList)
-						//	{
-						//		if (!enemy.Dead && !enemy.Unconscious)
-						//		{
-						//			allUnavailable = false;
-						//			break;
-						//		}
-						//	}
+						if (mBattleCommandQueue.Count == 0)
+						{
+							var allUnavailable = true;
+							foreach (var enemy in mEncounterEnemyList)
+							{
+								if (!enemy.Dead && !enemy.Unconscious)
+								{
+									allUnavailable = false;
+									break;
+								}
+							}
 
-						//	if (allUnavailable)
-						//	{
-						//		mBattleTurn = BattleTurn.Win;
-						//		await EndBattle();
-						//	}
-						//	else
-						//		ExecuteBattle();
-						//}
-						//else
-						//	ExecuteBattle();
+							if (allUnavailable)
+							{
+								mBattleTurn = BattleTurn.Win;
+								await EndBattle();
+							}
+							else
+								ExecuteBattle();
+						}
+						else
+							ExecuteBattle();
 					}
 					else if (mBattleTurn == BattleTurn.Enemy)
 					{
-						//ExecuteBattle();
+						ExecuteBattle();
 					}
 					else if (mBattleTurn == BattleTurn.RunAway || mBattleTurn == BattleTurn.Win || mBattleTurn == BattleTurn.Lose)
 					{
-						//await EndBattle();
+						await EndBattle();
 					}
 					else if (mWeaponShopEnd)
 					{
@@ -2104,28 +1736,28 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
 					{
-						if (mMenuMode == MenuMode.ChooseTrainSkill)
-							ShowChooseTrainSkillMemberMenu();
-						else if (mMenuMode == MenuMode.ChooseTrainMagic)
-							ShowChooseTrainMagicMemberMenu();
-						else if (mMenuMode != MenuMode.None && mMenuMode != MenuMode.BattleLose && mMenuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
-						{
-							AppendText("");
-							HideMenu();
+						AppendText("");
+						var menuMode = HideMenu();
 
-							if (mMenuMode == MenuMode.CastOneMagic ||
-							mMenuMode == MenuMode.CastAllMagic ||
-							mMenuMode == MenuMode.CastSpecial ||
-							mMenuMode == MenuMode.ChooseBattleCureSpell ||
-							mMenuMode == MenuMode.CastESP ||
-							mMenuMode == MenuMode.CastSummon)
+						if (menuMode == MenuMode.ChooseTrainSkill)
+							ShowChooseTrainSkillMemberMenu();
+						else if (menuMode == MenuMode.ChooseTrainMagic)
+							ShowChooseTrainMagicMemberMenu();
+						else if (menuMode != MenuMode.None && menuMode != MenuMode.BattleLose && menuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
+						{
+							if (menuMode == MenuMode.CastOneMagic ||
+							menuMode == MenuMode.CastAllMagic ||
+							menuMode == MenuMode.CastSpecial ||
+							menuMode == MenuMode.ChooseBattleCureSpell ||
+							menuMode == MenuMode.CastESP ||
+							menuMode == MenuMode.CastSummon)
 							{
 								BattleMode();
 							}
-							else if (mMenuMode == MenuMode.ChooseESPMagic) {
+							else if (menuMode == MenuMode.ChooseESPMagic) {
 								ShowCastESPMenu();
 							}
-							else if (mMenuMode == MenuMode.EnemySelectMode)
+							else if (menuMode == MenuMode.EnemySelectMode)
 							{
 								mEnemyBlockList[mEnemyFocusID].Background = new SolidColorBrush(Colors.Transparent);
 
@@ -2145,13 +1777,13 @@ namespace DarkUWP
 										break;
 								}
 							}
-							else if (mMenuMode == MenuMode.ApplyBattleCureSpell || mMenuMode == MenuMode.ApplyBattleCureAllSpell)
+							else if (menuMode == MenuMode.ApplyBattleCureSpell || menuMode == MenuMode.ApplyBattleCureAllSpell)
 								ShowCureDestMenu(mPlayerList[mBattlePlayerID], MenuMode.ChooseBattleCureSpell);
-							else if (mMenuMode == MenuMode.BattleStart ||
-								mMenuMode == MenuMode.BattleCommand)
+							else if (menuMode == MenuMode.BattleStart ||
+								menuMode == MenuMode.BattleCommand)
 								return;
-							else if (mMenuMode == MenuMode.ConfirmExitMap)
-							{
+							else if (menuMode == MenuMode.ConfirmExitMap)
+							{ 
 								mParty.YAxis--;
 
 								mMenuMode = MenuMode.None;
@@ -2215,7 +1847,7 @@ namespace DarkUWP
 								mBattleTurn = BattleTurn.None;
 
 								mSpecialEvent = SpecialEventType.None;
-								mBattleEvent = 0;
+								mBattleEvent = BattleEvent.None;
 
 								//ShowMap();
 
@@ -4039,8 +3671,6 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.ConfirmExitMap)
 						{
-							mMenuMode = MenuMode.None;
-
 							if (mMenuFocusID == 0)
 							{
 								if (mParty.Map == 6)
@@ -4051,7 +3681,13 @@ namespace DarkUWP
 
 									await RefreshGame();
 								}
+								else if (mParty.Map == 10) {
+									mParty.Map = 1;
+									mParty.XAxis = 17;
+									mParty.YAxis = 88;
 
+									await RefreshGame();
+								}
 							}
 							else
 							{
@@ -4288,6 +3924,7 @@ namespace DarkUWP
 								}
 								else
 								{
+									mBattleCommandID = mMenuFocusID;
 									AddBattleCommand();
 								}
 							}
@@ -5291,10 +4928,8 @@ namespace DarkUWP
 				mParty.Etc[4]--;
 
 			if (!(GetTileInfo(moveX, moveY) == 0 || (mPosition == PositionType.Den && GetTileInfo(moveX, moveY) == 52)) && mRand.Next(mEncounter * 20) == 0)
-			{
 				EncounterEnemy();
-				mTriggeredDownEvent = true;
-			}
+				
 
 			if (mPosition == PositionType.Ground)
 				PlusTime(0, 2, 0);
@@ -5336,9 +4971,13 @@ namespace DarkUWP
 
 		private async Task RefreshGame()
 		{
-			AppendText(new string[] { "" });
+			mLoading = true;
+
+			AppendText("");
 			await LoadMapData();
 			InitializeMap();
+
+			mLoading = false;
 		}
 
 		private void ExecuteBattle()
@@ -5463,7 +5102,7 @@ namespace DarkUWP
 					{
 						for (var i = 0; i < mEncounterEnemyList.Count; i++)
 						{
-							if (!mEncounterEnemyList[i].Dead && (!mParty.Cruel && mEncounterEnemyList[i].Unconscious))
+							if (!mEncounterEnemyList[i].Dead && ((!mParty.Cruel && !mEncounterEnemyList[i].Unconscious) || mParty.Cruel))
 								return false;
 						};
 
@@ -5536,7 +5175,7 @@ namespace DarkUWP
 						case 6:
 							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameMokjukJosa(6, battleCommand.Tool)} 사용했다[/color]");
 							break;
-						case 7:
+						case 8:
 							battleResult.Add($"[color={RGB.White}]일행은 도망을 시도했다[/color]");
 							break;
 						default:
@@ -6271,8 +5910,10 @@ namespace DarkUWP
 				{
 					CastESP();
 				}
-				else if (battleCommand.Method == 6)
+				else if (battleCommand.Method == 8)
 				{
+					GetBattleStatus(null);
+
 					if (mRand.Next(50) > battleCommand.Player.Agility)
 						battleResult.Add($"그러나, 일행은 성공하지 못했다");
 					else
@@ -6566,7 +6207,7 @@ namespace DarkUWP
 							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{attackPoint}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 						}
 
-						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0)
+						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0 || enemy.CastLevel == 0)
 						{
 							EnemyAttack();
 						}
@@ -6689,7 +6330,7 @@ namespace DarkUWP
 								if (enemy == whomEnemy)
 									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} 자신을 치료했다[/color]");
 								else
-									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {whomEnemy.NameMokjukJosa} 치료했다[/color]");
+									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {whomEnemy.NameJosa} 치료했다[/color]");
 
 								if (whomEnemy.Dead)
 									whomEnemy.Dead = false;
@@ -7114,8 +6755,9 @@ namespace DarkUWP
 			});
 		}
 
-		private async void InvokeSpecialEvent(int prevX, int prevY)
+		private async Task<bool> InvokeSpecialEvent(int prevX, int prevY)
 		{
+			var triggered = true;
 			if (mParty.Map == 6) {
 				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0) {
 					
@@ -7207,10 +6849,15 @@ namespace DarkUWP
 				}
 			}
 			else if (mParty.Map == 10) {
-				if ((mParty.XAxis == 24 && mParty.YAxis == 42) || (mParty.XAxis == 25 && mParty.YAxis == 42)) {
+				if ((mParty.XAxis == 24 && mParty.YAxis == 42) || (mParty.XAxis == 25 && mParty.YAxis == 42))
+				{
 					if (mParty.Etc[9] == 1)
+					{
 						mParty.Etc[9] = 2;
-					else if (mParty.Etc[9] == 3) {
+						triggered = false;
+					}
+					else if (mParty.Etc[9] == 3)
+					{
 						Talk(new string[] {
 							" 당신이 메너스에 들어오자 마자  어떤 사람의 시체가 놓여져 있었다." +
 							" 그 시체는 형체를 알아볼 수 없을 정도로 피 투성이가 되어있었고 그의 등에는  커다란 독 화살이 예리하게 관통해 있었다.",
@@ -7222,7 +6869,37 @@ namespace DarkUWP
 						mSpecialEvent = SpecialEventType.SeeDeadBody;
 					}
 				}
+				else if (22 <= mParty.XAxis && mParty.XAxis <= 27 && 8 <= mParty.YAxis && mParty.YAxis <= 11)
+				{
+					Talk(" 일행이 절벽에 서자마자  위압적인 힘이 일행을 끌어 당기기 시작했고 결국 일행은 그 힘을 버티지 못하고  의문의 구멍 속으로 빠져 들고 말았다.");
+
+					mParty.Map = 3;
+					mParty.XAxis = 50;
+					mParty.YAxis = 50;
+
+					await RefreshGame();
+
+					// 추가 구현 필요
+					//mSpecialEvent = SpecialEventType.ManHoleInMenace;
+				}
+				else if (10 <= mParty.XAxis && mParty.XAxis <= 14 && 9 <= mParty.YAxis && mParty.YAxis <= 11)
+				{
+					Talk(" 일행은 절벽 앞으로 섰고,  저번과 같이 어떤 강한 힘에 의해서 구멍 속으로 빨려 들어갔다.");
+
+					mParty.Map = 3;
+					mParty.XAxis = 13;
+					mParty.YAxis = 23;
+
+					await RefreshGame();
+
+					// 추가 구현 필요
+					//mSpecialEvent = SpecialEventType.ManHoleInMenace2;
+				}
+				else if (mParty.YAxis == 44)
+					ShowExitMenu();
 			}
+
+			return triggered;
 		}
 
 		private void HealOne(Lore player, Lore whomPlayer, List<string> cureResult)
@@ -7565,7 +7242,7 @@ namespace DarkUWP
 				mMenuList[i].Visibility = Visibility.Collapsed;
 			}
 
-			return mMenuMode;
+			return menuMode;
 		}
 
 		private bool AppendText(string str, bool append = false)
@@ -8378,11 +8055,15 @@ namespace DarkUWP
 				else if (mAnimationEvent == AnimationType.GoInsideMenace) {
 					for (var i = 0; i < 2; i++) {
 						MovePlayer(mParty.XAxis, mParty.YAxis - 1);
-						Task.Delay(2000);
+						Task.Delay(2000).Wait();
 					}
 
-					AppendText(" 당신이 조금 더 안쪽으로 들어 갔을때 누군가가 당신을 지켜 보고 있다는 느낌이 들었다.");
-					Task.Delay(5000);
+					Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+					{
+						AppendText(" 당신이 조금 더 안쪽으로 들어 갔을때 누군가가 당신을 지켜 보고 있다는 느낌이 들었다.");
+					});
+					
+					Task.Delay(5000).Wait();
 				}
 			});
 
@@ -8459,6 +8140,8 @@ namespace DarkUWP
 		void StartBattleEvent(BattleEvent battleEvent) {
 			if (battleEvent == BattleEvent.MenaceMurder)
 			{
+				mEncounterEnemyList.Clear();
+
 				for (var i = 0; i < 7; i++)
 					JoinEnemy(18);
 				var enemy = JoinEnemy(26);
@@ -8818,21 +8501,11 @@ namespace DarkUWP
 			}
 		}
 
-		//		private void ShowMap()
-		//		{
-		//			BattlePanel.Visibility = Visibility.Collapsed;
-
-		//			if (mPosition == PositionType.Den && mParty.Etc[0] == 0)
-		//			{
-		//				canvas.Visibility = Visibility.Collapsed;
-		//				DarknessPanel.Visibility = Visibility.Visible;
-		//			}
-		//			else
-		//			{
-		//				canvas.Visibility = Visibility.Visible;
-		//				DarknessPanel.Visibility = Visibility.Collapsed;
-		//			}
-		//		}
+		private void ShowMap()
+		{
+			BattlePanel.Visibility = Visibility.Collapsed;
+			canvas.Visibility = Visibility.Visible;
+		}
 
 		private void HideMap()
 		{
@@ -8992,17 +8665,6 @@ namespace DarkUWP
 			}
 		}
 
-		//		private void DisplayESP()
-		//		{
-		//			for (var i = 0; i < 6; i++)
-		//			{
-		//				if (i < mPlayerList.Count)
-		//					mPlayerESPList[i].Text = mPlayerList[i].ESP.ToString();
-		//				else
-		//					mPlayerESPList[i].Text = "";
-		//			}
-		//		}
-
 		private void DisplayCondition()
 		{
 			for (var i = 0; i < 6; i++)
@@ -9016,20 +8678,20 @@ namespace DarkUWP
 
 		private string GetConditionName(int index)
 		{
-			//if (mPlayerList[index].HP <= 0 && mPlayerList[index].Unconscious == 0)
-			//	mPlayerList[index].Unconscious = 1;
+			if (mPlayerList[index].HP <= 0 && mPlayerList[index].Unconscious == 0)
+				mPlayerList[index].Unconscious = 1;
 
-			//if (mPlayerList[index].Unconscious > mPlayerList[index].Endurance * mPlayerList[index].Level[0] && mPlayerList[index].Dead == 0)
-			//	mPlayerList[index].Dead = 1;
+			if (mPlayerList[index].Unconscious > mPlayerList[index].Endurance * mPlayerList[index].Level && mPlayerList[index].Dead == 0)
+				mPlayerList[index].Dead = 1;
 
-			//if (mPlayerList[index].Dead > 0)
-			//	return "사망";
+			if (mPlayerList[index].Dead > 0)
+				return "죽은 상태";
 
-			//if (mPlayerList[index].Unconscious > 0)
-			//	return "의식불명";
+			if (mPlayerList[index].Unconscious > 0)
+				return "의식불명";
 
-			//if (mPlayerList[index].Poison > 0)
-			//	return "중독";
+			if (mPlayerList[index].Poison > 0)
+				return "중독";
 
 			return "좋음";
 		}
@@ -9290,6 +8952,8 @@ namespace DarkUWP
 			if (range == 0)
 				return;
 
+			mTriggeredDownEvent = true;
+
 			var enemyNumber = mRand.Next(mMaxEnemy) + 1;
 			if (enemyNumber > mMaxEnemy)
 				enemyNumber = mMaxEnemy;
@@ -9361,15 +9025,15 @@ namespace DarkUWP
 			HideMap();
 		}
 
-		//		private void ShowGameOver(string[] gameOverMessage)
-		//		{
-		//			AppendText(gameOverMessage);
+		private void ShowGameOver(string[] gameOverMessage)
+		{
+			AppendText(gameOverMessage);
 
-		//			ShowMenu(MenuMode.BattleLose, new string[] {
-		//				"이전의 게임을 재개한다",
-		//				"게임을 끝낸다"
-		//			});
-		//		}
+			ShowMenu(MenuMode.BattleLose, new string[] {
+						"이전의 게임을 재개한다",
+						"게임을 끝낸다"
+					});
+		}
 
 		//		private void DetectGameOver()
 		//		{

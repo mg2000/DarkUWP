@@ -19,7 +19,7 @@
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 		<canvas:CanvasAnimatedControl Grid.Row="0" Grid.Column="0" x:Name="canvas" ClearColor="Black" Canvas.Left="0" Canvas.Top="0" Width="468" Height="572" CreateResources="canvas_CreateResources" Draw="canvas_Draw"/>
-		<StackPanel Grid.Row="0" Grid.Column="0" x:Name="BattlePanel" Width="576" Height="576" Background="Black" Visibility="Collapsed">
+		<StackPanel Grid.Row="0" Grid.Column="0" x:Name="BattlePanel" Width="468" Height="572" Background="Black" Visibility="Collapsed">
 			<Border x:Name="EnemyBlock0" Background="Transparent" Margin="60, 50, 30, 0">
 				<TextBlock x:Name="EnemyText0" Foreground="LightGray" FontSize="25">적1</TextBlock>
 			</Border>

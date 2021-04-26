@@ -32,7 +32,7 @@ namespace DarkUWP
 		public const string Green = "002a00";
 		public const string Cyan = "002a2a";
 		public const string Red = "ff0000";
-		public const string Magenta = "2a002a";
+		public const string Magenta = "82307d";
 		public const string Brown = "2a1500";
 		public const string LightGray = "aaaaaa";
 		public const string DarkGray = "151515";
@@ -41,7 +41,7 @@ namespace DarkUWP
 		public const string LightCyan = "41e3e3";
 		public const string LightRed = "ff0000";
 		public const string LightMagenta = "cf71c7";
-		public const string Yellow = "3c3c0a";
+		public const string Yellow = "ffff00";
 		public const string White = "ffffff";
 	}
 }
