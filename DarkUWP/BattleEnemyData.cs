@@ -27,7 +27,7 @@ namespace DarkUWP
 			SpecialCastLevel = enemy.SpecialCastLevel;
 			Level = enemy.Level;
 
-			HP = Endurance * Level;
+			HP = Endurance * Level * 10;
 			Posion = false;
 			Unconscious = false;
 			Dead = false;
