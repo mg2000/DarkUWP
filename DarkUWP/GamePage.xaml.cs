@@ -7003,6 +7003,8 @@ namespace DarkUWP
 
 						mSpecialEvent = SpecialEventType.SeeDeadBody;
 					}
+					else
+						triggered = false;
 				}
 				else if (22 <= mParty.XAxis && mParty.XAxis <= 27 && 8 <= mParty.YAxis && mParty.YAxis <= 11)
 				{
@@ -8422,7 +8424,7 @@ namespace DarkUWP
 			if ((layer[index] & 0x80) > 0 || (mXWide == 0 && mYWide == 0) || (playerX - mXWide <= column && column <= playerX + mXWide && playerY - mYWide <= row && row <= playerY + mYWide))
 				tint = Vector4.One;
 			else
-				tint = new Vector4(0.2f, 0.2f, 2f, 1);
+				tint = new Vector4(0.1f, 0.1f, 0.6f, 1);
 
 			if (mMapTiles != null)
 			{	
