@@ -42,6 +42,7 @@ namespace DarkUWP
 
 		private LorePlayer mParty;
 		private List<Lore> mPlayerList;
+		private Lore mAssistPlayer = null;
 
 		private PositionType mPosition;
 		private int mFace = 0;
@@ -79,7 +80,6 @@ namespace DarkUWP
 		private int mBuyWeaponID = -1;
 
 		private Lore mCurePlayer = null;
-		private CureMenuState mCureMenuState = CureMenuState.None;
 
 		private int mTeleportationDirection = 0;
 
@@ -796,18 +796,18 @@ namespace DarkUWP
 					player.AC = player.PotentialAC + player.ArmPower;
 				}
 
-				//				void ShowHealType()
-				//				{
-				//					AppendText(new string[] { $"[color={RGB.White}]어떤 치료입니까 ?[/color]" });
+				void ShowHealType()
+				{
+					AppendText(new string[] { $"[color={RGB.White}]어떤 치료입니까?[/color]" });
 
-				//					ShowMenu(MenuMode.HealType, new string[]
-				//					{
-				//							"상처를 치료",
-				//							"독을 제거",
-				//							"의식의 회복",
-				//							"부활"
-				//					});
-				//				}
+					ShowMenu(MenuMode.HealType, new string[]
+					{
+						"상처를 치료",
+						"독을 제거",
+						"의식의 회복",
+						"부활"
+					});
+				}
 
 				//				async Task ExitCastleLore()
 				//				{
@@ -893,13 +893,19 @@ namespace DarkUWP
 					{
 						if (battleEvent == BattleEvent.MenaceMurder)
 						{
+							Talk(new string[] {
+								$"[color={RGB.LightMagenta}] 당신은 악마 사냥꾼에게 기습을 받아서  거의 다 죽게 되었을때  갑자기 낯익은 목소리가 먼곳에서 들려 왔다.[/color]",
+								$"[color={RGB.LightMagenta}] {mPlayerList[0].Name}. 나는 레드 안타레스일세. 당신도 실력이 많이 줄었군. 이런 조무래기들에게 당하다니." +
+								"  그럼 약간의 도움을 주도록하지. 잘 보게나.[/color]"
+							});
 
+							mSpecialEvent = SpecialEventType.HelpRedAntares;
 						}
 						else
 						{
 							ShowGameOver(new string[] {
-								$"[color={RGB.LightMagenta}]일행은 모두 전투에서 패했다 !![/color]",
-								$"[color={RGB.LightGreen}]    어떻게 하시겠습니까 ?[/color]"
+								$"[color={RGB.LightMagenta}]일행은 모두 전투에서 패했다!![/color]",
+								$"[color={RGB.LightGreen}]    어떻게 하시겠습니까?[/color]"
 							});
 						}
 					}
@@ -984,6 +990,16 @@ namespace DarkUWP
 							ShowChooseChangeSwordMemberMenu();
 						else if (specialEvent == SpecialEventType.ChangeJobForMagic)
 							ShowChooseChangeMagicMemberMenu();
+						else if (specialEvent == SpecialEventType.CureComplete)
+						{
+							AppendText($"[color={RGB.White}]누가 치료를 받겠습니까?[/color]");
+
+							ShowCharacterMenu(MenuMode.Hospital);
+						}
+						else if (specialEvent == SpecialEventType.NotCured)
+						{
+							ShowHealType();
+						}
 						else if (specialEvent == SpecialEventType.LeaveSoldier)
 							InvokeAnimation(AnimationType.LeaveSoldier);
 						else if (specialEvent == SpecialEventType.ViewGeniusKieLetter)
@@ -1066,6 +1082,7 @@ namespace DarkUWP
 								$"[color={RGB.White}]두번째 흉성이 나타나는 날, 그는 용암의 대륙으로부터 세상을 뒤흔들게 되며 그는 네크로만서라 불리어 진다.[/color]",
 								"",
 								" 이 글 또한 몇년 전의 일과 일치 하네.",
+								"",
 								$"[color={RGB.White}]세번째 흉성이 나타나는 날, 네크로만서를  이기는 자는 아무도 없게 된다.[/color]",
 								"",
 								" 하지만 이 글은 사실과 다르다네.  자네가 네크로만서를 물리쳤기 때문에 말일세.",
@@ -1083,9 +1100,9 @@ namespace DarkUWP
 								" 알비레오 그 자신도 자네가 네크로만서를 물리치리라고는 생각하지 못했는데 자네 해 내었기 때문에 이런 말을 적었던것 같네."
 							});
 
-							specialEvent = SpecialEventType.MeetLordAhn5;
+							mSpecialEvent = SpecialEventType.MeetLordAhn5;
 						}
-						else if (mSpecialEvent == SpecialEventType.MeetLordAhn5)
+						else if (specialEvent == SpecialEventType.MeetLordAhn5)
 						{
 							AppendText(new string[] {
 								" 이 예언에 의하면 반드시 다크 메이지가 세상을  멸망 시키게 된다네.  알비레오 그 자신도 그 것을 알려 주려 했던 것이고." +
@@ -1198,7 +1215,8 @@ namespace DarkUWP
 
 							mParty.Etc[9]++;
 						}
-						else if (specialEvent == SpecialEventType.DestructCastleLore) {
+						else if (specialEvent == SpecialEventType.DestructCastleLore)
+						{
 							Talk(new string[] {
 								" 다크 메이지는 가공할 힘으로 전 대륙에 결계를 형성하기 시작했고 결계속의 물체들은 서서히 형체를 잃어가기 시작했다." +
 								"  이제는 실리안 카미너스를 제어할 수있는 메피스토펠레스마저 사라져 버려서  그녀는 의지의 중심을 잃고 한없이 그녀의 힘을 방출하기 시작했다.",
@@ -1207,7 +1225,8 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.DestructCastleLore2;
 						}
-						else if (specialEvent == SpecialEventType.DestructCastleLore2) {
+						else if (specialEvent == SpecialEventType.DestructCastleLore2)
+						{
 							Talk(new string[] {
 								" 하지만 이때, 실리안 카미너스의 마법 결계를 깨트리며 희미한 의지가 스며들어왔다." +
 								" 그것은 레드 안타레스의 마지막 의지였고 그는 그녀의 결계를 버티며 마지막 말을 한다.",
@@ -1223,7 +1242,8 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.DestructCastleLore3;
 						}
-						else if (specialEvent == SpecialEventType.DestructCastleLore3) {
+						else if (specialEvent == SpecialEventType.DestructCastleLore3)
+						{
 							AppendText(new string[] {
 								" 그의 의지는 점점 희미해 지더니 결국 암흑으로 사라지고 말았다.",
 								" 당신은 어떻게 하겠는가?"
@@ -1234,22 +1254,80 @@ namespace DarkUWP
 								"다크 메이지와 싸우고 싶다"
 							});
 						}
-						else if (specialEvent == SpecialEventType.EnterUnderworld) {
+						else if (specialEvent == SpecialEventType.EnterUnderworld)
+						{
 							InvokeAnimation(AnimationType.EnterUnderworld);
 						}
-						else if (specialEvent == SpecialEventType.SeeDeadBody) {
+						else if (specialEvent == SpecialEventType.SeeDeadBody)
+						{
 							mFace = 5;
 							InvokeAnimation(AnimationType.GoInsideMenace);
 						}
-						else if (specialEvent == SpecialEventType.BattleMenace) {
+						else if (specialEvent == SpecialEventType.BattleMenace)
+						{
 							mBattleEvent = BattleEvent.MenaceMurder;
 							StartBattle(false);
 						}
-						else if (specialEvent == SpecialEventType.BackToBattleMode) {
+						else if (specialEvent == SpecialEventType.BackToBattleMode)
+						{
 							if (BattlePanel.Visibility == Visibility.Collapsed)
 								DisplayEnemy();
 							BattleMode();
 						}
+						else if (specialEvent == SpecialEventType.HelpRedAntares)
+						{
+							AppendText(new string[] { $"[color={RGB.White}] 레드 안타레스는 '차원 이탈' 을 모든 적에게 사용했다.[/color]", "" });
+
+							foreach (var enemy in mEncounterEnemyList)
+							{
+								if (!enemy.Unconscious)
+								{
+									AppendText($"[color={RGB.LightRed}] {enemy.NameSubjectJosa} 의식을 잃었다[/color]", true);
+									enemy.HP = 0;
+									enemy.Unconscious = true;
+								}
+							}
+
+							DisplayEnemy();
+							ContinueText.Visibility = Visibility.Visible;
+
+							mSpecialEvent = SpecialEventType.HelpRedAntares2;
+						}
+						else if (specialEvent == SpecialEventType.HelpRedAntares2)
+						{
+							Talk($"[color={RGB.LightMagenta}] 나는 언제나 당신 주위에서  당신에게 도움을 주도록 하겠네. 그리고 내가 알아낸 바로는 다크 메이지는  존재 한다네." +
+							"  이제 부터가 다크 메이지와의 결전이 시작 되는 걸세. 그럼 다음에 또 보도록 하세.[/color]");
+
+							foreach (var player in mPlayerList)
+							{
+								if (player.HP < 0 || player.Unconscious > 0 || player.Dead > 0)
+								{
+									player.HP = 1;
+									player.Unconscious = 0;
+									player.Dead = 0;
+								}
+							}
+
+							if (mAssistPlayer != null && (mAssistPlayer.HP < 0 || mAssistPlayer.Unconscious > 0 || mAssistPlayer.Dead > 0))
+							{
+								mAssistPlayer.HP = 1;
+								mAssistPlayer.Unconscious = 0;
+								mAssistPlayer.Dead = 0;
+							}
+
+							DisplayHP();
+							DisplayCondition();
+
+							mSpecialEvent = SpecialEventType.HelpRedAntares3;
+						}
+						else if (specialEvent == SpecialEventType.HelpRedAntares3)
+						{
+							AppendText("");
+
+							mEncounterEnemyList.Clear();
+							ShowMap();
+						}
+
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -1367,16 +1445,6 @@ namespace DarkUWP
 					{
 						//mWeaponShopEnd = false;
 						//GoWeaponShop();
-					}
-					else if (mCureMenuState == CureMenuState.NotCure)
-					{
-						//mCureMenuState = CureMenuState.None;
-						//ShowHealType();
-					}
-					else if (mCureMenuState == CureMenuState.CureEnd)
-					{
-						//mCureMenuState = CureMenuState.None;
-						//GoHospital();
 					}
 				}
 				else if (mMenuMode == MenuMode.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
@@ -2909,7 +2977,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 4)
 							{
-								//ShowFileMenu(MenuMode.ChooseLoadGame);
+								ShowFileMenu(MenuMode.ChooseLoadGame);
 							}
 							else if (mMenuFocusID == 5)
 							{
@@ -3017,6 +3085,32 @@ namespace DarkUWP
 						//		ShowThankyou();
 						//	}
 						//}
+						else if (menuMode == MenuMode.ChooseWeaponType) {
+							if (0 <= mMenuFocusID && mMenuFocusID <= 3) {
+								var weaponPrice = new int[,] {
+									{ 500, 3_000, 5_000,  7_000, 12_000, 40_000,  70_000 },
+									{ 500, 3_000, 5_000, 10_000, 30_000, 60_000, 100_000 },
+									{ 100, 1_000, 1_500,  4_000,  8_000, 35_000,  50_000 },
+									{ 200,   300,   800,  2_000,  5_000, 10_000,  30_000 }
+								};
+
+								AppendText($"[color={RGB.White}]어떤 무기를 원하십니까?[/color]");
+
+								//var i = 15;
+								var weaponNameArr = new string[7];
+								for (var i = 1; i <= 7; i++)
+								{
+									if (Common.GetWeaponName(mMenuFocusID * 7 + i).Length < 3)
+										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t\t\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
+									else if (Common.GetWeaponName(mMenuFocusID * 7 + i).Length < 5)
+										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
+									else
+										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
+								}
+
+								ShowMenu(MenuMode.ChooseWeapon, weaponNameArr);
+							}
+						}
 						//else if (menuMode == MenuMode.WeaponType)
 						//{
 						//	mMenuMode = MenuMode.None;
@@ -3223,173 +3317,162 @@ namespace DarkUWP
 
 						//	GoWeaponShop();
 						//}
-						//else if (menuMode == MenuMode.Hospital)
-						//{
-						//	mMenuMode = MenuMode.None;
+						else if (menuMode == MenuMode.Hospital)
+						{
+							mMenuMode = MenuMode.None;
 
-						//	mCurePlayer = mPlayerList[mMenuFocusID];
+							if (mMenuFocusID == mPlayerList.Count)
+								mCurePlayer = mAssistPlayer;
+							else
+								mCurePlayer = mPlayerList[mMenuFocusID];
 
-						//	ShowHealType();
-						//}
-						//else if (menuMode == MenuMode.HealType)
-						//{
-						//	if (mMenuFocusID == 0)
-						//	{
-						//		if (mCurePlayer.Dead > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 이미 죽은 상태입니다" });
-						//		else if (mCurePlayer.Unconscious > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 이미 의식불명입니다" });
-						//		else if (mCurePlayer.Poison > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 독이 퍼진 상태입니다" });
-						//		else if (mCurePlayer.HP >= mCurePlayer.Endurance * mCurePlayer.Level[0])
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 치료가 필요하지 않습니다" });
+							ShowHealType();
+						}
+						else if (menuMode == MenuMode.HealType)
+						{
+							if (mMenuFocusID == 0)
+							{
+								if (mCurePlayer.Dead > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 이미 죽은 상태입니다");
+								else if (mCurePlayer.Unconscious > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 이미 의식불명입니다");
+								else if (mCurePlayer.Poison > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 독이 퍼진 상태입니다");
+								else if (mCurePlayer.HP >= mCurePlayer.Endurance * mCurePlayer.Level * 10)
+									AppendText($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 치료가 필요하지 않습니다[/color]");
 
-						//		if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious > 0 || mCurePlayer.Poison > 0 || mCurePlayer.HP >= mCurePlayer.Endurance * mCurePlayer.Level[0])
-						//		{
-						//			ContinueText.Visibility = Visibility;
+								if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious > 0 || mCurePlayer.Poison > 0 || mCurePlayer.HP >= mCurePlayer.Endurance * mCurePlayer.Level * 10)
+								{
+									ContinueText.Visibility = Visibility;
+									mSpecialEvent = SpecialEventType.CureComplete;
+								}
+								else
+								{
+									var payment = mCurePlayer.Endurance * mCurePlayer.Level * 10 - mCurePlayer.HP;
+									payment = payment * mCurePlayer.Level * 10 / 2 + 1;
 
-						//			mCureMenuState = CureMenuState.NotCure;
-						//		}
-						//		else
-						//		{
-						//			var payment = mCurePlayer.Endurance * mCurePlayer.Level[0] - mCurePlayer.HP;
-						//			payment = payment * mCurePlayer.Level[0] / 2 + 1;
+									if (mParty.Gold < payment)
+									{
+										ShowNotEnoughMoney();
+										mSpecialEvent = SpecialEventType.NotCured;
+									}
+									else
+									{
+										mParty.Gold -= payment;
+										mCurePlayer.HP = mCurePlayer.Endurance * mCurePlayer.Level * 10;
 
-						//			if (mParty.Gold < payment)
-						//			{
-						//				mCureMenuState = CureMenuState.NotCure;
-						//				ShowNotEnoughMoney();
-						//			}
-						//			else
-						//			{
-						//				mParty.Gold -= payment;
-						//				mCurePlayer.HP = mCurePlayer.Endurance * mCurePlayer.Level[0];
+										DisplayHP();
 
-						//				AppendText(new string[] { $"[color={RGB.White}]{mCurePlayer.Name}의 모든 건강이 회복되었다[/color]" });
+										Talk($"[color={RGB.White}]{mCurePlayer.Name}의 모든 건강이 회복되었다[/color]");
+										mSpecialEvent = SpecialEventType.CureComplete;
+									}
+								}
+							}
+							else if (mMenuFocusID == 1)
+							{
+								if (mCurePlayer.Dead > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 이미 죽은 상태입니다");
+								else if (mCurePlayer.Unconscious > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 이미 의식불명입니다");
+								else if (mCurePlayer.Poison == 0)
+									AppendText($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 독에 걸리지 않았습니다[/color]");
 
-						//				DisplayHP();
+								if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious > 0 || mCurePlayer.Poison == 0)
+								{
+									ContinueText.Visibility = Visibility;
+									mSpecialEvent = SpecialEventType.CureComplete;
+								}
+								else
+								{
+									var payment = mCurePlayer.Level * 10;
 
-						//				ContinueText.Visibility = Visibility;
+									if (mParty.Gold < payment)
+									{
+										ShowNotEnoughMoney();
+										mSpecialEvent = SpecialEventType.NotCured;
+									}
+									else
+									{
+										mParty.Gold -= payment;
+										mCurePlayer.Poison = 0;
 
-						//				mCureMenuState = CureMenuState.CureEnd;
-						//			}
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 1)
-						//	{
-						//		if (mCurePlayer.Dead > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 이미 죽은 상태입니다" });
-						//		else if (mCurePlayer.Unconscious > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 이미 의식불명입니다" });
-						//		else if (mCurePlayer.Poison == 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 독에 걸리지 않았습니다" });
+										DisplayCondition();
 
-						//		if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious > 0 || mCurePlayer.Poison == 0)
-						//		{
-						//			ContinueText.Visibility = Visibility;
+										Talk($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 독이 제거 되었습니다[/color]");
+										mSpecialEvent = SpecialEventType.CureComplete;
+									}
+								}
+							}
+							else if (mMenuFocusID == 2)
+							{
+								if (mCurePlayer.Dead > 0)
+									AppendText($"{mCurePlayer.NameSubjectJosa} 이미 죽은 상태입니다");
+								else if (mCurePlayer.Unconscious == 0)
+									AppendText($"[color={RGB.White}]{mCurePlayer.Name} 의식불명이 아닙니다[/color]");
 
-						//			mCureMenuState = CureMenuState.NotCure;
-						//		}
-						//		else
-						//		{
-						//			var payment = mCurePlayer.Level[0] * 10;
+								if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious == 0)
+								{
+									ContinueText.Visibility = Visibility;
+									mSpecialEvent = SpecialEventType.CureComplete;
+								}
+								else
+								{
+									var payment = mCurePlayer.Unconscious * 2;
 
-						//			if (mParty.Gold < payment)
-						//			{
-						//				mCureMenuState = CureMenuState.NotCure;
-						//				ShowNotEnoughMoney();
-						//			}
-						//			else
-						//			{
-						//				mParty.Gold -= payment;
-						//				mCurePlayer.Poison = 0;
+									if (mParty.Gold < payment)
+									{
+										ShowNotEnoughMoney();
+										mSpecialEvent = SpecialEventType.NotCured;
+									}
+									else
+									{
+										mParty.Gold -= payment;
+										mCurePlayer.Unconscious = 0;
+										mCurePlayer.HP = 1;
 
-						//				AppendText(new string[] { $"[color={RGB.White}]{mCurePlayer.Name}(은)는 독이 제거 되었습니다[/color]" });
+										DisplayCondition();
+										DisplayHP();
 
-						//				DisplayCondition();
+										Talk($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 의식을 차렸습니다[/color]");
+										mSpecialEvent = SpecialEventType.CureComplete;
+									}
+								}
+							}
+							else if (mMenuFocusID == 3)
+							{
+								if (mCurePlayer.Dead == 0)
+									AppendText($"[color={RGB.White}]{mCurePlayer.Name}(은)는 죽지 않았습니다[/color]");
 
-						//				ContinueText.Visibility = Visibility;
-						//				mCureMenuState = CureMenuState.CureEnd;
-						//			}
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 2)
-						//	{
-						//		if (mCurePlayer.Dead > 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 이미 죽은 상태입니다" });
-						//		else if (mCurePlayer.Unconscious == 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 의식불명이 아닙니다" });
+								if (mCurePlayer.Dead == 0)
+								{
+									ContinueText.Visibility = Visibility;
+									mSpecialEvent = SpecialEventType.CureComplete;
+								}
+								else
+								{
+									var payment = mCurePlayer.Dead * 100 + 400;
 
-						//		if (mCurePlayer.Dead > 0 || mCurePlayer.Unconscious == 0)
-						//		{
-						//			ContinueText.Visibility = Visibility;
+									if (mParty.Gold < payment)
+									{
+										ShowNotEnoughMoney();
+										mSpecialEvent = SpecialEventType.NotCured;
+									}
+									else
+									{
+										mParty.Gold -= payment;
+										mCurePlayer.Dead = 0;
 
-						//			mCureMenuState = CureMenuState.NotCure;
-						//		}
-						//		else
-						//		{
-						//			var payment = mCurePlayer.Unconscious * 2;
+										if (mCurePlayer.Unconscious > mCurePlayer.Endurance * mCurePlayer.Level)
+											mCurePlayer.Unconscious = mCurePlayer.Endurance * mCurePlayer.Level;
 
-						//			if (mParty.Gold < payment)
-						//			{
-						//				mCureMenuState = CureMenuState.NotCure;
-						//				ShowNotEnoughMoney();
-						//			}
-						//			else
-						//			{
-						//				mParty.Gold -= payment;
-						//				mCurePlayer.Unconscious = 0;
-						//				mCurePlayer.HP = 1;
+										DisplayCondition();
 
-						//				AppendText(new string[] { $"[color={RGB.White}]{mCurePlayer.Name}(은)는 의식을 차렸습니다[/color]" });
-
-						//				DisplayCondition();
-						//				DisplayHP();
-
-						//				ContinueText.Visibility = Visibility;
-						//				mCureMenuState = CureMenuState.CureEnd;
-						//			}
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 3)
-						//	{
-						//		if (mCurePlayer.Dead == 0)
-						//			AppendText(new string[] { $"{mCurePlayer.Name}(은)는 죽지 않았습니다" });
-
-						//		if (mCurePlayer.Dead == 0)
-						//		{
-						//			ContinueText.Visibility = Visibility;
-
-						//			mCureMenuState = CureMenuState.NotCure;
-						//		}
-						//		else
-						//		{
-						//			var payment = mCurePlayer.Dead * 100 + 400;
-
-						//			if (mParty.Gold < payment)
-						//			{
-						//				mCureMenuState = CureMenuState.NotCure;
-						//				ShowNotEnoughMoney();
-						//			}
-						//			else
-						//			{
-						//				mParty.Gold -= payment;
-						//				mCurePlayer.Dead = 0;
-
-						//				if (mCurePlayer.Unconscious > mCurePlayer.Endurance * mCurePlayer.Level[0])
-						//					mCurePlayer.Unconscious = mCurePlayer.Endurance * mCurePlayer.Level[0];
-
-						//				AppendText(new string[] { $"[color={RGB.White}]{mCurePlayer.Name}(은)는 다시 살아났습니다[/color]" });
-
-						//				DisplayCondition();
-
-						//				ContinueText.Visibility = Visibility;
-
-						//				mCureMenuState = CureMenuState.CureEnd;
-						//			}
-						//		}
-						//	}
-						//}
+										Talk($"[color={RGB.White}]{mCurePlayer.Name}(은)는 다시 살아났습니다[/color]");
+										mSpecialEvent = SpecialEventType.CureComplete;
+									}
+								}
+							}
+						}
 						else if (menuMode == MenuMode.TrainingCenter)
 						{
 							mMenuMode = MenuMode.None;
@@ -4291,7 +4374,7 @@ namespace DarkUWP
 							AppendText("");
 						}
 						else if (menuMode == MenuMode.JoinMercury) {
-							if (mPlayerList.Count < 6)
+							if (mPlayerList.Count < 5)
 							{
 								Lore mercury = new Lore()
 								{
@@ -4344,7 +4427,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.JoinHercules)
 						{
-							if (mPlayerList.Count < 6)
+							if (mPlayerList.Count < 5)
 							{
 								Lore hercules = new Lore()
 								{
@@ -4395,7 +4478,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.JoinTitan)
 						{
-							if (mPlayerList.Count < 6)
+							if (mPlayerList.Count < 5)
 							{
 								Lore titan = new Lore()
 								{
@@ -4446,7 +4529,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.JoinMerlin)
 						{
-							if (mPlayerList.Count < 6)
+							if (mPlayerList.Count < 5)
 							{
 								Lore merlin = new Lore()
 								{
@@ -4497,7 +4580,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.JoinBetelgeuse)
 						{
-							if (mPlayerList.Count < 6)
+							if (mPlayerList.Count < 5)
 							{
 								Lore betelgeuse = new Lore()
 								{
@@ -4885,12 +4968,8 @@ namespace DarkUWP
 
 		private void MovePlayer(int moveX, int moveY)
 		{
-			mParty.XAxis = moveX;
-			mParty.YAxis = moveY;
-
-			bool needUpdateStat = false;
-			foreach (var player in mPlayerList)
-			{
+			bool UpdatePlayersState(Lore player) {
+				var needUpdate = false;
 				if (player.Poison > 0)
 					player.Poison++;
 
@@ -4912,8 +4991,25 @@ namespace DarkUWP
 							player.Unconscious = 1;
 					}
 
-					needUpdateStat = true;
+					needUpdate = true;
 				}
+
+				return needUpdate;
+			}
+
+			mParty.XAxis = moveX;
+			mParty.YAxis = moveY;
+
+			bool needUpdateStat = false;
+			foreach (var player in mPlayerList)
+			{
+				if (UpdatePlayersState(player))
+					needUpdateStat = true;
+			}
+
+			if (mAssistPlayer != null) {
+				if (UpdatePlayersState(mAssistPlayer))
+					needUpdateStat = true;
 			}
 
 			if (needUpdateStat)
@@ -4993,6 +5089,9 @@ namespace DarkUWP
 						break;
 					}
 				}
+
+				if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
+					allPlayerDead = false;
 
 				if (allPlayerDead)
 				{
@@ -5206,6 +5305,9 @@ namespace DarkUWP
 							if (player.IsAvailable)
 								player.Experience += exp;
 						};
+
+						if (mAssistPlayer != null)
+							mAssistPlayer.Experience += exp;
 					}
 				}
 
@@ -6005,8 +6107,7 @@ namespace DarkUWP
 
 						if (enemy.SpecialCastLevel > 2 && enemy.Special != 0 && mRand.Next(5) == 0)
 						{
-							foreach (var player in mPlayerList)
-							{
+							void Cast(Lore player) {
 								if (player.Dead == 0)
 								{
 									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}에게 죽음의 공격을 시도했다[/color]");
@@ -6028,6 +6129,14 @@ namespace DarkUWP
 									}
 								}
 							}
+
+							foreach (var player in mPlayerList)
+							{
+								Cast(player);
+							}
+
+							if (mAssistPlayer != null)
+								Cast(mAssistPlayer);
 						}
 					}
 
@@ -6049,6 +6158,9 @@ namespace DarkUWP
 									if (player.Poison == 0)
 										normalList.Add(player);
 								}
+
+								if (mAssistPlayer != null && mAssistPlayer.Poison == 0)
+									normalList.Add(mAssistPlayer);
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
@@ -6079,6 +6191,9 @@ namespace DarkUWP
 									if (player.Unconscious == 0)
 										normalList.Add(player);
 								}
+
+								if (mAssistPlayer != null && mAssistPlayer.Poison == 0)
+									normalList.Add(mAssistPlayer);
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
@@ -6114,6 +6229,9 @@ namespace DarkUWP
 									if (player.Dead == 0)
 										normalList.Add(player);
 								}
+
+								if (mAssistPlayer != null && mAssistPlayer.Poison == 0)
+									normalList.Add(mAssistPlayer);
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
@@ -6174,6 +6292,9 @@ namespace DarkUWP
 								if (player.IsAvailable)
 									normalList.Add(player);
 							}
+
+							if (mAssistPlayer != null && mAssistPlayer.Poison == 0)
+								normalList.Add(mAssistPlayer);
 
 							var destPlayer = normalList[mRand.Next(normalList.Count)];
 
@@ -6323,6 +6444,9 @@ namespace DarkUWP
 
 								foreach (var player in destPlayerList)
 									CastAttack(castPower, player);
+
+								if (mAssistPlayer != null)
+									CastAttack(castPower, mAssistPlayer);
 							}
 
 							void CureEnemy(BattleEnemyData whomEnemy, int curePoint)
@@ -6368,12 +6492,16 @@ namespace DarkUWP
 									}
 								}
 
+								if (mAssistPlayer != null && mAssistPlayer.IsAvailable) {
+									avgAC += mAssistPlayer.AC;
+									avgCount++;
+								}
+
 								avgAC /= avgCount;
 
 								if (avgAC > 4 && mRand.Next(5) == 0)
 								{
-									foreach (var player in mPlayerList)
-									{
+									void BreakArmor(Lore player) {
 										battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {player.Name}의 갑옷파괴를 시도했다[/color]");
 										if (player.Luck > mRand.Next(21))
 											battleResult.Add($"그러나, {enemy.NameSubjectJosa} 성공하지 못했다");
@@ -6385,6 +6513,14 @@ namespace DarkUWP
 												player.AC--;
 										}
 									}
+
+									foreach (var player in mPlayerList)
+									{
+										BreakArmor(player);
+									}
+
+									if (mAssistPlayer != null)
+										BreakArmor(mAssistPlayer);
 
 									DisplayPlayerInfo();
 								}
@@ -6416,6 +6552,9 @@ namespace DarkUWP
 												weakestPlayer = player;
 										}
 
+										if (mAssistPlayer != null && mAssistPlayer.IsAvailable && mAssistPlayer.HP < weakestPlayer.HP)
+											weakestPlayer = mAssistPlayer;
+
 										CastAttackOne(weakestPlayer);
 									}
 									else
@@ -6431,6 +6570,9 @@ namespace DarkUWP
 								if (player.IsAvailable)
 									normalList.Add(player);
 							}
+
+							if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
+								normalList.Add(mAssistPlayer);
 
 							var destPlayer = normalList[mRand.Next(normalList.Count)];
 
@@ -6489,6 +6631,9 @@ namespace DarkUWP
 											if (player.IsAvailable && (weakestPlayer == null || weakestPlayer.HP > player.HP))
 												weakestPlayer = player;
 										}
+
+										if (mAssistPlayer != null && mAssistPlayer.IsAvailable && mAssistPlayer.HP < weakestPlayer.HP)
+											weakestPlayer = mAssistPlayer;
 
 										CastAttackOne(weakestPlayer);
 									}
@@ -6616,16 +6761,6 @@ namespace DarkUWP
 		//					"방패류",
 		//					"갑옷류"
 		//			});
-		//		}
-
-		//		private void GoHospital()
-		//		{
-		//			AppendText(new string[] {
-		//						$"[color={RGB.White}]여기는 병원입니다.[/color]",
-		//						$"[color={RGB.White}]누가 치료를 받겠습니까 ?[/color]"
-		//					});
-
-		//			ShowCharacterMenu(MenuMode.Hospital);
 		//		}
 
 		//		private void ShowPartyStatus()
@@ -7088,11 +7223,11 @@ namespace DarkUWP
 		//				result.Add(message);
 		//		}
 
-		//		private void ShowNotEnoughMoney(List<string> result = null)
-		//		{
-		//			AppendText(new string[] { "당신은 충분한 돈이 없습니다." }, true);
-		//			ContinueText.Visibility = Visibility.Visible;
-		//		}
+		private void ShowNotEnoughMoney()
+		{
+			AppendText(new string[] { "당신은 충분한 돈이 없습니다." }, true);
+			ContinueText.Visibility = Visibility.Visible;
+		}
 
 		//		private void ShowThankyou()
 		//		{
@@ -7114,13 +7249,16 @@ namespace DarkUWP
 		//				return "그녀";
 		//		}
 
-		private void ShowCharacterMenu(MenuMode menuMode)
+		private void ShowCharacterMenu(MenuMode menuMode, bool includeAssistPlayer = true)
 		{
 			AppendText($"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]", true);
 
-			var menuStr = new string[mPlayerList.Count];
+			var menuStr = new string[mPlayerList.Count + (mAssistPlayer != null ? 1 : 0)];
 			for (var i = 0; i < mPlayerList.Count; i++)
 				menuStr[i] = mPlayerList[i].Name;
+
+			if (mAssistPlayer != null)
+				menuStr[menuStr.Length - 1] = mAssistPlayer.Name;
 
 			ShowMenu(menuMode, menuStr);
 		}
@@ -7448,12 +7586,9 @@ namespace DarkUWP
 
 			void ShowHospitalMenu()
 			{
-				AppendText(new string[] {
-					$"[color={RGB.White}]여기는 병원입니다.[/color]",
-					$"[color={RGB.White}]누가 치료를 받겠습니까 ?[/color]",
-				});
+				Talk($"[color={RGB.White}]여기는 병원입니다.[/color]");
 
-				ShowCharacterMenu(MenuMode.Hospital);
+				mSpecialEvent = SpecialEventType.CureComplete;
 			}
 
 			void ShowWeaponShopMenu()
@@ -7866,9 +8001,13 @@ namespace DarkUWP
 						});
 
 						foreach (var player in mPlayerList) {
-							player.Experience += 500000;
+							player.Experience += 500_000;
 						}
-						mParty.Gold += 100000;
+
+						if (mAssistPlayer != null)
+							mAssistPlayer.Experience += 500_000;
+
+						mParty.Gold += 100_000;
 
 						mSpecialEvent = SpecialEventType.MeetLordAhn8;
 					}
@@ -7902,9 +8041,13 @@ namespace DarkUWP
 
 						foreach (var player in mPlayerList)
 						{
-							player.Experience += 1000000;
+							player.Experience += 1_000_000;
 						}
-						mParty.Gold += 500000;
+
+						if (mAssistPlayer != null)
+							mAssistPlayer.Experience += 1_000_000;
+
+						mParty.Gold += 500_000;
 
 						mSpecialEvent = SpecialEventType.MeetLordAhn10;
 					}
@@ -7934,6 +8077,8 @@ namespace DarkUWP
 						});
 					}
 				}
+			}
+			else if (mParty.Map == 7) {
 
 			}
 		}
@@ -7988,38 +8133,51 @@ namespace DarkUWP
 							mParty.Min = 0;
 						}
 						else if (i >= 68 && mParty.Hour != 9) {
-							PlusTime(0, 20, 0);
-
-							foreach (var player in mPlayerList) {
-								if (player.Dead == 0 && player.Unconscious == 0) {
+							void UpdateState(Lore player) {
+								if (player.Dead == 0 && player.Unconscious == 0)
+								{
 									if (player.Poison == 0)
 									{
 										player.HP += player.Level;
 										if (player.HP > player.Endurance * player.Level * 10)
 											player.HP = player.Endurance * player.Level * 10;
 									}
-									else {
+									else
+									{
 										player.HP--;
 										if (player.HP <= 0)
 											player.Unconscious = 1;
-									}								
+									}
 								}
-								else if (player.Dead == 0 && player.Unconscious > 0) {
-									if (player.Poison == 0) {
+								else if (player.Dead == 0 && player.Unconscious > 0)
+								{
+									if (player.Poison == 0)
+									{
 										if (player.Unconscious - player.Level > 0)
 											player.Unconscious = player.Unconscious + player.Level;
-										else {
+										else
+										{
 											player.Unconscious = 0;
 											player.HP = 1;
 										}
 									}
-									else {
+									else
+									{
 										player.Unconscious++;
 										if (player.Unconscious > player.Endurance * player.Level)
 											player.Dead = 1;
 									}
 								}
 							}
+
+							PlusTime(0, 20, 0);
+
+							foreach (var player in mPlayerList) {
+								UpdateState(player);
+							}
+
+							if (mAssistPlayer != null)
+								UpdateState(mAssistPlayer);
 
 							UpdatePlayersStat();
 						}
@@ -8102,15 +8260,23 @@ namespace DarkUWP
 					mSpecialEvent = SpecialEventType.MeetLordAhn11;
 			}
 			else if (mAnimationEvent == AnimationType.GetDefaultWeapon) {
-				UpdateTileInfo(40, 78, 44);
-				AppendText(" 일행은 가장 기본적인 무기로  모두  무장을 하였다.");
-
-				foreach (var player in mPlayerList) {
-					if (player.Weapon == 0 && player.ClassType == ClassCategory.Sword && player.Class != 5) {
+				void Equip(Lore player) {
+					if (player.Weapon == 0 && player.ClassType == ClassCategory.Sword && player.Class != 5)
+					{
 						player.Weapon = 1;
 						player.WeaPower = 5;
 					}
 				}
+
+				UpdateTileInfo(40, 78, 44);
+				AppendText(" 일행은 가장 기본적인 무기로  모두  무장을 하였다.");
+
+				foreach (var player in mPlayerList) {
+					Equip(player);
+				}
+
+				if (mAssistPlayer != null)
+					Equip(mAssistPlayer);
 
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
@@ -8551,7 +8717,7 @@ namespace DarkUWP
 			}
 
 			//ShowMap();
-			BGMPlayer.Source = musicUri;
+			//BGMPlayer.Source = musicUri;
 
 			UpdateView();
 		}
@@ -8645,10 +8811,12 @@ namespace DarkUWP
 
 		private void DisplayHP()
 		{
-			for (var i = 0; i < 6; i++)
+			for (var i = 0; i < mPlayerHPList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
 					mPlayerHPList[i].Text = mPlayerList[i].HP.ToString();
+				else if (i == mPlayerList.Count && mAssistPlayer != null)
+					mPlayerHPList[i].Text = mAssistPlayer.HP.ToString();
 				else
 					mPlayerHPList[i].Text = "";
 			}
@@ -8656,10 +8824,12 @@ namespace DarkUWP
 
 		private void DisplaySP()
 		{
-			for (var i = 0; i < 6; i++)
+			for (var i = 0; i < mPlayerSPList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
 					mPlayerSPList[i].Text = mPlayerList[i].SP.ToString();
+				else if (i == mPlayerList.Count && mAssistPlayer != null)
+					mPlayerSPList[i].Text = mAssistPlayer.SP.ToString();
 				else
 					mPlayerSPList[i].Text = "";
 			}
@@ -8667,33 +8837,44 @@ namespace DarkUWP
 
 		private void DisplayCondition()
 		{
-			for (var i = 0; i < 6; i++)
+			void UpdateCondition(TextBlock conditionText, Lore player) {
+				if (player.HP <= 0 && player.Unconscious == 0)
+					player.Unconscious = 1;
+
+				if (player.Unconscious > player.Endurance * player.Level && player.Dead == 0)
+					player.Dead = 1;
+
+				if (player.Dead > 0)
+				{
+					conditionText.Foreground = new SolidColorBrush(GetColor(RGB.LightRed));
+					conditionText.Text = "죽은 상태";
+				}
+				else if (player.Unconscious > 0)
+				{
+					conditionText.Foreground = new SolidColorBrush(GetColor(RGB.LightRed));
+					conditionText.Text = "의식불명";
+				}
+				else if (player.Poison > 0)
+				{
+					conditionText.Foreground = new SolidColorBrush(GetColor(RGB.LightRed));
+					conditionText.Text = "중독";
+				}
+				else
+				{
+					conditionText.Foreground = new SolidColorBrush(GetColor(RGB.White));
+					conditionText.Text = "좋음";
+				}
+			}
+
+			for (var i = 0; i < mPlayerConditionList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
-					mPlayerConditionList[i].Text = GetConditionName(i);
+					UpdateCondition(mPlayerConditionList[i], mPlayerList[i]);
+				else if (i == mPlayerList.Count && mAssistPlayer != null)
+					UpdateCondition(mPlayerConditionList[i], mAssistPlayer);
 				else
 					mPlayerConditionList[i].Text = "";
 			}
-		}
-
-		private string GetConditionName(int index)
-		{
-			if (mPlayerList[index].HP <= 0 && mPlayerList[index].Unconscious == 0)
-				mPlayerList[index].Unconscious = 1;
-
-			if (mPlayerList[index].Unconscious > mPlayerList[index].Endurance * mPlayerList[index].Level && mPlayerList[index].Dead == 0)
-				mPlayerList[index].Dead = 1;
-
-			if (mPlayerList[index].Dead > 0)
-				return "죽은 상태";
-
-			if (mPlayerList[index].Unconscious > 0)
-				return "의식불명";
-
-			if (mPlayerList[index].Poison > 0)
-				return "중독";
-
-			return "좋음";
 		}
 
 		//		private bool EnterWater()
@@ -9102,7 +9283,6 @@ namespace DarkUWP
 					AppendText($"[color={RGB.White}]   지금 집 주인인 저 레굴루스는 여행을 떠나고 없습니다. 저에게 용건이 있으신 분은 북쪽 해안으로 오십시오.[/color]", true);
 				else if (x == 76 && y == 23)
 					AppendText($"[color={RGB.White}]         여기는 헤라클레스의 집[/color]", true);
-
 			}
 		}
 
@@ -9254,7 +9434,9 @@ namespace DarkUWP
 			ChooseSwordJob,
 			ChooseMagicJob,
 			Hospital,
+			HealType,
 			ChooseWeaponType,
+			ChooseWeapon,
 			ChooseFoodAmount,
 			JoinMadJoe,
 			JoinMercury,
@@ -9410,6 +9592,11 @@ namespace DarkUWP
 			BattleMenace,
 			BattleUseItem,
 			BackToBattleMode,
+			HelpRedAntares,
+			HelpRedAntares2,
+			HelpRedAntares3,
+			CureComplete,
+			NotCured
 		}
 
 		private enum BattleEvent {

@@ -264,7 +264,7 @@
 				<ColumnDefinition/>
 			</Grid.ColumnDefinitions>
 			<TextBlock Grid.Row="0" Grid.Column="0" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">이름</TextBlock>
-			<TextBlock Grid.Row="0" Grid.Column="1" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">체력</TextBlock>
+			<TextBlock Grid.Row="0" Grid.Column="1" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">생명력</TextBlock>
 			<TextBlock Grid.Row="0" Grid.Column="2" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">마력</TextBlock>
 			<TextBlock Grid.Row="0" Grid.Column="6" Foreground="#41e3e3" FontSize="25" HorizontalAlignment="Center" VerticalAlignment="Center">상태</TextBlock>
 
