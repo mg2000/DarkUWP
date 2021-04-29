@@ -89,10 +89,21 @@ namespace DarkUWP
 		private readonly List<string> mChangableClassList = new List<string>();
 		private readonly List<int> mChangableClassIDList = new List<int>();
 
+		private readonly string[] mItems = new string[] { "화살", "소환 문서", "대형 횃불", "수정 구슬", "비행 부츠", "이동 구슬" };
+		private readonly int[] mItemPrices = new int[] { 500, 4_000, 300, 500, 1_000, 5_000 };
+		private int mBuyItemID;
+
+		private readonly string[] mMedicines = new string[] { "체력 회복약", "마법 회복약", "해독의 약초", "의식의 약초", "부활의 약초" };
+		private readonly int[] mMedicinePrices = new int[] { 2_000, 3_000, 1_000, 5_000, 10_000 };
+		private int mBuyMedicineID;
+
 		private int mUseItemID;
 		private Lore mItemUsePlayer;
 		private readonly List<int> mUsableItemIDList = new List<int>();
 
+		private int mWeaponTypeID;
+
+		private int mTrainTime;
 
 		private SpecialEventType mSpecialEvent = SpecialEventType.None;
 
@@ -524,6 +535,16 @@ namespace DarkUWP
 						{  60, 100,  70, 100, 100,  50 },
 						{  70, 100,  70,  50, 100, 100 }
 					};
+
+				var weaponPrice = new int[,] {
+					{ 500, 3_000, 5_000,  7_000, 12_000, 40_000,  70_000 },
+					{ 500, 3_000, 5_000, 10_000, 30_000, 60_000, 100_000 },
+					{ 100, 1_000, 1_500,  4_000,  8_000, 35_000,  50_000 },
+					{ 200,   300,   800,  2_000,  5_000, 10_000,  30_000 }
+				};
+
+				var shieldPrice = new int[] { 3_000, 15_000, 45_000, 80_000, 150_000 };
+				var armorPrice = new int[] { 2_000, 5_000, 22_000, 45_000, 75_000, 100_000, 140_000, 200_000, 350_000, 500_000 };
 
 				void ShowTrainSkillMenu()
 				{
@@ -968,6 +989,56 @@ namespace DarkUWP
 					Talk(resultPart.ToArray());
 				}
 
+				void ShowWeaponTypeMenu(int weaponCategory) {
+					mWeaponTypeID = weaponCategory;
+
+					if (0 <= weaponCategory && weaponCategory <= 3)
+					{
+						AppendText($"[color={RGB.White}]어떤 무기를 원하십니까?[/color]");
+
+						var weaponNameArr = new string[7];
+						for (var i = 1; i <= 7; i++)
+						{
+							if (Common.GetWeaponName(mWeaponTypeID * 7 + i).Length < 3)
+								weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t\t\t금 {string.Format("{0:#,#}", weaponPrice[mWeaponTypeID, i - 1])} 개";
+							else if (Common.GetWeaponName(mWeaponTypeID * 7 + i).Length < 5)
+								weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t\t금 {string.Format("{0:#,#}", weaponPrice[mWeaponTypeID, i - 1])} 개";
+							else
+								
+							weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t금 {string.Format("{0:#,#}", weaponPrice[mWeaponTypeID, i - 1])} 개";
+						}
+
+						ShowMenu(MenuMode.BuyWeapon, weaponNameArr);
+					}
+					else if (weaponCategory == 4) {
+						AppendText($"[color={RGB.White}]어떤 방패를 원하십니까?[/color]");
+
+						var shieldNameArr = new string[5];
+						for (var i = 1; i <= 5; i++){
+							if (Common.GetShieldName(i).Length <= 5)
+								shieldNameArr[i - 1] = $"{Common.GetShieldName(i)}\t\t금 {string.Format("{0:#,#}", shieldPrice[i - 1])} 개";
+							else
+								shieldNameArr[i - 1] = $"{Common.GetShieldName(i)}\t금 {string.Format("{0:#,#}", shieldPrice[i - 1])} 개";
+						}
+
+						ShowMenu(MenuMode.BuyShield, shieldNameArr);
+					}
+					else if (weaponCategory == 5) {
+						AppendText($"[color={RGB.White}]어떤 갑옷을 원하십니까?[/color]");
+
+						var armorNameArr = new string[10];
+						for (var i = 1; i <= 10; i++)
+						{
+							if (Common.GetArmorName(i).Length <= 5)
+								armorNameArr[i - 1] = $"{Common.GetArmorName(i)}\t\t금 {string.Format("{0:#,#}", armorPrice[i - 1])} 개";
+							else
+								armorNameArr[i - 1] = $"{Common.GetArmorName(i)}\t금 {string.Format("{0:#,#}", armorPrice[i - 1])} 개";
+						}
+
+						ShowMenu(MenuMode.BuyArmor, armorNameArr);
+					}
+				}
+
 				if (mLoading || (mAnimationEvent != AnimationType.None && ContinueText.Visibility != Visibility.Visible && mMenuMode == MenuMode.None) || mTriggeredDownEvent)
 				{
 					mTriggeredDownEvent = false;
@@ -1327,7 +1398,23 @@ namespace DarkUWP
 							mEncounterEnemyList.Clear();
 							ShowMap();
 						}
+						else if (specialEvent == SpecialEventType.CantBuyWeapon)
+							ShowWeaponTypeMenu(mWeaponTypeID);
+						else if (specialEvent == SpecialEventType.CantBuyExp)
+							ShowExpStoreMenu();
+						else if (specialEvent == SpecialEventType.CantBuyItem)
+							ShowItemStoreMenu();
+						else if (specialEvent == SpecialEventType.CantBuyMedicine)
+							ShowMedicineStoreMenu();
+						else if (specialEvent == SpecialEventType.MeetGeniusKie) {
+							AppendText(new string[] {
+								" 나는 이곳에서 너무 많이 머물렀다네.",
+								" 자네도 만났으니 나의 할 일은 다 끝났다네.",
+								" 조금만 있다가 나도 새로운 여행을 떠나야 하지. 그럼 다음에 보도록 하지"
+							});
 
+							mParty.Etc[34] |= 1 << 4;
+						}
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -1811,6 +1898,8 @@ namespace DarkUWP
 							ShowChooseTrainSkillMemberMenu();
 						else if (menuMode == MenuMode.ChooseTrainMagic)
 							ShowChooseTrainMagicMemberMenu();
+						else if (menuMode == MenuMode.BuyWeapon || menuMode == MenuMode.BuyShield || menuMode == MenuMode.BuyArmor)
+							ShowWeaponShopMenu();
 						else if (menuMode != MenuMode.None && menuMode != MenuMode.BattleLose && menuMode != MenuMode.ChooseGameOverLoadGame && mSpecialEvent == SpecialEventType.None)
 						{
 							if (menuMode == MenuMode.CastOneMagic ||
@@ -1822,7 +1911,8 @@ namespace DarkUWP
 							{
 								BattleMode();
 							}
-							else if (menuMode == MenuMode.ChooseESPMagic) {
+							else if (menuMode == MenuMode.ChooseESPMagic)
+							{
 								ShowCastESPMenu();
 							}
 							else if (menuMode == MenuMode.EnemySelectMode)
@@ -1851,7 +1941,7 @@ namespace DarkUWP
 								menuMode == MenuMode.BattleCommand)
 								return;
 							else if (menuMode == MenuMode.ConfirmExitMap)
-							{ 
+							{
 								mParty.YAxis--;
 
 								mMenuMode = MenuMode.None;
@@ -3086,237 +3176,231 @@ namespace DarkUWP
 						//	}
 						//}
 						else if (menuMode == MenuMode.ChooseWeaponType) {
-							if (0 <= mMenuFocusID && mMenuFocusID <= 3) {
-								var weaponPrice = new int[,] {
-									{ 500, 3_000, 5_000,  7_000, 12_000, 40_000,  70_000 },
-									{ 500, 3_000, 5_000, 10_000, 30_000, 60_000, 100_000 },
-									{ 100, 1_000, 1_500,  4_000,  8_000, 35_000,  50_000 },
-									{ 200,   300,   800,  2_000,  5_000, 10_000,  30_000 }
-								};
+							ShowWeaponTypeMenu(mMenuFocusID);
+						}
+						else if (menuMode == MenuMode.BuyWeapon)
+						{
+							var price = weaponPrice[mWeaponTypeID, mMenuFocusID];
 
-								AppendText($"[color={RGB.White}]어떤 무기를 원하십니까?[/color]");
+							if (mParty.Gold < price)
+								ShowNotEnoughMoney(SpecialEventType.CantBuyWeapon);
+							else
+							{
+								mBuyWeaponID = mMenuFocusID + 1;
 
-								//var i = 15;
-								var weaponNameArr = new string[7];
-								for (var i = 1; i <= 7; i++)
-								{
-									if (Common.GetWeaponName(mMenuFocusID * 7 + i).Length < 3)
-										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t\t\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
-									else if (Common.GetWeaponName(mMenuFocusID * 7 + i).Length < 5)
-										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
-									else
-										weaponNameArr[i - 1] = $"{Common.GetWeaponName(mMenuFocusID * 7 + i)}\t금 {weaponPrice[mMenuFocusID, i - 1]} 개";
-								}
+								AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetWeaponNameJosa(mBuyWeaponID)} 사용하시겠습니까?[/color]" });
 
-								ShowMenu(MenuMode.ChooseWeapon, weaponNameArr);
+								ShowCharacterMenu(MenuMode.UseWeaponCharacter);
 							}
 						}
-						//else if (menuMode == MenuMode.WeaponType)
-						//{
-						//	mMenuMode = MenuMode.None;
+						else if (menuMode == MenuMode.UseWeaponCharacter)
+						{
+							bool VerifyWeapon(Lore equipPlayer, int weapon) {
+								if (equipPlayer.ClassType == ClassCategory.Magic)
+									return false;
+								else if ((equipPlayer.Class == 1 && 1 <= weapon && weapon <= 28) ||
+									(equipPlayer.Class == 2 && 1 <= weapon && weapon <= 21) ||
+									(equipPlayer.Class == 3 && 1 <= weapon && weapon <= 7) ||
+									(equipPlayer.Class == 4 && 8 <= weapon && weapon <= 28) ||
+									(equipPlayer.Class == 6 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))) ||
+									(equipPlayer.Class == 7 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))))
+									return true;
+								else
+									return false;
+							}
 
-						//	if (mMenuFocusID == 0)
-						//	{
-						//		AppendText(new string[] { $"[color={RGB.White}]어떤 무기를 원하십니까?[/color]" });
+							var player = mPlayerList[mMenuFocusID];
 
-						//		ShowMenu(MenuMode.BuyWeapon, new string[]
-						//		{
-						//							$"{Common.GetWeaponStr(1)} : 금 500 개",
-						//							$"{Common.GetWeaponStr(2)} : 금 1500 개",
-						//							$"{Common.GetWeaponStr(3)} : 금 3000 개",
-						//							$"{Common.GetWeaponStr(4)} : 금 5000 개",
-						//							$"{Common.GetWeaponStr(5)} : 금 10000 개",
-						//							$"{Common.GetWeaponStr(6)} : 금 30000 개",
-						//							$"{Common.GetWeaponStr(7)} : 금 60000 개",
-						//							$"{Common.GetWeaponStr(8)} : 금 80000 개",
-						//							$"{Common.GetWeaponStr(9)} : 금 100000 개"
-						//		});
-						//	}
-						//	else if (mMenuFocusID == 1)
-						//	{
-						//		AppendText(new string[] { $"[color={RGB.White}]어떤 방패를 원하십니까?[/color]" });
+							if (VerifyWeapon(player, (mWeaponTypeID - 1) * 7 + mBuyWeaponID)) {
+								player.Weapon = (mWeaponTypeID - 1) * 7 + mBuyWeaponID;
+								UpdateItem(player);
 
-						//		ShowMenu(MenuMode.BuyShield, new string[]
-						//		{
-						//							$"{Common.GetDefenseStr(1)}방패 : 금 1000 개",
-						//							$"{Common.GetDefenseStr(2)}방패 : 금 5000 개",
-						//							$"{Common.GetDefenseStr(3)}방패 : 금 25000 개",
-						//							$"{Common.GetDefenseStr(4)}방패 : 금 80000 개",
-						//							$"{Common.GetDefenseStr(5)}방패 : 금 100000 개"
-						//		});
-						//	}
-						//	else if (mMenuFocusID == 2)
-						//	{
-						//		AppendText(new string[] { $"[color={RGB.White}]어떤 갑옷를 원하십니까?[/color]" });
+								mParty.Gold -= weaponPrice[mWeaponTypeID, mBuyWeaponID - 1];
+							}
+							else {
+								Talk($" 이 무기는 {player.Name}에게는 맞지 않습니다.");
+								mSpecialEvent = SpecialEventType.CantBuyWeapon;
+							}
+						}
+						else if (menuMode == MenuMode.BuyShield)
+						{
+							var price = shieldPrice[mMenuFocusID];
 
-						//		ShowMenu(MenuMode.BuyArmor, new string[]
-						//		{
-						//							$"{Common.GetDefenseStr(1)}갑옷 : 금 5000 개",
-						//							$"{Common.GetDefenseStr(2)}갑옷 : 금 25000 개",
-						//							$"{Common.GetDefenseStr(3)}갑옷 : 금 80000 개",
-						//							$"{Common.GetDefenseStr(4)}갑옷 : 금 100000 개",
-						//							$"{Common.GetDefenseStr(5)}갑옷 : 금 200000 개"
-						//		});
-						//	}
-						//}
-						//else if (menuMode == MenuMode.BuyWeapon)
-						//{
-						//	mMenuMode = MenuMode.None;
+							if (mParty.Gold < price)
+								ShowNotEnoughMoney(SpecialEventType.CantBuyWeapon);
+							else
+							{
+								mBuyWeaponID = mMenuFocusID + 1;
 
-						//	var price = GetWeaponPrice(mMenuFocusID + 1);
+								AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetShieldNameJosa(mBuyWeaponID)} 사용하시겠습니까?[/color]" });
 
-						//	if (mParty.Gold < price)
-						//	{
-						//		mWeaponShopEnd = true;
-						//		ShowNotEnoughMoney();
-						//	}
-						//	else
-						//	{
-						//		mBuyWeaponID = mMenuFocusID + 1;
+								ShowCharacterMenu(MenuMode.UseShieldCharacter);
+							}
+						}
+						else if (menuMode == MenuMode.UseShieldCharacter)
+						{
+							bool VerifyShield(Lore equipPlayer, int shield)
+							{
+								if (equipPlayer.ClassType != ClassCategory.Sword)
+									return false;
+								else if (equipPlayer.Class == 1 || equipPlayer.Class == 2 || equipPlayer.Class == 3 || equipPlayer.Class == 7)
+									return true;
+								else
+									return false;
+							}
 
-						//		AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetWeaponStr(mBuyWeaponID)}를 사용하시겠습니까?[/color]" });
+							var player = mPlayerList[mMenuFocusID];
 
-						//		ShowCharacterMenu(MenuMode.UseWeaponCharacter);
-						//	}
-						//}
-						//else if (menuMode == MenuMode.UseWeaponCharacter)
-						//{
-						//	mMenuMode = MenuMode.None;
+							if (VerifyShield(player, mBuyWeaponID))
+							{
+								player.Shield = mBuyWeaponID;
+								UpdateItem(player);
 
-						//	var player = mPlayerList[mMenuFocusID];
+								mParty.Gold -= shieldPrice[mBuyWeaponID - 1];
+							}
+							else
+							{
+								Talk($" {player.NameSubjectJosa} 이 방패를 사용 할 수 없습니다.");
+								mSpecialEvent = SpecialEventType.CantBuyWeapon;
+							}
+						}
+						else if (menuMode == MenuMode.BuyArmor)
+						{
+							var price = armorPrice[mMenuFocusID];
 
-						//	if (player.Class == 5)
-						//	{
-						//		AppendText(new string[] { $"[color={RGB.LightMagenta}]전투승은 이 무기가 필요없습니다.[/color]" });
+							if (mParty.Gold < price)
+								ShowNotEnoughMoney(SpecialEventType.CantBuyWeapon);
+							else
+							{
+								mBuyWeaponID = mMenuFocusID + 1;
 
-						//		mWeaponShopEnd = true;
-						//		ContinueText.Visibility = Visibility.Visible;
-						//	}
-						//	else
-						//	{
-						//		var power = 0;
-						//		switch (mBuyWeaponID)
-						//		{
-						//			case 1:
-						//				power = 5;
-						//				break;
-						//			case 2:
-						//				power = 7;
-						//				break;
-						//			case 3:
-						//				power = 9;
-						//				break;
-						//			case 4:
-						//				power = 10;
-						//				break;
-						//			case 5:
-						//				power = 15;
-						//				break;
-						//			case 6:
-						//				power = 20;
-						//				break;
-						//			case 7:
-						//				power = 30;
-						//				break;
-						//			case 8:
-						//				power = 40;
-						//				break;
-						//			case 9:
-						//				power = 50;
-						//				break;
-						//		}
+								AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetArmorNameJosa(mBuyWeaponID)} 사용하시겠습니까?[/color]" });
 
-						//		player.Weapon = mBuyWeaponID;
-						//		player.WeaPower = power;
+								ShowCharacterMenu(MenuMode.UseArmorCharacter);
+							}
+						}
+						else if (menuMode == MenuMode.UseArmorCharacter)
+						{
+							bool VerifyArmor(Lore equipPlayer, int armor)
+							{
+								if ((equipPlayer.ClassType == ClassCategory.Magic && armor == 1) ||
+									(equipPlayer.ClassType == ClassCategory.Sword && ((1 <= armor && armor <= 10) || armor == 255)))
+									return true;
+								else
+									return false;
+							}
 
-						//		if (player.Class == 1)
-						//			player.WeaPower = (int)Math.Round(player.WeaPower * 1.5);
+							var player = mPlayerList[mMenuFocusID];
 
-						//		mParty.Gold -= GetWeaponPrice(mBuyWeaponID);
+							if (VerifyArmor(player, mBuyWeaponID))
+							{
+								player.Armor = mBuyWeaponID;
+								UpdateItem(player);
 
-						//		GoWeaponShop();
-						//	}
-						//}
-						//else if (menuMode == MenuMode.BuyShield)
-						//{
-						//	mMenuMode = MenuMode.None;
+								mParty.Gold -= armorPrice[mBuyWeaponID - 1];
+							}
+							else
+							{
+								Talk($" {player.NameSubjectJosa} 이 갑옷을 사용 할 수 없습니다.");
+								mSpecialEvent = SpecialEventType.CantBuyWeapon;
+							}
+						}
+						else if (menuMode == MenuMode.ChooseFoodAmount) {
+							if (mParty.Gold < (mMenuFocusID + 1) * 100)
+								ShowNotEnoughMoney(SpecialEventType.None);
+							else {
+								mParty.Gold -= (mMenuFocusID + 1) * 100;
+								var food = (mMenuFocusID + 1) * 10;
+								if (mParty.Food + food > 255)
+									mParty.Food = 255;
+								else
+									mParty.Food += food;
 
-						//	var price = GetShieldPrice(mMenuFocusID + 1);
+								AppendText("매우 고맙습니다.");
+							}
+						}
+						else if (menuMode == MenuMode.BuyExp) {
+							if (mParty.Gold < (mMenuFocusID + 1) * 10_000)
+							{
+								Talk(" 일행은 충분한 금이 없었다.");
+								mSpecialEvent = SpecialEventType.CantBuyExp;
+							}
+							else {
+								AppendText($"[color={RGB.White}]  일행은 ${mMenuFocusID + 1}시간동안 훈련을 받게 되었다.");
+								mTrainTime = mMenuFocusID + 1;
+								InvokeAnimation(AnimationType.BuyExp);
+							}						
+						}
+						else if (menuMode == MenuMode.SelectItem) {
+							AppendText($"[color={RGB.White}] 갯수를 지정 하십시오.[/color]");
 
-						//	if (mParty.Gold < price)
-						//	{
-						//		mWeaponShopEnd = true;
-						//		ShowNotEnoughMoney();
-						//	}
-						//	else
-						//	{
-						//		mBuyWeaponID = mMenuFocusID + 1;
+							mBuyItemID = mMenuFocusID;
 
-						//		AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetDefenseStr(mBuyWeaponID)}방패를 사용하시겠습니까?[/color]" });
+							var itemCountArr = new string[10];
+							for (var i = 0; i < itemCountArr.Length; i++) {
+								if (mBuyItemID == 0)
+									itemCountArr[i] = $"{mItems[i]} {(i + 1) * 10}개 : 금 {string.Format("{0:#,#}", mItemPrices[i])}개";
+								else
+									itemCountArr[i] = $"{mItems[i]} {i + 1}개 : 금 {string.Format("{0:#,#}", mItemPrices[i])}개";
+							}
 
-						//		ShowCharacterMenu(MenuMode.UseShieldCharacter);
-						//	}
-						//}
-						//else if (menuMode == MenuMode.UseShieldCharacter)
-						//{
-						//	mMenuMode = MenuMode.None;
+							ShowMenu(MenuMode.SelectItemAmount, itemCountArr);
+						}
+						else if (menuMode == MenuMode.SelectItemAmount) {
+							if (mParty.Gold < mItemPrices[mBuyItemID] * (mMenuFocusID + 1))
+							{
+								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
+								mSpecialEvent = SpecialEventType.CantBuyItem;
+							}
 
-						//	var player = mPlayerList[mMenuFocusID];
+							mParty.Gold -= mItemPrices[mBuyItemID] * (mMenuFocusID + 1);
+							if (mBuyItemID == 0)
+							{
+								if (mParty.Arrow + (mMenuFocusID + 1) * 10 < 32_768)
+									mParty.Arrow += (mMenuFocusID + 1) * 10;
+								else
+									mParty.Arrow = 32_767;
+							}
+							else {
+								if (mParty.Item[mBuyItemID + 4] + mMenuFocusID + 1 < 256)
+									mParty.Item[mBuyItemID + 4] += mMenuFocusID + 1;
+								else
+									mParty.Item[mBuyItemID + 4] = 255;
+							}
 
-						//	player.Shield = mBuyWeaponID;
-						//	player.ShiPower = mBuyWeaponID;
-						//	player.AC = player.ShiPower + player.ArmPower;
+							ShowItemStoreMenu();
+						}
+						else if (menuMode == MenuMode.SelectMedicine)
+						{
+							AppendText($"[color={RGB.White}] 갯수를 지정 하십시오.[/color]");
 
-						//	if (player.Class == 1)
-						//		player.AC++;
+							mBuyMedicineID = mMenuFocusID;
 
-						//	if (player.AC > 10)
-						//		player.AC = 10;
+							var itemCountArr = new string[10];
+							for (var i = 0; i < itemCountArr.Length; i++)
+							{
+								itemCountArr[i] = $"{mMedicines[i]} {i + 1}개 : 금 {string.Format("{0:#,#}", mMedicinePrices[i])}개";
+							}
 
-						//	mParty.Gold -= GetShieldPrice(mBuyWeaponID);
+							ShowMenu(MenuMode.SelectMedicineAmount, itemCountArr);
+						}
+						else if (menuMode == MenuMode.SelectMedicineAmount)
+						{
+							if (mParty.Gold < mMedicinePrices[mBuyMedicineID] * (mMenuFocusID + 1))
+							{
+								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
+								mSpecialEvent = SpecialEventType.CantBuyMedicine;
+							}
 
-						//	GoWeaponShop();
-						//}
-						//else if (menuMode == MenuMode.BuyArmor)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	var price = GetArmorPrice(mMenuFocusID + 1);
-
-						//	if (mParty.Gold < price)
-						//	{
-						//		mWeaponShopEnd = true;
-						//		ShowNotEnoughMoney();
-						//	}
-						//	else
-						//	{
-						//		mBuyWeaponID = mMenuFocusID + 1;
-
-						//		AppendText(new string[] { $"[color={RGB.White}]누가 이 {Common.GetDefenseStr(mBuyWeaponID)}갑옷을 사용하시겠습니까?[/color]" });
-
-						//		ShowCharacterMenu(MenuMode.UseArmorCharacter);
-						//	}
-						//}
-						//else if (menuMode == MenuMode.UseArmorCharacter)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	var player = mPlayerList[mMenuFocusID];
-
-						//	player.Armor = mBuyWeaponID;
-						//	player.ArmPower = mBuyWeaponID + 1;
-						//	player.AC = player.ShiPower + player.ArmPower;
-
-						//	if (player.Class == 1)
-						//		player.AC++;
-
-						//	if (player.AC > 10)
-						//		player.AC = 10;
-
-						//	mParty.Gold -= GetArmorPrice(mBuyWeaponID);
-
-						//	GoWeaponShop();
-						//}
+							mParty.Gold -= mMedicinePrices[mBuyMedicineID] * (mMenuFocusID + 1);
+							
+							if (mParty.Item[mBuyMedicineID] + mMenuFocusID + 1 < 256)
+								mParty.Item[mBuyMedicineID] += mMenuFocusID + 1;
+							else
+								mParty.Item[mBuyMedicineID] = 255;
+						
+							ShowItemStoreMenu();
+						}
 						else if (menuMode == MenuMode.Hospital)
 						{
 							mMenuMode = MenuMode.None;
@@ -3352,10 +3436,7 @@ namespace DarkUWP
 									payment = payment * mCurePlayer.Level * 10 / 2 + 1;
 
 									if (mParty.Gold < payment)
-									{
-										ShowNotEnoughMoney();
-										mSpecialEvent = SpecialEventType.NotCured;
-									}
+										ShowNotEnoughMoney(mSpecialEvent = SpecialEventType.NotCured);
 									else
 									{
 										mParty.Gold -= payment;
@@ -3387,10 +3468,7 @@ namespace DarkUWP
 									var payment = mCurePlayer.Level * 10;
 
 									if (mParty.Gold < payment)
-									{
-										ShowNotEnoughMoney();
-										mSpecialEvent = SpecialEventType.NotCured;
-									}
+										ShowNotEnoughMoney(SpecialEventType.NotCured);
 									else
 									{
 										mParty.Gold -= payment;
@@ -3420,10 +3498,7 @@ namespace DarkUWP
 									var payment = mCurePlayer.Unconscious * 2;
 
 									if (mParty.Gold < payment)
-									{
-										ShowNotEnoughMoney();
-										mSpecialEvent = SpecialEventType.NotCured;
-									}
+										ShowNotEnoughMoney(SpecialEventType.NotCured);
 									else
 									{
 										mParty.Gold -= payment;
@@ -3453,10 +3528,7 @@ namespace DarkUWP
 									var payment = mCurePlayer.Dead * 100 + 400;
 
 									if (mParty.Gold < payment)
-									{
-										ShowNotEnoughMoney();
-										mSpecialEvent = SpecialEventType.NotCured;
-									}
+										ShowNotEnoughMoney(SpecialEventType.NotCured);
 									else
 									{
 										mParty.Gold -= payment;
@@ -4625,6 +4697,106 @@ namespace DarkUWP
 
 								DisplayPlayerInfo();
 								AppendText("");
+							}
+							else
+								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
+						}
+						else if (menuMode == MenuMode.JoinPolaris)
+						{
+							if (mPlayerList.Count < 5)
+							{
+								Lore polaris = new Lore()
+								{
+									Name = "폴라리스",
+									Gender = GenderType.Male,
+									Class = 7,
+									ClassType = ClassCategory.Sword,
+									Level = 4,
+									Strength = 18,
+									Mentality = 10,
+									Concentration = 6,
+									Endurance = 12,
+									Resistance = 16,
+									Agility = 14,
+									Accuracy = 17,
+									Luck = 12,
+									Poison = 0,
+									Unconscious = 0,
+									Dead = 0,
+									SP = 0,
+									Experience = 0,
+									Weapon = 4,
+									Shield = 3,
+									Armor = 4,
+									PotentialAC = 2,
+									SwordSkill = 25,
+									AxeSkill = 10,
+									SpearSkill = 5,
+									BowSkill = 0,
+									ShieldSkill = 25,
+									FistSkill = 10
+								};
+
+								polaris.HP = polaris.Endurance * polaris.Level * 10;
+								polaris.UpdatePotentialExperience();
+								UpdateItem(polaris);
+
+								mPlayerList.Add(polaris);
+								UpdateTileInfo(40, 17, 44);
+
+								mParty.Etc[49] |= 1 << 7;
+
+								DisplayPlayerInfo();
+							}
+							else
+								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
+						}
+						else if (menuMode == MenuMode.JoinGeniusKie)
+						{
+							if (mPlayerList.Count < 5)
+							{
+								Lore geniusKie = new Lore()
+								{
+									Name = "지니어스 기",
+									Gender = GenderType.Male,
+									Class = 7,
+									ClassType = ClassCategory.Sword,
+									Level = 10,
+									Strength = 19,
+									Mentality = 15,
+									Concentration = 10,
+									Endurance = 14,
+									Resistance = 18,
+									Agility = 16,
+									Accuracy = 18,
+									Luck = 17,
+									Poison = 0,
+									Unconscious = 0,
+									Dead = 0,
+									Experience = 0,
+									Weapon = 19,
+									Shield = 4,
+									Armor = 6,
+									PotentialAC = 3,
+									SwordSkill = 25,
+									AxeSkill = 30,
+									SpearSkill = 30,
+									BowSkill = 10,
+									ShieldSkill = 40,
+									FistSkill = 15
+								};
+
+								geniusKie.HP = geniusKie.Endurance * geniusKie.Level * 10;
+								geniusKie.SP = geniusKie.Mentality * geniusKie.Level * 5;
+								geniusKie.UpdatePotentialExperience();
+								UpdateItem(geniusKie);
+
+								mPlayerList.Add(geniusKie);
+								UpdateTileInfo(53, 55, 44);
+
+								mParty.Etc[50] |= 1;
+
+								DisplayPlayerInfo();
 							}
 							else
 								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
@@ -6747,22 +6919,6 @@ namespace DarkUWP
 			});
 		}
 
-		//		private void GoWeaponShop()
-		//		{
-		//			AppendText(new string[] {
-		//						$"[color={RGB.White}]여기는 무기상점입니다.[/color]",
-		//						$"[color={RGB.White}]우리들은 무기, 방패, 갑옷을 팔고있습니다.[/color]",
-		//						$"[color={RGB.White}]어떤 종류를 원하십니까 ?[/color]"
-		//					});
-
-		//			ShowMenu(MenuMode.WeaponType, new string[]
-		//			{
-		//					"무기류",
-		//					"방패류",
-		//					"갑옷류"
-		//			});
-		//		}
-
 		//		private void ShowPartyStatus()
 		//		{
 		//			string CheckEnable(int i)
@@ -7225,10 +7381,15 @@ namespace DarkUWP
 		//				result.Add(message);
 		//		}
 
-		private void ShowNotEnoughMoney()
+		private void ShowNotEnoughMoney(SpecialEventType specialEvent)
 		{
-			AppendText(new string[] { "당신은 충분한 돈이 없습니다." }, true);
-			ContinueText.Visibility = Visibility.Visible;
+			var noMoneyStr = "당신은 충분한 돈이 없습니다.";
+			if (specialEvent == SpecialEventType.None)
+				AppendText(noMoneyStr);
+			else {
+				Talk(noMoneyStr);
+				mSpecialEvent = specialEvent;
+			}
 		}
 
 		//		private void ShowThankyou()
@@ -7591,24 +7752,6 @@ namespace DarkUWP
 				Talk($"[color={RGB.White}]여기는 병원입니다.[/color]");
 
 				mSpecialEvent = SpecialEventType.CureComplete;
-			}
-
-			void ShowWeaponShopMenu()
-			{
-				AppendText(new string[] {
-					$"[color={RGB.White}]여기는 무기상점입니다.[/color]",
-					$"[color={RGB.White}]우리들은 무기, 방패, 갑옷을 팔고있습니다.[/color]",
-					$"[color={RGB.White}]어떤 종류를 원하십니까 ?[/color]",
-				});
-
-				ShowMenu(MenuMode.ChooseWeaponType, new string[] {
-					"베는 무기류",
-					"찍는 무기류",
-					"찌르는 무기류",
-					"쏘는 무기류",
-					"방패류",
-					"갑옷류"
-				});
 			}
 
 			void ShowGroceryMenu()
@@ -8081,7 +8224,92 @@ namespace DarkUWP
 				}
 			}
 			else if (mParty.Map == 7) {
+				if ((moveX == 15 && moveY == 23) || (moveX == 20 && moveY == 20) || (moveX == 23 && moveY == 18))
+					ShowClassTrainingMenu();
+				else if (moveX == 17 && moveY == 18)
+					ShowExpStoreMenu();
+				else if (moveX == 16 && moveY == 55)
+					ShowMedicineStoreMenu();
+				else if ((moveX == 58 && moveY == 59) || (moveX == 58 && moveY == 57) || (moveX == 58 && moveY == 55))
+					ShowWeaponShopMenu();
+				else if ((moveX == 56 && moveY == 16) || (moveX == 53 && moveY == 19))
+					ShowItemStoreMenu();
+				else if ((moveX == 57 && moveY == 21) || (moveX == 58 && moveY == 24))
+					ShowGroceryMenu();
+				else if (moveX == 36 && moveY == 40)
+					AppendText(" 제가 폴라리스님의 후임으로  이 성문을 지키고 있습니다.");
+				else if (moveX == 39 && moveY == 40)
+				{
+					AppendText(new string[] {
+						$" 아~~~ 당신이 바로 폴라리스님이 말씀 하시던 바로 그 {mPlayerList[0].Name}님이시군요.",
+						" 폴라리스님께 말씀 많이 들었습니다."
+					});
+				}
+				else if (moveX == 35 && moveY == 18)
+					AppendText(" 이 성의 병원에는  희귀한 약초를  파는 곳이 있습니다. 체력이나 마법을 올려 주는 그런 약물이나 독을 해독하거나 심지어 죽은 사람마저도 살릴 수 있는 약초도 있더군요.");
+				else if (moveX == 35 && moveY == 20)
+					AppendText(" 저는 직접  타임 워커 알비레오님을 보았는데 같은 마법사로서 존경하지 않을 수 없더군요. 그 분의 예언은 틀림없다고 확신 할 수 있습니다.");
+				else if (moveX == 40 && moveY == 19)
+					AppendText(" 내가 듣기로는 지하 세계를 발견하기 위해 알 수 없는 피라미드로 들어간 사람이 몇 명 있더군요.");
+				else if (moveX == 40 && moveY == 21)
+					AppendText(" 저는 당신의 능력을 믿습니다.  꼭 이 세계를 구해 주십시오.");
+				else if (moveX == 40 && moveY == 17 && (mParty.Etc[49] & (1 << 7)) == 0) {
+					AppendText(new string[] {
+						$" 오래간 만이군 !! 이 폴라리스의 이름을 걸고 {mPlayerList[0].Name} 자네를 환영하네.",
+						" 이번에는 내가 참여 할 만한 모험이 없나?",
+						" 분명히 있는 것 같은데  안 그런가?  이번의 일에도 나를 참가 시켜 주게.",
+						" 꼭 부탁하네."
+					});
 
+					ShowMenu(MenuMode.JoinPolaris, new string[] {
+						"원한다면 허락하지",
+						"자네는 이 곳에서 더 할일이 많다네"
+					});
+				}
+				else if (moveX == 20 && moveY == 60)
+					AppendText(" 저는 이 성의 남쪽에 있는 피라미드에 들어갔다가 상처를 입어서  여기서 치료를 받고 있습니다.  그곳에는 몇년 전에 없어진줄로만 알고있었던 괴물들이 득실 거리더군요.");
+				else if (moveX == 55 && moveY == 58)
+					AppendText(" 저는 이 곳의 점성가인데  근래 들어 달의 운행이 점점 이상해지고 있습니다. 분명 큰 재앙이 닥칠 증거 같습니다.");
+				else if (moveX == 55 && moveY == 58)
+					AppendText(" 이 위의 상인들은 로어성의 상인과는 달리 마법 물품들을 판매하고 있더군요.");
+				else if (moveX == 60 && moveY == 45)
+					AppendText(" 알비레오의 예언은 정말일까요?  지금 이 대륙에는  그의 예언서가 안 알려진 곳이 없습니다. 때문에 민심도 많이 동요 되고 있습니다.");
+				else if (moveX == 46 && moveY == 35)
+					AppendText(" 만약 당신이 돈은 많은데  경험치가 모자란다면 서쪽에 있는 군사 훈련소의 어떤 자에게 부탁 하시오.  그는 금액 만큼의 전투 방법을 가르쳐서 경험치를 올려 준다더군요.");
+				else if (moveX == 53 && moveY == 55 && (mParty.Etc[50] & 1) == 0) {
+					if (mParty.Etc[4] == 0) {
+						Talk(new string[] {
+							" 용하게도 나를 찾아 냈군. 내가 로어 성에 남긴 메모 쪽지를 보았겠지. 그것에 관한 이야긴데 말이야..." +
+							"  나는 몇 개월 전에 로어 헌터와 이 성의 남쪽에 있는 피라미드에 들어 갔었지. 우리가 그 곳에서 본 것은 복잡한 미로와 함께 두개의 동굴이었지." +
+							" 그 두개의 동굴은 모두 지하의 신세계와 이어져 있었고  그 지하 세계는 완전한 하나의 또 다른 세계를 이루고 있었지." +
+							$" 그 곳은 [color={RGB.LightCyan}]빛의 지붕[/color]이라고 불리는  마을도 있었고 동굴도 몇개가 있었다고 기억 된다네." +
+							" 하지만 우리가 갔을 때는 새로운 변화가 일어 나고 있었네.  그 곳은 네크로만서와는 다른 존재가 반란을 꾀하고 있었고  그와 그 일당들의 힘은 정말 대단하였지." +
+							" 그의 힘에 의해 지하 세계의 피라미드가 튕겨져 나왔다는  사실을 알았을때는 정말 놀랬다네." +
+							"  도저히 우리들의 힘으로는 그들을 당할 수가 없어서 쫓겨 다니던 중 다시 피라미드를 통해 나오게 되었던 것이네." +
+							$" 그 일당은 모두 4명의 보스로 구성되어 있었는데 모두 최강의 마법사들이었네." +
+							$"  우리가 [color={RGB.LightCyan}]흉성의 증거[/color]라는 동굴을 나올 때 그 중의 우두머리인 [color={RGB.LightCyan}]메피스토펠레스[/color]가" +
+							"  공기중의 수소를 이용한 행융합 마법을 사용하여  동굴 입구를 폭파 시켰다네.  정말 그 힘은 레드 안타레스의 마법을 능가하는 힘이 었다네." +
+							" 그 4 명의 보스의 이름도 참고로 알아 두게나. 그 일당의 일인자가 방금 말한 메피스토펠레스라고하고,  이인자가 아스모데우스이고, 그 다음이 몰록이며,  마지막이 베리알이라고 하더군." +
+							"  지금은 결국 그들을 모두 따돌렸지만  그들도 그들의 존재가  알려진 이상 가만히 있지 않을걸세." +
+							" 만약 자네가 지하세계를 탐험하려 한다면 어서 빨리 가보도록하게 분명 그들은 입구를 봉쇄하려 할 걸세.  아니면 벌써 입구를 막아 버렸는지도 모르겠지만." +
+							" 지금 지하 세계에서 일어나는 변화는 분명히 알비레오의 예언과 관련이 있다네.  아마 자가 해야할 일도 거기와 관련된 것일 걸세."
+						});
+
+						mSpecialEvent = SpecialEventType.MeetGeniusKie;
+					}
+					else {
+						AppendText(new string[] {
+							" 다시 생각해 보니 나도 자네의 일행에 참가해야할 것같네." +
+							"  나는 얼마 전에 지하 세계에 다녀 왔기 때문에  전투 감각이 아직 살아았는데다가 전사라는 계급 때문에  자네에게 많은 도움이 될 걸세.",
+							" 자네에게 한번 부탁하네."
+						});
+
+						ShowMenu(MenuMode.JoinGeniusKie, new string[] {
+							"자네라면 큰 도움이 될걸세",
+							"지금은 좀 곤란하군"
+						});
+					}
+				}
 			}
 		}
 		
@@ -8217,13 +8445,16 @@ namespace DarkUWP
 						MovePlayer(mParty.XAxis, mParty.YAxis - 1);
 						Task.Delay(2000).Wait();
 					}
-
-					Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-					{
-						AppendText(" 당신이 조금 더 안쪽으로 들어 갔을때 누군가가 당신을 지켜 보고 있다는 느낌이 들었다.");
-					});
-					
+				}
+				else if (mAnimationEvent == AnimationType.GoInsideMenace2)
 					Task.Delay(5000).Wait();
+				else if (mAnimationEvent == AnimationType.BuyExp) {
+					var totalTrainTime = mTrainTime * 3;
+
+					for (var i = 0; i < totalTrainTime; i++) {
+						PlusTime(0, 20, 0);
+						Task.Delay(500).Wait();
+					}
 				}
 			});
 
@@ -8239,7 +8470,8 @@ namespace DarkUWP
 
 				mSpecialEvent = SpecialEventType.LeaveSoldier;
 			}
-			else if (mAnimationEvent == AnimationType.LeaveSoldier) {
+			else if (mAnimationEvent == AnimationType.LeaveSoldier)
+			{
 				for (var y = 48; y < 51; y++)
 					UpdateTileInfo(18, y, 44);
 				mParty.Etc[29] |= 1;
@@ -8247,13 +8479,15 @@ namespace DarkUWP
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 			}
-			else if (mAnimationEvent == AnimationType.SleepLoreCastle) {
+			else if (mAnimationEvent == AnimationType.SleepLoreCastle)
+			{
 				AppendText($"[color={RGB.White}] 아침이 밝았다.[/color]");
 
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 			}
-			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn) {
+			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn)
+			{
 				Talk(" 한참후 ...");
 
 				if (mAnimationEvent == AnimationType.TalkLordAhn)
@@ -8261,8 +8495,10 @@ namespace DarkUWP
 				else
 					mSpecialEvent = SpecialEventType.MeetLordAhn11;
 			}
-			else if (mAnimationEvent == AnimationType.GetDefaultWeapon) {
-				void Equip(Lore player) {
+			else if (mAnimationEvent == AnimationType.GetDefaultWeapon)
+			{
+				void Equip(Lore player)
+				{
 					if (player.Weapon == 0 && player.ClassType == ClassCategory.Sword && player.Class != 5)
 					{
 						player.Weapon = 1;
@@ -8273,7 +8509,8 @@ namespace DarkUWP
 				UpdateTileInfo(40, 78, 44);
 				AppendText(" 일행은 가장 기본적인 무기로  모두  무장을 하였다.");
 
-				foreach (var player in mPlayerList) {
+				foreach (var player in mPlayerList)
+				{
 					Equip(player);
 				}
 
@@ -8283,7 +8520,8 @@ namespace DarkUWP
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 			}
-			else if (mAnimationEvent == AnimationType.EnterUnderworld) {
+			else if (mAnimationEvent == AnimationType.EnterUnderworld)
+			{
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 
@@ -8292,11 +8530,41 @@ namespace DarkUWP
 				mFace = 4;
 				AppendText(" 한참 후에 당신은 정신이 들었고 여기가 지하세계임을 알아 차렸다.");
 			}
-			else if (mAnimationEvent == AnimationType.GoInsideMenace) {
+			else if (mAnimationEvent == AnimationType.GoInsideMenace)
+			{
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
+
+				AppendText(" 당신이 조금 더 안쪽으로 들어 갔을때 누군가가 당신을 지켜 보고 있다는 느낌이 들었다.");
+				InvokeAnimation(AnimationType.GoInsideMenace2);
+			}
+			else if (mAnimationEvent == AnimationType.GoInsideMenace2)
+			{
+
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 
 				StartBattleEvent(BattleEvent.MenaceMurder);
+			}
+			else if (mAnimationEvent == AnimationType.GoInsideMenace)
+			{
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
+
+				StartBattleEvent(BattleEvent.MenaceMurder);
+			}
+			else if (mAnimationEvent == AnimationType.BuyExp) {
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
+
+				foreach (var player in mPlayerList)
+					player.Experience += mTrainTime * 10_000;
+
+				if (mAssistPlayer != null)
+					mAssistPlayer.Experience += mTrainTime * 10_000;
+
+				AppendText($"[color={RGB.White}] 일행은 훈련을 끝 마쳤다.[/color]", true);
+				ContinueText.Visibility = Visibility.Visible;
 			}
 			else
 			{
@@ -8338,6 +8606,66 @@ namespace DarkUWP
 					mSpecialEvent = SpecialEventType.BattleMenace;
 				}
 			}
+		}
+
+		private void ShowWeaponShopMenu()
+		{
+			AppendText(new string[] {
+				$"[color={RGB.White}]여기는 무기상점입니다.[/color]",
+				$"[color={RGB.White}]우리들은 무기, 방패, 갑옷을 팔고있습니다.[/color]",
+				$"[color={RGB.White}]어떤 종류를 원하십니까 ?[/color]",
+			});
+
+			ShowMenu(MenuMode.ChooseWeaponType, new string[] {
+				"베는 무기류",
+				"찍는 무기류",
+				"찌르는 무기류",
+				"쏘는 무기류",
+				"방패류",
+				"갑옷류"
+			});
+		}
+
+		private void ShowExpStoreMenu()
+		{
+			AppendText(new string[] {
+					$"[color={RGB.White}] 여기에서는 황금의 양만큼  훈련을 시켜서 경험치를 올려 주는 곳입니다.[/color]",
+					$"[color={RGB.LightCyan}] 원하시는 금액을 고르십시오.[/color]"
+				});
+
+			ShowMenu(MenuMode.BuyExp, new string[] {
+					"금 10,000개; 소요시간 : 1 시간",
+					"금 20,000개; 소요시간 : 2 시간",
+					"금 30,000개; 소요시간 : 3 시간",
+					"금 40,000개; 소요시간 : 4 시간",
+					"금 50,000개; 소요시간 : 5 시간",
+					"금 60,000개; 소요시간 : 6 시간",
+					"금 70,000개; 소요시간 : 7 시간",
+					"금 80,000개; 소요시간 : 8 시간",
+					"금 90,000개; 소요시간 : 9 시간",
+					"금 100,000개; 소요시간 : 10 시간",
+				});
+		}
+
+		private void ShowItemStoreMenu() {
+			AppendText(new string[] {
+				$"[color={RGB.White}] 여기는 여러가지 물품을 파는 곳입니다.[/color]",
+				"",
+				$"[color={RGB.White}] 당신이 사고 싶은 물건을 고르십시오.[/color]"
+			});
+
+			ShowMenu(MenuMode.SelectItem, mItems);
+		}
+
+		private void ShowMedicineStoreMenu()
+		{
+			AppendText(new string[] {
+				$"[color={RGB.White}] 여기는 약초를 파는 곳입니다.[/color]",
+				"",
+				$"[color={RGB.White}] 당신이 사고 싶은 약이나 약초를 고르십시오.[/color]"
+			});
+
+			ShowMenu(MenuMode.SelectMedicine, mMedicines);
 		}
 
 		private void canvas_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
@@ -9438,7 +9766,9 @@ namespace DarkUWP
 			Hospital,
 			HealType,
 			ChooseWeaponType,
-			ChooseWeapon,
+			BuyWeapon,
+			BuyShield,
+			BuyArmor,
 			ChooseFoodAmount,
 			JoinMadJoe,
 			JoinMercury,
@@ -9469,20 +9799,23 @@ namespace DarkUWP
 			UseItemWhom,
 			ChooseBattleCureSpell,
 			ApplyBattleCureSpell,
-			ApplyBattleCureAllSpell
+			ApplyBattleCureAllSpell,
+			UseWeaponCharacter,
+			UseShieldCharacter,
+			UseArmorCharacter,
+			BuyExp,
+			SelectItem,
+			SelectItemAmount,
+			SelectMedicine,
+			SelectMedicineAmount,
+			JoinPolaris,
+			JoinGeniusKie
 		}
 
 		private enum SpinnerType
 		{
 			None,
 			TeleportationRange
-		}
-
-		private enum CureMenuState
-		{
-			None,
-			NotCure,
-			CureEnd
 		}
 
 		private enum BattleTurn
@@ -9558,7 +9891,9 @@ namespace DarkUWP
 			TalkLordAhn2,
 			GetDefaultWeapon,
 			EnterUnderworld,
-			GoInsideMenace
+			GoInsideMenace,
+			GoInsideMenace2,
+			BuyExp
 		}
 
 		private enum SpecialEventType
@@ -9598,7 +9933,12 @@ namespace DarkUWP
 			HelpRedAntares2,
 			HelpRedAntares3,
 			CureComplete,
-			NotCured
+			NotCured,
+			CantBuyWeapon,
+			CantBuyExp,
+			CantBuyItem,
+			CantBuyMedicine,
+			MeetGeniusKie
 		}
 
 		private enum BattleEvent {

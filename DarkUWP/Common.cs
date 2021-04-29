@@ -14,16 +14,19 @@ namespace DarkUWP
 		private static string[] mWeaponNames = new string[] {
 			"불확실한 무기", 
 			"맨손", 
-			"단검", "그라디우스", "샤벨", "신월도", "인월도",
-			"장검", "프렘버그", "곤봉", "소형 도끼", "프레일",
-			"전투용 망치", "철퇴", "양날 전투 도끼", "핼버드", "단도",
-			"기병창", "단창", "레이피어", "삼지창", "랜서",
-			"도끼창", "블로우 파이프", "표창", "투석기", "투창",
-			"활", "석궁", "아르발레스트",
+			"단검", "그라디우스", "샤벨", "신월도", "인월도", "장검", "프렘버그", 
+			"곤봉", "소형 도끼", "프레일", "전투용 망치", "철퇴", "양날 전투 도끼", "핼버드", 
+			"단도", "기병창", "단창", "레이피어", "삼지창", "랜서", "도끼창", 
+			"블로우 파이프", "표창", "투석기", "투창", "활", "석궁", "아르발레스트",
 			"화염", "해일", "폭풍", "지진", "이빨", "촉수", "창", 
-			"발톱", "바위", "화염검", "동물의 뼈", "번개 마법",
-			"점토", "강철 주먹", "산성 가스", "전광", "독가스",
-			"불꽃", "염소 가스", "한기", "냉동 가스"
+			"발톱", "바위", "화염검", "동물의 뼈", "번개 마법", "점토", "강철 주먹", 
+			"산성 가스", "전광", "독가스", "불꽃", "염소 가스", "한기", "냉동 가스"
+		};
+
+		private static string[] mShieldNames = new string[] { "불확실함", "없음", "가죽 방패", "소형 강철 방패", "대형 강철 방패", "크로매틱 방패", "플래티움 방패" };
+		private static string[] mArmorNames = new string[] { 
+			"불확실함", "없음", 
+			"가죽 갑옷", "링 메일", "체인 메일", "미늘 갑옷", "브리간디", "큐일보일", "라멜라", "철판 갑옷", "크로매틱 갑옷", "플래티움 갑옷"
 		};
 
 		private static string[,] mMagicNames = new string[,] {
@@ -52,6 +55,33 @@ namespace DarkUWP
 
 		public static string GetWeaponNameJosa(int weapon) {
 			return AddJosa(GetWeaponName(weapon));
+		}
+
+		public static string GetShieldName(int shield) {
+			if (0 <= shield && shield <= 5)
+				return mShieldNames[shield + 1];
+			else
+				return mShieldNames[0];
+		}
+
+		public static string GetShieldNameJosa(int shield)
+		{
+			return AddJosa(GetShieldName(shield));
+		}
+
+		public static string GetArmorName(int armor)
+		{
+			if (armor == 255)
+				return "흑요석 갑옷";
+			else if (0 <= armor && armor <= 10)
+				return mArmorNames[armor + 1];
+			else
+				return mArmorNames[0];
+		}
+
+		public static string GetArmorNameJosa(int armor)
+		{
+			return AddJosa(GetArmorName(armor));
 		}
 
 		public static string GetMagicName(int playerClass, int magic) {
