@@ -54,6 +54,79 @@
 			<StackPanel Grid.Row="0">
 				<RichTextBlock x:Name="DialogText" FontSize="25" Margin="30, 30, 30, 30" IsTextSelectionEnabled="False"></RichTextBlock>
 				<RichTextBlock x:Name="SpinnerText" FontSize="25" Margin="30, 0, 30, 0" IsTextSelectionEnabled="False" Visibility="Collapsed"></RichTextBlock>
+				<Grid x:Name="PartyInfoPanel" Margin="30, 30, 30, 0" Visibility="Collapsed">
+					<Grid.RowDefinitions>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+						<RowDefinition/>
+					</Grid.RowDefinitions>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition/>
+						<ColumnDefinition/>
+						<ColumnDefinition/>
+						<ColumnDefinition/>
+					</Grid.ColumnDefinitions>
+					<TextBlock Grid.Row="0" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">X축 =</TextBlock>
+					<TextBlock x:Name="XPosText" Grid.Row="0" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">83</TextBlock>
+					<TextBlock Grid.Row="1" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">Y축 =</TextBlock>
+					<TextBlock x:Name="YPosText" Grid.Row="1" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">83</TextBlock>
+
+					<TextBlock Grid.Row="2" Grid.Column="0" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">남은 식량 = </TextBlock>
+					<TextBlock x:Name="FoodText" Grid.Row="2" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 10, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="2" Grid.Column="2" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">마법의 횃불 : </TextBlock>
+					<TextBlock x:Name="EnableLightText" Grid.Row="2" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center" Margin="0, 10, 0, 0">불가</TextBlock>
+
+					<TextBlock Grid.Row="3" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">남은 황금 = </TextBlock>
+					<TextBlock x:Name="GoldText" Grid.Row="3" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">5326</TextBlock>
+					<TextBlock Grid.Row="3" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">공중 부상 :</TextBlock>
+					<TextBlock x:Name="EnableLevitationText" Grid.Row="3" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">불가</TextBlock>
+
+					<TextBlock Grid.Row="4" Grid.Column="0" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">남은 화살 = </TextBlock>
+					<TextBlock x:Name="ArrowText" Grid.Row="4" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 10, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="4" Grid.Column="2" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">물위를 걸음 :</TextBlock>
+					<TextBlock x:Name="EnableFloatingWaterText" Grid.Row="4" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center" Margin="0, 10, 0, 0">불가</TextBlock>
+
+					<TextBlock Grid.Row="5" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">늪위를 걸음 :</TextBlock>
+					<TextBlock x:Name="EnableFloatingSwampText" Grid.Row="5" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Center">불가</TextBlock>
+
+					<TextBlock Grid.Row="6" Grid.Column="0" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">체력 회복약 :</TextBlock>
+					<TextBlock x:Name="HPPotionText" Grid.Row="6" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 10, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="6" Grid.Column="2" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">소환 문서 :</TextBlock>
+					<TextBlock x:Name="SummonScrollText" Grid.Row="6" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 10, 85, 0">50</TextBlock>
+
+					<TextBlock Grid.Row="7" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">마법 회복약 :</TextBlock>
+					<TextBlock x:Name="SPPotionText" Grid.Row="7" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="7" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">대형 횃불 :</TextBlock>
+					<TextBlock x:Name="BigTorchText" Grid.Row="7" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+
+					<TextBlock Grid.Row="8" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">해독의 약초 :</TextBlock>
+					<TextBlock x:Name="AntidoteText" Grid.Row="8" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="8" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">수정 구슬 :</TextBlock>
+					<TextBlock x:Name="CrystalText" Grid.Row="8" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+
+					<TextBlock Grid.Row="9" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">의식의 약초 :</TextBlock>
+					<TextBlock x:Name="ConsciousText" Grid.Row="9" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="9" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">비행 부츠 :</TextBlock>
+					<TextBlock x:Name="FlyingBootsText" Grid.Row="9" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+
+					<TextBlock Grid.Row="10" Grid.Column="0" FontSize="25" Foreground="#aaaaaa">부활의 약초 :</TextBlock>
+					<TextBlock x:Name="RevivalText" Grid.Row="10" Grid.Column="1" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+					<TextBlock Grid.Row="10" Grid.Column="2" FontSize="25" Foreground="#aaaaaa">이동 구슬 :</TextBlock>
+					<TextBlock x:Name="TransportationMarbleText" Grid.Row="10" Grid.Column="3" FontSize="25" Foreground="#aaaaaa" HorizontalAlignment="Right" Margin="0, 0, 85, 0">50</TextBlock>
+
+					<TextBlock x:Name="DateText" Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" FontSize="25" Foreground="#aaaaaa" Margin="0, 10, 0, 0">774년 1월 22일</TextBlock>
+					<TextBlock x:Name="TimeText" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" FontSize="25" Foreground="#aaaaaa">0시 59분</TextBlock>
+				</Grid>
 				<Grid x:Name="StatPanel" Margin="30, 30, 30, 0" Visibility="Collapsed">
 					<Grid.RowDefinitions>
 						<RowDefinition/>

@@ -309,6 +309,15 @@ namespace DarkUWP
 								else if (x == 83 && y == 85)
 									ShowEnterMenu(EnterType.UnknownPyramid);
 							}
+							else if (mParty.Map == 7) {
+								AppendText(new string[] {
+									" 당신이 동굴 입구에 들어가려 할때 어떤 글을 보았다.",
+									"",
+									"",
+									"",
+									$"[color={RGB.White}]   여기는 한때 피라미드라고 불리우는 악마의 동굴이었지만 지금은 폐쇄되어 아무도 들어갈 수가 없습니다.[/color]"
+								});
+							}
 						}
 
 						if (mPosition == PositionType.Town)
@@ -1423,15 +1432,6 @@ namespace DarkUWP
 						args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
 						return;
 
-					if (StatPanel.Visibility == Visibility.Visible)
-						StatPanel.Visibility = Visibility.Collapsed;
-
-					if (StatHealthPanel.Visibility == Visibility.Visible)
-						StatHealthPanel.Visibility = Visibility.Collapsed;
-
-					if (DialogText.Visibility == Visibility.Collapsed)
-						DialogText.Visibility = Visibility.Visible;
-
 					ContinueText.Visibility = Visibility.Collapsed;
 
 					//if (mBattleTurn == BattleTurn.None)
@@ -1546,6 +1546,8 @@ namespace DarkUWP
 						"마법을 사용한다",
 						"초능력을 사용한다",
 						"여기서 쉰다",
+						"물품을 서로 교환한다",
+						"물품을 사용한다",
 						"게임 선택 상황"
 					});
 				}
@@ -2265,7 +2267,7 @@ namespace DarkUWP
 						{
 							if (mMenuFocusID == 0)
 							{
-								//ShowPartyStatus();
+								ShowPartyStatus();
 							}
 							else if (mMenuFocusID == 1)
 							{
@@ -3833,6 +3835,13 @@ namespace DarkUWP
 									mParty.Map = 1;
 									mParty.XAxis = 19;
 									mParty.YAxis = 11;
+
+									await RefreshGame();
+								}
+								else if (mParty.Map == 7) {
+									mParty.Map = 1;
+									mParty.XAxis = 76;
+									mParty.YAxis = 56;
 
 									await RefreshGame();
 								}
@@ -6919,28 +6928,46 @@ namespace DarkUWP
 			});
 		}
 
-		//		private void ShowPartyStatus()
-		//		{
-		//			string CheckEnable(int i)
-		//			{
-		//				if (mParty.Etc[i] == 0)
-		//					return "불가";
-		//				else
-		//					return "가능";
-		//			}
+		private void ShowPartyStatus()
+		{
+			string CheckEnable(int i)
+			{
+				if (mParty.Etc[i] == 0)
+					return "불가";
+				else
+					return "가능";
+			}
 
-		//			AppendText(new string[] { $"X 축 = {mParty.XAxis + 1 }",
-		//				$"Y 축 = {mParty.YAxis + 1}",
-		//				"",
-		//				$"남은 식량 = {mParty.Food}",
-		//				$"남은 황금 = {mParty.Gold}",
-		//				"",
-		//				$"마법의 횃불 : {CheckEnable(0)}",
-		//				$"공중 부상 : {CheckEnable(3)}",
-		//				$"물위를 걸음 : {CheckEnable(1)}",
-		//				$"늪위를 걸음 : {CheckEnable(2)}"
-		//			});
-		//		}
+			DialogText.Visibility = Visibility.Collapsed;
+			PartyInfoPanel.Visibility = Visibility.Visible;
+
+			XPosText.Text = (mParty.XAxis + 1).ToString();
+			YPosText.Text = (mParty.YAxis + 1).ToString();
+
+			FoodText.Text = mParty.Food.ToString();
+			GoldText.Text = mParty.Gold.ToString();
+			ArrowText.Text = mParty.Arrow.ToString();
+
+			EnableLightText.Text = CheckEnable(0);
+			EnableLevitationText.Text = CheckEnable(3);
+			EnableFloatingWaterText.Text = CheckEnable(1);
+			EnableFloatingSwampText.Text = CheckEnable(2);
+
+			HPPotionText.Text = mParty.Item[0].ToString();
+			SPPotionText.Text = mParty.Item[1].ToString();
+			AntidoteText.Text = mParty.Item[2].ToString();
+			ConsciousText.Text = mParty.Item[3].ToString();
+			RevivalText.Text = mParty.Item[4].ToString();
+
+			SummonScrollText.Text = mParty.Item[5].ToString();
+			BigTorchText.Text = mParty.Item[6].ToString();
+			CrystalText.Text = mParty.Item[7].ToString();
+			FlyingBootsText.Text = mParty.Item[8].ToString();
+			TransportationMarbleText.Text = mParty.Item[9].ToString();
+
+			DateText.Text = $"{mParty.Year}년 {mParty.Day / 30 + 1}월 {mParty.Day % 30 + 1}일";
+			TimeText.Text = $"{mParty.Hour}시 {mParty.Min}분";
+		}
 
 		//		private void Rest()
 		//		{
@@ -7136,6 +7163,15 @@ namespace DarkUWP
 					mParty.Etc[30] |= 1 << 3;
 				}
 				else if (mParty.YAxis == 94) {
+					ShowExitMenu();
+				}
+			}
+			else if (mParty.Map == 7) {
+				if (mParty.XAxis == 49)
+					AppendText(" 여기는  두번째의 대륙으로 이동하는  게이트입니다. 하지만 당신은 그 곳에서 하여야할 임무가 없습니다. 다시 돌아가 주십시오.");
+				else if (mParty.XAxis == 29 || mParty.XAxis == 31)
+					UpdateTileInfo(30, mParty.YAxis, 45);
+				else if (mParty.YAxis == 69) {
 					ShowExitMenu();
 				}
 			}
@@ -7571,6 +7607,18 @@ namespace DarkUWP
 
 		private bool AppendText(RichTextBlock textBlock, string str, bool append = false)
 		{
+
+			if (PartyInfoPanel.Visibility == Visibility.Visible)
+				PartyInfoPanel.Visibility = Visibility.Collapsed;
+
+			if (StatPanel.Visibility == Visibility.Visible)
+				StatPanel.Visibility = Visibility.Collapsed;
+
+			if (StatHealthPanel.Visibility == Visibility.Visible)
+				StatHealthPanel.Visibility = Visibility.Collapsed;
+
+			if (DialogText.Visibility == Visibility.Collapsed)
+				DialogText.Visibility = Visibility.Visible;
 
 			var totalLen = 0;
 
@@ -8308,6 +8356,76 @@ namespace DarkUWP
 							"자네라면 큰 도움이 될걸세",
 							"지금은 좀 곤란하군"
 						});
+					}
+				}
+				else if (moveX == 37 && moveY == 16) {
+					if (mParty.Etc[10] == 0) {
+						AppendText(new string[] {
+							$" 잘왔소, {mPlayerList[0].Name}공.",
+							" 공만이 이 일을 해결할 수 있을것 같아서  한가지 부탁을 하겠소." +
+							" 벌써 발견했는 지는 모르겠지만 이 성의 남쪽에는 알 수 없는 피라미드가 땅속 깊은 곳으로 부터 솟아 올랐소." +
+							" 그 곳을 이미 로어 헌터가 지니어스 기란 용사와 같이 탐험을 했었소. 거기에서 로어 헌터는 지하세계를 발견하고는  구사일생으로 살아서 돌아왔다오." +
+							"  하지만 그는 지하 세계에 대한 더 자세한 정보를 얻기 위해  단신으로 다시 피라미드에 들어갔다오." +
+							" 지금 그의 생사는 도저히 알 수가 없어서 공에게 그를 도와 달라고 부탁 하는 것이오.  피라미드에는 괴물들이 많이 있으니 주의해야 할것이오. 꼭 그를 찾아내시오."
+						});
+						mParty.Etc[10]++;
+					}
+					else if (mParty.Etc[10] == 1)
+						AppendText(" 피라미드 속에서 소식이 끊어진  로어 헌터의 생사를 알아 주시오.");
+					else if (mParty.Etc[10] == 2) {
+						AppendText(new string[] {
+							" 로어 헌터가 살아 있었다니 정말 다행이군요.",
+							" 공에게 이 일을 맡기기를  정말 잘 선택한 것 같소.",
+							"",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ] [ 황금 + 10000 ][/color]"
+						});
+
+						foreach (var player in mPlayerList) {
+							player.Experience += 50_000;
+						}
+
+						if (mAssistPlayer != null)
+							mAssistPlayer.Experience += 50_000;
+
+						mParty.Gold += 10_000;
+						mParty.Etc[10]++;
+					}
+					else if (mParty.Etc[10] == 3) {
+						if ((mParty.Etc[30] & (1 << 5)) > 0 && (mParty.Etc[31] & (1 << 7)) > 0) {
+							mParty.Etc[10]++;
+							TalkMode(moveX, moveY, key);
+							return;
+						}
+						else {
+							AppendText(new string[] {
+								" 이번에 공이 할 일은  피라미드 속의 두 동굴을 탐험하고 지하 세계에 대한 정보를 알아 오는 일이오.",
+								" 이번 일도 부탁하오."
+							});
+						}
+					}
+					else if (mParty.Etc[10] == 4) {
+						AppendText(new string[] {
+							" 공이 피라미드 안의 두 동굴에서 발견한 것이 이 두개의 석판이오 ?  유감스럽게도 나에게는 이 고대어를 해석할 만한 능력이 없소." +
+							" 분명히 로드 안이라면 해석할 수 있을 것이오.",
+							"",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ] [ 황금 + 15000 ][/color]"
+						});
+
+						foreach (var player in mPlayerList)
+						{
+							player.Experience += 100_000;
+						}
+
+						if (mAssistPlayer != null)
+							mAssistPlayer.Experience += 100_000;
+
+						mParty.Gold += 15_000;
+						mParty.Etc[10]++;
+					}
+					else {
+						AppendText(" 이제 공이 이 곳에서 할 일은 다 끝났소");
+						if (mParty.Etc[9] == 5)
+							mParty.Etc[9]++;
 					}
 				}
 			}
@@ -9613,6 +9731,19 @@ namespace DarkUWP
 					AppendText($"[color={RGB.White}]   지금 집 주인인 저 레굴루스는 여행을 떠나고 없습니다. 저에게 용건이 있으신 분은 북쪽 해안으로 오십시오.[/color]", true);
 				else if (x == 76 && y == 23)
 					AppendText($"[color={RGB.White}]         여기는 헤라클레스의 집[/color]", true);
+			}
+			else if (mParty.Map == 7) {
+				if (x == 38 && y == 67)
+				{
+					AppendText(new string[] {
+						$"[color={RGB.White}]       여기는[/color] [color={RGB.LightCyan}]라스트디치성[/color][color={RGB.White}]입니다[/color]",
+						$"[color={RGB.White}]          여러분을 환영합니다[/color]"
+					});
+				}
+				else if (x == 38 && y == 7)
+					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드 의 입구[/color]");
+				else if (x == 53 && y == 8)
+					AppendText($"[color={RGB.LightGreen}]       여기는 그라운드 게이트의 입구[/color]");
 			}
 		}
 
