@@ -36,7 +36,7 @@ namespace DarkUWP
 		public const string Brown = "ae7928";
 		public const string LightGray = "aaaaaa";
 		public const string DarkGray = "151515";
-		public const string LightBlue = "0a0a3c";
+		public const string LightBlue = "0000ff";
 		public const string LightGreen = "00ff00";
 		public const string LightCyan = "41e3e3";
 		public const string LightRed = "ff0000";

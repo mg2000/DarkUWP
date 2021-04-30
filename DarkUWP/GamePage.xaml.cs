@@ -30,6 +30,7 @@ namespace DarkUWP
 		private int mMapWidth = 0;
 		private int mMapHeight = 0;
 
+		private SpriteSheet mWizardEyeTile;
 		private SpriteSheet mMapTiles;
 		private SpriteSheet mCharacterTiles;
 		private byte[] mMapLayer = null;
@@ -158,12 +159,25 @@ namespace DarkUWP
 		private readonly List<string> mRemainDialog = new List<string>();
 
 		private WizardEye mWizardEye = new WizardEye();
+		private volatile bool mWizardEyePosBlink = false;
+		private DispatcherTimer mWizardEyeTimer = new DispatcherTimer();
+		private int mWizardEyePosX;
+		private int mWizardEyePosY;
 
 		public GamePage()
 		{
 			var rootFrame = Window.Current.Content as Frame;
 
 			this.InitializeComponent();
+
+			mWizardEyeTimer.Interval = TimeSpan.FromMilliseconds(100);
+			mWizardEyeTimer.Tick += (sender, e) =>
+			{
+				if (mWizardEyePosBlink)
+					mWizardEyePosBlink = false;
+				else
+					mWizardEyePosBlink = true;
+			};
 
 			DialogText.Tag = 0;
 
@@ -1415,7 +1429,8 @@ namespace DarkUWP
 							ShowItemStoreMenu();
 						else if (specialEvent == SpecialEventType.CantBuyMedicine)
 							ShowMedicineStoreMenu();
-						else if (specialEvent == SpecialEventType.MeetGeniusKie) {
+						else if (specialEvent == SpecialEventType.MeetGeniusKie)
+						{
 							AppendText(new string[] {
 								" 나는 이곳에서 너무 많이 머물렀다네.",
 								" 자네도 만났으니 나의 할 일은 다 끝났다네.",
@@ -1423,6 +1438,12 @@ namespace DarkUWP
 							});
 
 							mParty.Etc[34] |= 1 << 4;
+						}
+						else if (specialEvent == SpecialEventType.WizardEye)
+						{
+							AppendText("");
+							mWizardEyeTimer.Stop();
+							mWizardEyePosBlink = false;
 						}
 					}
 
@@ -1551,114 +1572,114 @@ namespace DarkUWP
 						"게임 선택 상황"
 					});
 				}
-				//				else if (mSpinnerType != SpinnerType.None)
-				//				{
-				//					void CloseSpinner()
-				//					{
-				//						SpinnerText.TextHighlighters.Clear();
-				//						SpinnerText.Blocks.Clear();
-				//						SpinnerText.Visibility = Visibility.Collapsed;
+				else if (mSpinnerType != SpinnerType.None)
+				{
+					void CloseSpinner()
+					{
+						SpinnerText.TextHighlighters.Clear();
+						SpinnerText.Blocks.Clear();
+						SpinnerText.Visibility = Visibility.Collapsed;
 
-				//						mSpinnerItems = null;
-				//						mSpinnerID = 0;
-				//						mSpinnerType = SpinnerType.None;
-				//					}
+						mSpinnerItems = null;
+						mSpinnerID = 0;
+						mSpinnerType = SpinnerType.None;
+					}
 
-				//					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp)
-				//					{
-				//						mSpinnerID = (mSpinnerID + 1) % mSpinnerItems.Length;
+					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp)
+					{
+						mSpinnerID = (mSpinnerID + 1) % mSpinnerItems.Length;
 
-				//						AppendText(SpinnerText, mSpinnerItems[mSpinnerID].Item1);
-				//					}
-				//					else if (args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
-				//					{
-				//						if (mSpinnerID == 0)
-				//							mSpinnerID = mSpinnerItems.Length - 1;
-				//						else
-				//							mSpinnerID--;
+						AppendText(SpinnerText, mSpinnerItems[mSpinnerID].Item1);
+					}
+					else if (args.VirtualKey == VirtualKey.Down || args.VirtualKey == VirtualKey.GamepadLeftThumbstickDown || args.VirtualKey == VirtualKey.GamepadDPadDown)
+					{
+						if (mSpinnerID == 0)
+							mSpinnerID = mSpinnerItems.Length - 1;
+						else
+							mSpinnerID--;
 
-				//						AppendText(SpinnerText, mSpinnerItems[mSpinnerID].Item1);
-				//					}
-				//					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
-				//					{
-				//						if (mSpinnerType == SpinnerType.TeleportationRange)
-				//						{
-				//							AppendText("");
+						AppendText(SpinnerText, mSpinnerItems[mSpinnerID].Item1);
+					}
+					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
+					{
+						if (mSpinnerType == SpinnerType.TeleportationRange)
+						{
+							AppendText("");
 
-				//							CloseSpinner();
-				//						}
-				//					}
-				//					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
-				//					{
-				//						if (mSpinnerType == SpinnerType.TeleportationRange)
-				//						{
-				//							int moveX = mParty.XAxis;
-				//							int moveY = mParty.YAxis;
+							CloseSpinner();
+						}
+					}
+					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
+					{
+						if (mSpinnerType == SpinnerType.TeleportationRange)
+						{
+							int moveX = mParty.XAxis;
+							int moveY = mParty.YAxis;
 
-				//							switch (mTeleportationDirection)
-				//							{
-				//								case 0:
-				//									moveY -= mSpinnerItems[mSpinnerID].Item2;
-				//									break;
-				//								case 1:
-				//									moveY += mSpinnerItems[mSpinnerID].Item2;
-				//									break;
-				//								case 2:
-				//									moveX += mSpinnerItems[mSpinnerID].Item2;
-				//									break;
-				//								case 3:
-				//									moveX -= mSpinnerItems[mSpinnerID].Item2;
-				//									break;
-				//							}
+							switch (mTeleportationDirection)
+							{
+								case 0:
+									moveY -= mSpinnerItems[mSpinnerID].Item2;
+									break;
+								case 1:
+									moveY += mSpinnerItems[mSpinnerID].Item2;
+									break;
+								case 2:
+									moveX += mSpinnerItems[mSpinnerID].Item2;
+									break;
+								case 3:
+									moveX -= mSpinnerItems[mSpinnerID].Item2;
+									break;
+							}
 
-				//							if (moveX < 4 || moveX > mMapWidth - 4 || moveY < 4 || moveY > mMapHeight - 4)
-				//								AppendText("공간 이동이 통하지 않습니다.");
-				//							else
-				//							{
-				//								var valid = false;
-				//								if (mPosition == PositionType.Town)
-				//								{
-				//									if (27 <= mMapLayer[moveX + mMapWidth * moveY] && mMapLayer[moveX + mMapWidth * moveY] <= 47)
-				//										valid = true;
-				//								}
-				//								else if (mPosition == PositionType.Ground)
-				//								{
-				//									if (24 <= mMapLayer[moveX + mMapWidth * moveY] && mMapLayer[moveX + mMapWidth * moveY] <= 47)
-				//										valid = true;
-				//								}
-				//								else if (mPosition == PositionType.Den)
-				//								{
-				//									if (41 <= mMapLayer[moveX + mMapWidth * moveY] && mMapLayer[moveX + mMapWidth * moveY] <= 47)
-				//										valid = true;
-				//								}
-				//								else if (mPosition == PositionType.Keep)
-				//								{
-				//									if (27 <= mMapLayer[moveX + mMapWidth * moveY] && mMapLayer[moveX + mMapWidth * moveY] <= 47)
-				//										valid = true;
-				//								}
+							if (moveX < 4 || moveX > mMapWidth - 4 || moveY < 4 || moveY > mMapHeight - 4)
+								AppendText("공간 이동이 통하지 않습니다.");
+							else
+							{
+								var valid = false;
+								if (mPosition == PositionType.Town)
+								{
+									if (27 <= GetTileInfo(moveX, moveY) && GetTileInfo(moveX, moveY) <= 47)
+										valid = true;
+								}
+								else if (mPosition == PositionType.Ground)
+								{
+									if (24 <= GetTileInfo(moveX, moveY) && GetTileInfo(moveX, moveY) <= 47)
+										valid = true;
+								}
+								else if (mPosition == PositionType.Den)
+								{
+									if (41 <= GetTileInfo(moveX, moveY) && GetTileInfo(moveX, moveY) <= 47)
+										valid = true;
+								}
+								else if (mPosition == PositionType.Keep)
+								{
+									if (27 <= GetTileInfo(moveX, moveY) && GetTileInfo(moveX, moveY) <= 47)
+										valid = true;
+								}
 
-				//								if (!valid)
-				//									AppendText("공간 이동 장소로 부적합 합니다.");
-				//								else
-				//								{
-				//									mMagicPlayer.SP -= 50;
+								if (!valid)
+									AppendText("공간 이동 장소로 부적합 합니다.");
+								else
+								{
+									mMagicPlayer.SP -= 50;
 
-				//									if (mMapLayer[moveX + mMapWidth * moveY] == 0 || ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && mMapLayer[moveX + mMapWidth * moveY] == 52))
-				//										AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신을 배척합니다.[/color]");
-				//									else
-				//									{
-				//										mParty.XAxis = moveX;
-				//										mParty.YAxis = moveY;
+									if (GetTileInfo(moveX, moveY) == 0 || ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && GetTileInfo(moveX, moveY) == 52))
+										AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신을 배척합니다.[/color]");
+									else
+									{
+										mParty.XAxis = moveX;
+										mParty.YAxis = moveY;
 
-				//										AppendText($"[color={RGB.White}]공간 이동 마법이 성공했습니다.[/color]");
-				//									}
-				//								}
-				//							}
-				//						}
+										AppendText($"[color={RGB.White}]공간 이동 마법이 성공했습니다.[/color]");
+									}
+								}
+							}
+						}
 
-				//						CloseSpinner();
-				//					}
-				//				}
+						CloseSpinner();
+					}
+				}
 				else if (mMenuMode != MenuMode.None)
 				{
 					void ShowTrainMessage() {
@@ -1769,28 +1790,53 @@ namespace DarkUWP
 
 					void ShowCureDestMenu(Lore player, MenuMode menuMode)
 					{
-						AppendText(new string[] { "누구에게" });
-						string[] playerList;
+						int curePoint;
 
-						int availCount;
-						if (player.ClassType == ClassCategory.Magic)
-							availCount = player.CureMagic / 10;
+						mMagicPlayer = mPlayerList[mBattlePlayerID];
+						if (mMagicPlayer.ClassType == ClassCategory.Magic)
+							curePoint = mMagicPlayer.CureMagic / 10;
 						else
-							availCount = player.AxeSkill / 10;
+							curePoint = mMagicPlayer.AxeSkill / 10;
 
-						if (availCount < 6)
-							playerList = new string[mPlayerList.Count];
+						if (curePoint <= 0)
+						{
+							Talk("당신은 치료 마법을 사용할 능력이 없습니다.");
+							if (menuMode == MenuMode.ChooseBattleCureSpell)
+								mSpecialEvent = SpecialEventType.BackToBattleMode;
+							else
+								ContinueText.Visibility = Visibility.Visible;
+						}
 						else
 						{
-							playerList = new string[mPlayerList.Count + 1];
-							playerList[playerList.Length - 1] = "모든 사람들에게";
+							AppendText(new string[] { "누구에게" });
+							string[] playerList;
+
+							int availCount;
+							if (player.ClassType == ClassCategory.Magic)
+								availCount = player.CureMagic / 10;
+							else
+								availCount = player.AxeSkill / 10;
+
+							if (availCount < 6)
+							{
+								playerList = new string[mAssistPlayer == null ? mPlayerList.Count : mPlayerList.Count + 1];
+								if (mAssistPlayer != null)
+									playerList[playerList.Length - 1] = mAssistPlayer.Name;
+							}
+							else
+							{
+								playerList = new string[mAssistPlayer == null ? mPlayerList.Count + 1 : mPlayerList.Count + 2];
+								if (mAssistPlayer != null)
+									playerList[playerList.Length - 2] = mAssistPlayer.Name;
+								playerList[playerList.Length - 1] = "모든 사람들에게";
+							}
+
+
+							for (var i = 0; i < mPlayerList.Count; i++)
+								playerList[i] = mPlayerList[i].Name;
+
+							ShowMenu(menuMode, playerList);
 						}
-
-
-						for (var i = 0; i < mPlayerList.Count; i++)
-							playerList[i] = mPlayerList[i].Name;
-						
-						ShowMenu(menuMode, playerList);
 					}
 
 					void ShowSummonMenu() {
@@ -2048,15 +2094,8 @@ namespace DarkUWP
 								xInit = 0;
 								width = mMapWidth;
 							}
-
-							if (mMapHeight <= 80) {
-								yInit = 0;
-								Height = mMapHeight;
-							}
-
-							if (width == 0 || height == 0) {
+							else {
 								xInit = mParty.XAxis - 50;
-								yInit = mParty.YAxis - 50;
 
 								if (xInit <= 0)
 								{
@@ -2067,36 +2106,46 @@ namespace DarkUWP
 									else
 										width = mMapWidth;
 								}
+								else if (xInit + 100 > mMapWidth)
+								{
+									if (mMapWidth > 100)
+									{
+										xInit = mMapWidth - 100;
+										width = 100;
+									}
+									else
+									{
+										xInit = 0;
+										width = mMapWidth;
+									}
+								}
+								else
+									width = 100;
+							}
+
+							if (mMapHeight <= 80) {
+								yInit = 0;
+								Height = mMapHeight;
+							}
+							else
+							{
+								yInit = mParty.YAxis - 40;
 
 								if (yInit <= 0)
 								{
 									yInit = 0;
 
-									if (mMapHeight > 100)
-										height = 100;
+									if (mMapHeight > 80)
+										height = 80;
 									else
 										height = mMapHeight;
 								}
-
-
-								if (xInit + 50 > mMapWidth)
+								else if (yInit + 80 > mMapHeight)
 								{
-									if (mMapWidth > 100) {
-										xInit = mMapWidth - 100;
-										width = 100;
-									}
-									else {
-										xInit = 0;
-										width = mMapWidth;
-									}
-								}
-
-								if (yInit + 50 > mMapHeight)
-								{
-									if (mMapWidth > 100)
+									if (mMapHeight > 80)
 									{
-										yInit = mMapHeight - 100;
-										height = 100;
+										yInit = mMapHeight - 80;
+										height = 80;
 									}
 									else
 									{
@@ -2104,9 +2153,14 @@ namespace DarkUWP
 										height = mMapHeight;
 									}
 								}
+								else
+									height = 80;
 							}
 
-							lock(mWizardEye) {
+							MapCanvas.Width = width * 4;
+							MapCanvas.Height = height * 4;
+
+							lock (mWizardEye) {
 								mWizardEye.Set(width, height);
 
 								var offset = 0;
@@ -2130,6 +2184,11 @@ namespace DarkUWP
 
 								for (var y = yInit; y < yInit + height; y++) {
 									for (var x = xInit; x < xInit + width; x++) {
+										if (mParty.XAxis == x && mParty.YAxis == y) {
+											mWizardEyePosX = offset % width;
+											mWizardEyePosY = offset / width;
+										}
+
 										var tileInfo = GetTileInfo(x, y);
 										if (mPosition == PositionType.Town)  {
 											if ((1 <= tileInfo && tileInfo <= 18) || tileInfo == 20 || tileInfo == 21)
@@ -2215,11 +2274,17 @@ namespace DarkUWP
 											else
 												mWizardEye.Data[offset] = LIGHTMAGENTA;
 										}
+
+										offset++;
 									}
 								}
 							}
 
+							mWizardEyeTimer.Start();
 							MapCanvas.Visibility = Visibility.Visible;
+
+							Talk(" 주지사의 눈을 통해 이 지역을 바라보고 있다.");
+							mSpecialEvent = SpecialEventType.WizardEye;
 						}
 
 						void ShowCureSpellMenu(Lore player, int whomID, MenuMode applyCureMode, MenuMode applyAllCureMode)
@@ -2257,6 +2322,20 @@ namespace DarkUWP
 							}
 						}
 
+						void Teleport(MenuMode newMenuMode) {
+							if (mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+								AppendText($"[color={RGB.LightMagenta}]이 동굴의 악의 힘이 공간 이동을 방해 합니다.[/color]");
+							else
+							{
+								AppendText($"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]");
+
+								ShowMenu(newMenuMode, new string[] { "북쪽으로 공간이동",
+														"남쪽으로 공간이동",
+														"동쪽으로 공간이동",
+														"서쪽으로 공간이동" });
+							}
+						}
+
 						var menuMode = HideMenu();
 
 						if (menuMode == MenuMode.EnemySelectMode)
@@ -2272,7 +2351,7 @@ namespace DarkUWP
 							else if (mMenuFocusID == 1)
 							{
 								AppendText(new string[] { "능력을 보고 싶은 인물을 선택하시오" });
-								//ShowCharacterMenu(MenuMode.ViewCharacter);
+								ShowCharacterMenu(MenuMode.ViewCharacter);
 							}
 							else if (mMenuFocusID == 2)
 							{
@@ -2283,6 +2362,8 @@ namespace DarkUWP
 								{
 									if (i < mPlayerList.Count)
 										mHealthTextList[i].Update(mPlayerList[i].Name, mPlayerList[i].Poison, mPlayerList[i].Unconscious, mPlayerList[i].Dead);
+									else if (i == mPlayerList.Count)
+										mHealthTextList[i].Update(mAssistPlayer.Name, mAssistPlayer.Poison, mAssistPlayer.Unconscious, mAssistPlayer.Dead);
 									else
 										mHealthTextList[i].Clear();
 								}
@@ -2292,12 +2373,10 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 3)
 							{
-								AppendText(new string[] { $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]" }, true);
-								//ShowCharacterMenu(MenuMode.CastSpell);
+								ShowCharacterMenu(MenuMode.CastSpell, false);
 							}
 							else if (mMenuFocusID == 4)
 							{
-								AppendText(new string[] { $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]" }, true);
 								//ShowCharacterMenu(MenuMode.Extrasense);
 							}
 							else if (mMenuFocusID == 5)
@@ -2305,6 +2384,14 @@ namespace DarkUWP
 								//Rest();
 							}
 							else if (mMenuFocusID == 6)
+							{
+
+							}
+							else if (mMenuFocusID == 7)
+							{
+
+							}
+							else if (mMenuFocusID == 8)
 							{
 								AppendText(new string[] { "게임 선택 상황" });
 
@@ -2322,430 +2409,522 @@ namespace DarkUWP
 								ShowMenu(MenuMode.GameOptions, gameOptions);
 							}
 						}
-						//else if (menuMode == MenuMode.ViewCharacter)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	AppendText("");
-
-						//	StatPlayerName.Text = mPlayerList[mMenuFocusID].Name;
-						//	StatPlayerGender.Text = mPlayerList[mMenuFocusID].GenderName;
-						//	StatPlayerClass.Text = Common.GetClassStr(mPlayerList[mMenuFocusID]);
-
-						//	StatStrength.Text = mPlayerList[mMenuFocusID].Strength.ToString();
-						//	StatMentality.Text = mPlayerList[mMenuFocusID].Mentality.ToString();
-						//	StatConcentration.Text = mPlayerList[mMenuFocusID].Concentration.ToString();
-						//	StatEndurance.Text = mPlayerList[mMenuFocusID].Endurance.ToString();
-
-						//	StatResistance.Text = mPlayerList[mMenuFocusID].Resistance.ToString();
-						//	StatAgility.Text = mPlayerList[mMenuFocusID].Agility.ToString();
-						//	StatLuck.Text = mPlayerList[mMenuFocusID].Luck.ToString();
-
-						//	StatWeaponAccuracy.Text = mPlayerList[mMenuFocusID].Accuracy[0].ToString();
-						//	StatMagicAccuracy.Text = mPlayerList[mMenuFocusID].Accuracy[1].ToString();
-						//	StatESPAccuracy.Text = mPlayerList[mMenuFocusID].Accuracy[2].ToString();
-
-						//	StatAttackLevel.Text = mPlayerList[mMenuFocusID].Level[0].ToString();
-						//	StatMagicLevel.Text = mPlayerList[mMenuFocusID].Level[1].ToString();
-						//	StatESPLevel.Text = mPlayerList[mMenuFocusID].Level[2].ToString();
-
-						//	StatExp.Text = mPlayerList[mMenuFocusID].Experience.ToString();
-
-						//	StatWeapon.Text = Common.GetWeaponStr(mPlayerList[mMenuFocusID].Weapon);
-						//	StatShield.Text = Common.GetWeaponStr(mPlayerList[mMenuFocusID].Shield);
-						//	StatArmor.Text = Common.GetWeaponStr(mPlayerList[mMenuFocusID].Armor);
-
-						//	DialogText.Visibility = Visibility.Collapsed;
-						//	StatPanel.Visibility = Visibility.Visible;
-
-						//	ContinueText.Visibility = Visibility.Visible;
-						//}
-						//else if (menuMode == MenuMode.CastSpell)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	if (mPlayerList[mMenuFocusID].IsAvailable)
-						//	{
-						//		mMagicPlayer = mPlayerList[mMenuFocusID];
-						//		AppendText(new string[] { "사용할 마법의 종류 ===>" });
-						//		ShowMenu(MenuMode.SpellCategory, new string[]
-						//		{
-						//							"공격 마법",
-						//							"치료 마법",
-						//							"변화 마법"
-						//		});
-						//	}
-						//	else
-						//	{
-						//		AppendText(new string[] { $"{GetGenderData(mPlayerList[mMenuFocusID])}는 마법을 사용할 수 있는 상태가 아닙니다" });
-						//	}
-						//}
-						//else if (menuMode == MenuMode.SpellCategory)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	if (mMenuFocusID == 0)
-						//	{
-						//		AppendText(new string[] { "전투 모드가 아닐 때는 공격 마법을 사용할 수 없습니다." });
-						//		ContinueText.Visibility = Visibility.Visible;
-						//	}
-						//	else if (mMenuFocusID == 1)
-						//	{
-						//		ShowCureDestMenu(mMagicPlayer, MenuMode.ChooseCureSpell);
-						//	}
-						//	else if (mMenuFocusID == 2)
-						//	{
-						//		mMenuMode = MenuMode.None;
-
-						//		AppendText(new string[] { "선택" });
-
-						//		int availableCount;
-						//		if (mMagicPlayer.Level[1] > 1)
-						//			availableCount = mMagicPlayer.Level[1] / 2 + 1;
-						//		else
-						//			availableCount = 1;
-
-						//		if (availableCount > 7)
-						//			availableCount = 7;
-
-						//		var totalMagicCount = 40 - 33 + 1;
-						//		if (availableCount < totalMagicCount)
-						//			totalMagicCount = availableCount;
-
-						//		var phenominaMagicMenu = new string[totalMagicCount];
-						//		for (var i = 33; i < 33 + availableCount; i++)
-						//			phenominaMagicMenu[i - 33] = Common.GetMagicStr(i);
-
-						//		ShowMenu(MenuMode.ApplyPhenominaMagic, phenominaMagicMenu);
-						//	}
-						//}
-						//else if (menuMode == MenuMode.ChooseCureSpell)
-						//{
-						//	mMenuMode = MenuMode.None;
-
-						//	AppendText(new string[] { "선택" });
-
-						//	if (mMenuFocusID < mPlayerList.Count)
-						//		mMagicWhomPlayer = mPlayerList[mMenuFocusID];
-
-						//	ShowCureSpellMenu(mMagicPlayer, mMenuFocusID, MenuMode.ApplyCureMagic, MenuMode.ApplyCureAllMagic);
-						//}
-						else if (menuMode == MenuMode.ChooseBattleCureSpell)
+						else if (menuMode == MenuMode.ViewCharacter)
 						{
-							mMenuMode = MenuMode.None;
+							DialogText.Visibility = Visibility.Collapsed;
+							StatPanel.Visibility = Visibility.Visible;
+
+							var player = mMenuFocusID < mPlayerList.Count ? mPlayerList[mMenuFocusID] : mAssistPlayer;
+
+							StatPlayerName.Text = player.Name;
+							StatPlayerGender.Text = player.GenderStr;
+							StatPlayerClass.Text = player.ClassStr;
+
+							StatStrength.Text = player.Strength.ToString();
+							StatMentality.Text = player.Mentality.ToString();
+							StatConcentration.Text = player.Concentration.ToString();
+							StatEndurance.Text = player.Endurance.ToString();
+							StatResistance.Text = player.Resistance.ToString();
+							StatAgility.Text = player.Agility.ToString();
+							StatAccuracy.Text = player.Accuracy.ToString();
+							StatLuck.Text = player.Luck.ToString();
+
+							if (player.ClassType == ClassCategory.Sword) {
+								StatAbility1Title.Text = "베는 무기 기술치 :";
+								StatAbility1Value.Text = player.SwordSkill.ToString();
+
+								if (player.Class != 7)
+									StatAbility2Title.Text = "찍는 무기 기술치 :";
+								else
+									StatAbility2Title.Text = "치료 마법 능력치 :";
+								StatAbility2Value.Text = player.AxeSkill.ToString();
+
+								StatAbility3Title.Text = "찌르는 무기 기술치 :";
+								StatAbility3Value.Text = player.SpearSkill.ToString();
+
+								StatAbility4Title.Text = "쏘는 무기 기술치 :";
+								StatAbility4Value.Text = player.BowSkill.ToString();
+
+								StatAbility5Title.Text = "방패 사용 기술치 :";
+								StatAbility5Value.Text = player.ShieldSkill.ToString();
+
+								StatAbility6Title.Text = "맨손 사용 기술치 :";
+								StatAbility6Value.Text = player.FistSkill.ToString();
+							}
+							else if (player.ClassType == ClassCategory.Magic) {
+								StatAbility1Title.Text = "공격 마법 능력치 :";
+								StatAbility1Value.Text = player.AttackMagic.ToString();
+
+								StatAbility2Title.Text = "변화 마법 능력치 :";
+								StatAbility2Value.Text = player.PhenoMagic.ToString();
+
+								StatAbility3Title.Text = "치료 마법 능력치 :";
+								StatAbility3Value.Text = player.CureMagic.ToString();
+
+								StatAbility4Title.Text = "특수 마법 능력치 :";
+								StatAbility4Value.Text = player.SpecialMagic.ToString();
+
+								StatAbility5Title.Text = "초 자연력 능력치 :";
+								StatAbility5Value.Text = player.ESPMagic.ToString();
+
+								StatAbility6Title.Text = "소환 마법 능력치 :";
+								StatAbility6Value.Text = player.SummonMagic.ToString();
+							}
+		
+							StatExp.Text = player.Experience.ToString("#,#");
+							StatLevel.Text = player.Level.ToString();
+
+							StatWeapon.Text = Common.GetWeaponName(mPlayerList[mMenuFocusID].Weapon);
+							StatShield.Text = Common.GetShieldName(mPlayerList[mMenuFocusID].Shield);
+							StatArmor.Text = Common.GetArmorName(mPlayerList[mMenuFocusID].Armor);
+						}
+						else if (menuMode == MenuMode.CastSpell)
+						{
+							if (!mPlayerList[mMenuFocusID].IsAvailable)
+								AppendText($"{mPlayerList[mMenuFocusID].GenderPronoun}는 마법을 사용할 수 있는 상태가 아닙니다");
+							else if (mPlayerList[mMenuFocusID].ClassType == ClassCategory.Sword && mPlayerList[mMenuFocusID].Class != 7)
+								AppendText($"{mPlayerList[mMenuFocusID].NameSubjectJosa} 마법을 사용할 수 없는 계열입니다.");
+							else
+							{
+								mMagicPlayer = mPlayerList[mMenuFocusID];
+								AppendText("사용할 마법의 종류 ===>");
+								ShowMenu(MenuMode.SpellCategory, new string[]
+								{
+									"치료 마법",
+									"변화 마법"
+								});
+							}
+						}
+						else if (menuMode == MenuMode.SpellCategory)
+						{
+							if (mMenuFocusID == 0)
+							{
+								ShowCureDestMenu(mMagicPlayer, MenuMode.ChooseCureSpell);
+							}
+							else if (mMenuFocusID == 1)
+							{
+								if (mMagicPlayer.ClassType == ClassCategory.Sword)
+									AppendText($"{mMagicPlayer.NameSubjectJosa} 변화 마법을 사용하는 계열이 아닙니다.");
+								else
+								{
+									AppendText(new string[] { "선택" });
+
+									int availableCount = mMagicPlayer.PhenoMagic / 10;
+									if (availableCount > 10)
+										availableCount = 10;
+
+									var phenominaMagicMenu = new string[availableCount];
+									for (var i = 0; i < availableCount; i++)
+										phenominaMagicMenu[i] = Common.GetMagicName(2, i + 1);
+
+									ShowMenu(MenuMode.ApplyPhenominaMagic, phenominaMagicMenu);
+								}
+							}
+						}
+						else if (menuMode == MenuMode.ChooseCureSpell || menuMode == MenuMode.ChooseBattleCureSpell)
+						{
+							AppendText(new string[] { "선택" });
 
 							if (mMenuFocusID < mPlayerList.Count)
 								mMagicWhomPlayer = mPlayerList[mMenuFocusID];
-							else {
+							else if (mMenuFocusID == mPlayerList.Count && mAssistPlayer != null)
+								mMagicWhomPlayer = mAssistPlayer;
+							else
+							{
 								int curePoint;
 								if (mMagicPlayer.ClassType == ClassCategory.Magic)
 									curePoint = mMagicPlayer.CureMagic / 10 - 5;
 								else
 									curePoint = mMagicPlayer.AxeSkill / 10 - 5;
 
-								if (curePoint < 1) {
+								if (curePoint < 1)
+								{
 									Talk("강한 치료 마법은 아직 불가능 합니다.");
 
-									mSpecialEvent = SpecialEventType.BackToBattleMode;
+									if (menuMode == MenuMode.ChooseBattleCureSpell)
+										mSpecialEvent = SpecialEventType.BackToBattleMode;
+									else
+										ContinueText.Visibility = Visibility.Visible;
 									return;
 								}
 							}
 
-							ShowCureSpellMenu(mPlayerList[mBattlePlayerID], mMenuFocusID, MenuMode.ApplyBattleCureSpell, MenuMode.ApplyBattleCureAllSpell);
+							if (menuMode == MenuMode.ChooseCureSpell)
+								ShowCureSpellMenu(mMagicPlayer, mMenuFocusID, MenuMode.ApplyCureMagic, MenuMode.ApplyCureAllMagic);
+							else
+								ShowCureSpellMenu(mPlayerList[mBattlePlayerID], mMenuFocusID, MenuMode.ApplyBattleCureSpell, MenuMode.ApplyBattleCureAllSpell);
 						}
-						//else if (menuMode == MenuMode.ApplyCureMagic)
-						//{
-						//	mMenuMode = MenuMode.None;
+						else if (menuMode == MenuMode.ApplyCureMagic)
+						{
+							mMenuMode = MenuMode.None;
 
-						//	DialogText.TextHighlighters.Clear();
-						//	DialogText.Blocks.Clear();
+							DialogText.TextHighlighters.Clear();
+							DialogText.Blocks.Clear();
 
-						//	CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
+							CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
 
-						//	ShowCureResult();
-						//}
-						//else if (menuMode == MenuMode.ApplyCureAllMagic)
-						//{
-						//	mMenuMode = MenuMode.None;
+							ShowCureResult();
+						}
+						else if (menuMode == MenuMode.ApplyCureAllMagic)
+						{
+							mMenuMode = MenuMode.None;
 
-						//	DialogText.TextHighlighters.Clear();
-						//	DialogText.Blocks.Clear();
+							DialogText.TextHighlighters.Clear();
+							DialogText.Blocks.Clear();
 
-						//	CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
+							CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
 
-						//	ShowCureResult();
-						//}
-						//else if (menuMode == MenuMode.ApplyPhenominaMagic)
-						//{
-						//	mMenuMode = MenuMode.None;
+							ShowCureResult();
+						}
+						else if (menuMode == MenuMode.ApplyPhenominaMagic)
+						{
+							mMenuMode = MenuMode.None;
 
-						//	if (mMenuFocusID == 0)
-						//	{
-						//		if (mMagicPlayer.SP < 1)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			if (mParty.Etc[0] < 255)
-						//			{
-						//				mParty.Etc[0]++;
-						//				ShowMap();
-						//			}
+							if (mMenuFocusID == 0)
+							{
+								if (mMagicPlayer.SP < 1)
+									ShowNotEnoughSP();
+								else
+								{
+									if (mParty.Etc[0] + mMagicPlayer.PhenoMagic / 10 < 256)
+										mParty.Etc[0] += mMagicPlayer.PhenoMagic / 10;
+									else
+										mParty.Etc[0] = 255;
 
-						//			AppendText(new string[] { $"[color={RGB.White}]일행은 마법의 횃불을 밝혔습니다.[/color]" });
-						//			mMagicPlayer.SP--;
-						//			DisplaySP();
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 1)
-						//	{
-						//		if (mMagicPlayer.SP < 5)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			mParty.Etc[3] = 255;
+									AppendText($"[color={RGB.White}]일행은 마법의 횃불을 밝혔습니다.[/color]");
+									mMagicPlayer.SP--;
+									DisplaySP();
+								}
+							}
+							else if (mMenuFocusID == 1) {
+								if (mMagicPlayer.SP < 5)
+									ShowNotEnoughSP();
+								else {
+									mMagicPlayer.SP -= 5;
+									ShowWizardEye();
+								}
+							}
+							else if (mMenuFocusID == 2)
+							{
+								if (mMagicPlayer.SP < 5)
+									ShowNotEnoughSP();
+								else
+								{
+									mParty.Etc[3] = 255;
 
-						//			AppendText(new string[] { $"[color={RGB.White}]일행은 공중부상중 입니다.[/color]" });
-						//			mMagicPlayer.SP -= 5;
-						//			DisplaySP();
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 2)
-						//	{
-						//		if (mMagicPlayer.SP < 10)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			mParty.Etc[1] = 255;
+									AppendText(new string[] { $"[color={RGB.White}]일행은 공중부상중 입니다.[/color]" });
+									mMagicPlayer.SP -= 5;
+									DisplaySP();
+								}
+							}
+							else if (mMenuFocusID == 3)
+							{
+								if (mMagicPlayer.SP < 10)
+									ShowNotEnoughSP();
+								else
+								{
+									mParty.Etc[1] = 255;
 
-						//			AppendText(new string[] { $"[color={RGB.White}]일행은 물 위를 걸을 수 있습니다.[/color]" });
-						//			mMagicPlayer.SP -= 10;
-						//			DisplaySP();
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 3)
-						//	{
-						//		if (mMagicPlayer.SP < 20)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			mParty.Etc[2] = 255;
+									AppendText(new string[] { $"[color={RGB.White}]일행은 물 위를 걸을 수 있습니다.[/color]" });
+									mMagicPlayer.SP -= 10;
+									DisplaySP();
+								}
+							}
+							else if (mMenuFocusID == 4)
+							{
+								if (mMagicPlayer.SP < 20)
+									ShowNotEnoughSP();
+								else
+								{
+									mParty.Etc[2] = 255;
 
-						//			AppendText(new string[] { $"[color={RGB.White}]일행은 늪 위를 걸을 수 있습니다.[/color]" });
-						//			mMagicPlayer.SP -= 20;
-						//			DisplaySP();
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 4)
-						//	{
-						//		if (mMagicPlayer.SP < 25)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" });
+									AppendText(new string[] { $"[color={RGB.White}]일행은 늪 위를 걸을 수 있습니다.[/color]" });
+									mMagicPlayer.SP -= 20;
+									DisplaySP();
+								}
+							}
+							else if (mMenuFocusID == 5)
+							{
+								if (mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+									AppendText($"[color={RGB.LightMagenta}]이 동굴의 악의 힘이 기화 이동을 방해 합니다.[/color]");
+								else if (mMagicPlayer.SP < 25)
+									ShowNotEnoughSP();
+								else
+								{
+									AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" });
 
-						//			ShowMenu(MenuMode.VaporizeMoveDirection, new string[] { "북쪽으로 기화 이동",
-						//								"남쪽으로 기화 이동",
-						//								"동쪽으로 기화 이동",
-						//								"서쪽으로 기화 이동" });
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 5)
-						//	{
-						//		if (mParty.Map == 20 || mParty.Map == 25 || mParty.Map == 26)
-						//			AppendText(new string[] { $"[color={RGB.LightMagenta}]이 동굴의 악의 힘이 이 마법을 방해합니다.[/color]" });
-						//		else if (mMagicPlayer.SP < 30)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" }, true);
+									ShowMenu(MenuMode.VaporizeMoveDirection, new string[] { "북쪽으로 기화 이동",
+														"남쪽으로 기화 이동",
+														"동쪽으로 기화 이동",
+														"서쪽으로 기화 이동" });
+								}
+							}
+							else if (mMenuFocusID == 6)
+							{
+								if (mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+									AppendText(new string[] { $"[color={RGB.LightMagenta}]이 지역의 악의 힘이 지형 변화를 방해 합니다.[/color]" });
+								else if (mMagicPlayer.SP < 30)
+									ShowNotEnoughSP();
+								else
+								{
+									AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" }, true);
 
-						//			ShowMenu(MenuMode.TransformDirection, new string[] { "북쪽에 지형 변화",
-						//								"남쪽에 지형 변화",
-						//								"동쪽에 지형 변화",
-						//								"서쪽에 지형 변화" });
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 6)
-						//	{
-						//		if (mParty.Map == 20 || mParty.Map == 25 || mParty.Map == 26)
-						//			AppendText(new string[] { $"[color={RGB.LightMagenta}]이 동굴의 악의 힘이 이 마법을 방해합니다.[/color]" });
-						//		else if (mMagicPlayer.SP < 50)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" }, true);
+									ShowMenu(MenuMode.TransformDirection, new string[] { "북쪽에 지형 변화",
+														"남쪽에 지형 변화",
+														"동쪽에 지형 변화",
+														"서쪽에 지형 변화" });
+								}
+							}
+							else if (mMenuFocusID == 7)
+							{
+								if (mMagicPlayer.SP < 50)
+									ShowNotEnoughSP();
+								else
+									Teleport(MenuMode.TeleportationDirection);
+							}
+							else if (mMenuFocusID == 8)
+							{
+								if (mMagicPlayer.SP < 30)
+									ShowNotEnoughSP();
+								else
+								{
+									var count = mPlayerList.Count;
+									if (mParty.Food + count > 255)
+										mParty.Food = 255;
+									else
+										mParty.Food = mParty.Food + count;
+									mMagicPlayer.SP -= 30;
+									DisplaySP();
 
-						//			ShowMenu(MenuMode.TeleportationDirection, new string[] { "북쪽으로 공간이동",
-						//								"남쪽으로 공간이동",
-						//								"동쪽으로 공간이동",
-						//								"서쪽으로 공간이동" });
-						//		}
-						//	}
-						//	else if (mMenuFocusID == 7)
-						//	{
-						//		if (mMagicPlayer.SP < 30)
-						//			ShowNotEnoughSP();
-						//		else
-						//		{
-						//			var count = mPlayerList.Count;
-						//			if (mParty.Food + count > 255)
-						//				mParty.Food = 255;
-						//			else
-						//				mParty.Food = mParty.Food + count;
-						//			mMagicPlayer.SP -= 30;
-						//			DisplaySP();
+									AppendText(new string[] { $"[color={RGB.White}]식량 제조 마법은 성공적으로 수행되었습니다[/color]",
+										$"[color={RGB.White}]            {count} 개의 식량이 증가됨[/color]",
+										$"[color={RGB.LightCyan}]      일행의 현재 식량은 {mParty.Food} 개 입니다[/color]" });
+								}
+							}
+							else if (mMenuFocusID == 9) {
+								if (mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+									AppendText(new string[] { $"[color={RGB.LightMagenta}]이 지역의 악의 힘이 지형 변화를 방해 합니다.[/color]" });
+								else if (mMagicPlayer.SP < 60)
+									ShowNotEnoughSP();
+								else
+								{
+									AppendText(new string[] { $"[color={RGB.White}]<<<  방향을 선택하시오  >>>[/color]" }, true);
 
-						//			AppendText(new string[] { $"[color={RGB.White}]식량 제조 마법은 성공적으로 수행되었습니다[/color]",
-						//							$"[color={RGB.White}]            {count} 개의 식량이 증가됨[/color]",
-						//							$"[color={RGB.White}]      일행의 현재 식량은 {mParty.Food} 개 입니다[/color]" }, true);
-						//		}
-						//	}
+									ShowMenu(MenuMode.BigTransformDirection, new string[] { "북쪽에 지형 변화",
+														"남쪽에 지형 변화",
+														"동쪽에 지형 변화",
+														"서쪽에 지형 변화" });
+								}
+							}
 
-						//	DisplaySP();
-						//}
-						//else if (menuMode == MenuMode.VaporizeMoveDirection)
-						//{
-						//	mMenuMode = MenuMode.None;
+							//DisplaySP();
+						}
+						else if (menuMode == MenuMode.VaporizeMoveDirection)
+						{
+							int xOffset = 0, yOffset = 0;
+							switch (mMenuFocusID)
+							{
+								case 0:
+									yOffset = -1;
+									break;
+								case 1:
+									yOffset = 1;
+									break;
+								case 2:
+									xOffset = 1;
+									break;
+								case 3:
+									xOffset = -1;
+									break;
+							}
 
-						//	int xOffset = 0, yOffset = 0;
-						//	switch (mMenuFocusID)
-						//	{
-						//		case 0:
-						//			yOffset = -1;
-						//			break;
-						//		case 1:
-						//			yOffset = 1;
-						//			break;
-						//		case 2:
-						//			xOffset = 1;
-						//			break;
-						//		case 3:
-						//			xOffset = -1;
-						//			break;
-						//	}
+							var newX = mParty.XAxis + 2 * xOffset;
+							var newY = mParty.YAxis + 2 * yOffset;
 
-						//	var newX = mParty.XAxis + 2 * xOffset;
-						//	var newY = mParty.YAxis + 2 * yOffset;
+							if (newX < 4 || newX >= mMapWidth - 4 || newY < 5 || newY >= mMapHeight - 4)
+								return;
 
-						//	var canMove = false;
+							var canMove = false;
 
-						//	var moveTile = mMapLayer[newX + mMapWidth * newY];
-						//	switch (mPosition)
-						//	{
-						//		case PositionType.Town:
-						//			if (moveTile == 0 || (27 <= moveTile && moveTile <= 47))
-						//				canMove = true;
-						//			break;
-						//		case PositionType.Ground:
-						//			if (moveTile == 0 || (24 <= moveTile && moveTile <= 47))
-						//				canMove = true;
-						//			break;
-						//		case PositionType.Den:
-						//			if (moveTile == 0 || (41 <= moveTile && moveTile <= 47))
-						//				canMove = true;
-						//			break;
-						//		case PositionType.Keep:
-						//			if (moveTile == 0 || (40 <= moveTile && moveTile <= 47))
-						//				canMove = true;
-						//			break;
+							var moveTile = mMapLayer[newX + mMapWidth * newY];
+							switch (mPosition)
+							{
+								case PositionType.Town:
+									if (moveTile == 0 || (27 <= moveTile && moveTile <= 47))
+										canMove = true;
+									break;
+								case PositionType.Ground:
+									if (moveTile == 0 || (24 <= moveTile && moveTile <= 47))
+										canMove = true;
+									break;
+								case PositionType.Den:
+									if (moveTile == 0 || (41 <= moveTile && moveTile <= 47))
+										canMove = true;
+									break;
+								case PositionType.Keep:
+									if (moveTile == 0 || (40 <= moveTile && moveTile <= 47))
+										canMove = true;
+									break;
 
-						//	}
+							}
 
-						//	if (!canMove)
-						//		AppendText(new string[] { $"기화 이동이 통하지 않습니다." }, true);
-						//	else
-						//	{
-						//		mMagicPlayer.SP -= 25;
-						//		DisplaySP();
+							if (!canMove)
+								AppendText($"기화 이동이 통하지 않습니다.");
+							else
+							{
+								mMagicPlayer.SP -= 25;
+								DisplaySP();
 
-						//		if (mMapLayer[(mParty.XAxis + xOffset) + mMapWidth * (mParty.YAxis + yOffset)] == 0 ||
-						//			((mPosition == PositionType.Den || mPosition == PositionType.Keep) && mMapLayer[(newX + xOffset) + mMapWidth * (newY + yOffset)] == 52))
-						//		{
-						//			AppendText(new string[] { $"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]" }, true);
-						//		}
-						//		else
-						//		{
-						//			mParty.XAxis = newX;
-						//			mParty.YAxis = newY;
+								if (GetTileInfo(newX, newY) == 0 ||
+									((mPosition == PositionType.Den || mPosition == PositionType.Keep) && (GetTileInfo(newX, newY) == 52)))
+								{
+									AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]");
+								}
+								else
+								{
+									mParty.XAxis = newX;
+									mParty.YAxis = newY;
 
-						//			AppendText(new string[] { $"[color={RGB.White}]기화 이동을 마쳤습니다.[/color]" }, true);
-						//		}
+									AppendText($"[color={RGB.White}]기화 이동을 마쳤습니다.[/color]");
+								}
 
-						//	}
-						//}
-						//else if (menuMode == MenuMode.TransformDirection)
-						//{
+							}
+						}
+						else if (menuMode == MenuMode.TransformDirection)
+						{
 
-						//	mMenuMode = MenuMode.None;
+							mMenuMode = MenuMode.None;
 
-						//	int xOffset = 0, yOffset = 0;
-						//	switch (mMenuFocusID)
-						//	{
-						//		case 0:
-						//			yOffset = -1;
-						//			break;
-						//		case 1:
-						//			yOffset = 1;
-						//			break;
-						//		case 2:
-						//			xOffset = 1;
-						//			break;
-						//		case 3:
-						//			xOffset = -1;
-						//			break;
-						//	}
+							int xOffset = 0, yOffset = 0;
+							switch (mMenuFocusID)
+							{
+								case 0:
+									yOffset = -1;
+									break;
+								case 1:
+									yOffset = 1;
+									break;
+								case 2:
+									xOffset = 1;
+									break;
+								case 3:
+									xOffset = -1;
+									break;
+							}
 
-						//	var newX = mParty.XAxis + xOffset;
-						//	var newY = mParty.YAxis + yOffset;
+							var newX = mParty.XAxis + xOffset;
+							var newY = mParty.YAxis + yOffset;
 
 
-						//	mMagicPlayer.SP -= 30;
-						//	DisplaySP();
+							mMagicPlayer.SP -= 30;
+							DisplaySP();
 
-						//	if (mMapLayer[newX + mMapWidth * newY] == 0 ||
-						//			((mPosition == PositionType.Den || mPosition == PositionType.Keep) && mMapLayer[newX + mMapWidth * newY] == 52))
-						//	{
-						//		AppendText(new string[] { $"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]" }, true);
-						//	}
-						//	else
-						//	{
-						//		byte tile;
+							if (GetTileInfo(newX, newY) == 0 ||
+									((mPosition == PositionType.Den || mPosition == PositionType.Keep) && GetTileInfo(newX, newY) == 52) ||
+									(mPosition == PositionType.Town && GetTileInfo(newX, newY) == 48))
+								AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]");
+							else
+							{
+								byte tile;
 
-						//		switch (mPosition)
-						//		{
-						//			case PositionType.Town:
-						//				tile = 47;
-						//				break;
-						//			case PositionType.Ground:
-						//				tile = 41;
-						//				break;
-						//			case PositionType.Den:
-						//				tile = 43;
-						//				break;
-						//			default:
-						//				tile = 43;
-						//				break;
-						//		}
+								switch (mPosition)
+								{
+									case PositionType.Town:
+										tile = 47;
+										break;
+									case PositionType.Ground:
+										tile = 41;
+										break;
+									case PositionType.Den:
+										tile = 43;
+										break;
+									default:
+										tile = 43;
+										break;
+								}
 
-						//		mMapLayer[newX + mMapWidth * newY] = tile;
+								UpdateTileInfo(newX, newY, tile);
 
-						//		AppendText($"[color={RGB.White}]지형 변화에 성공했습니다.[/color]");
-						//	}
-						//}
-						//else if (menuMode == MenuMode.TeleportationDirection)
-						//{
-						//	mMenuMode = MenuMode.None;
+								AppendText($"[color={RGB.White}]지형 변화에 성공했습니다.[/color]");
+							}
+						}
+						else if (menuMode == MenuMode.TransformDirection)
+						{
 
-						//	mTeleportationDirection = mMenuFocusID;
+							mMenuMode = MenuMode.None;
 
-						//	var rangeItems = new List<Tuple<string, int>>();
-						//	for (var i = 1; i <= 9; i++)
-						//	{
-						//		rangeItems.Add(new Tuple<string, int>($"[color={RGB.White}]##[/color] [color={RGB.LightGreen}]{i * 1000}[/color] [color={RGB.White}] 공간 이동력[/color]", i));
-						//	}
+							int xOffset = 0, yOffset = 0;
+							switch (mMenuFocusID)
+							{
+								case 0:
+									yOffset = -1;
+									break;
+								case 1:
+									yOffset = 1;
+									break;
+								case 2:
+									xOffset = 1;
+									break;
+								case 3:
+									xOffset = -1;
+									break;
+							}
 
-						//	ShowSpinner(SpinnerType.TeleportationRange, rangeItems.ToArray(), 5);
-						//}
+							var newX = mParty.XAxis + xOffset;
+							var newY = mParty.YAxis + yOffset;
+
+							var range = xOffset == 0 ? 5 : 4;
+
+							mMagicPlayer.SP -= 60;
+							DisplaySP();
+
+							byte tile;
+
+							switch (mPosition)
+							{
+								case PositionType.Town:
+									tile = 47;
+									break;
+								case PositionType.Ground:
+									tile = 41;
+									break;
+								case PositionType.Den:
+									tile = 43;
+									break;
+								default:
+									tile = 43;
+									break;
+							}
+
+							for (var i = 1; i <= range; i++)
+							{
+								if (GetTileInfo(mParty.XAxis + xOffset * i, mParty.YAxis + yOffset * i) == 0 ||
+										((mPosition == PositionType.Den || mPosition == PositionType.Keep) && GetTileInfo(mParty.XAxis + xOffset * i, mParty.YAxis + yOffset * i) == 52) ||
+										(mPosition == PositionType.Town && GetTileInfo(mParty.XAxis + xOffset * i, mParty.YAxis + yOffset * i) == 48))
+								{
+									AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]");
+									return;
+								}
+								else
+								{
+									UpdateTileInfo(newX, newY, tile);
+								}
+							}
+
+							AppendText($"[color={RGB.White}]지형 변화에 성공했습니다.[/color]");
+						}
+						else if (menuMode == MenuMode.TeleportationDirection)
+						{
+							mTeleportationDirection = mMenuFocusID;
+
+							var rangeItems = new List<Tuple<string, int>>();
+							for (var i = 1; i <= 9; i++)
+							{
+								rangeItems.Add(new Tuple<string, int>($"[color={RGB.White}]##[/color] [color={RGB.LightGreen}]{i * 1000}[/color] [color={RGB.White}] 공간 이동력[/color]", i));
+							}
+
+							ShowSpinner(SpinnerType.TeleportationRange, rangeItems.ToArray(), 5);
+						}
 						//else if (menuMode == MenuMode.Extrasense)
 						//{
 						//	mMenuMode = MenuMode.None;
@@ -4016,21 +4195,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 4)
 							{
-								int curePoint;
-
-								mMagicPlayer = mPlayerList[mBattlePlayerID];
-								if (mMagicPlayer.ClassType == ClassCategory.Magic)
-									curePoint = mMagicPlayer.CureMagic / 10;
-								else
-									curePoint = mMagicPlayer.AxeSkill / 10;
-
-								if (curePoint <= 0)
-								{
-									Talk("당신은 치료 마법을 사용할 능력이 없습니다.");
-									mSpecialEvent = SpecialEventType.BackToBattleMode;
-								}
-								else
-									ShowCureDestMenu(mPlayerList[mBattlePlayerID], MenuMode.ChooseBattleCureSpell);
+								ShowCureDestMenu(mPlayerList[mBattlePlayerID], MenuMode.ChooseBattleCureSpell);
 							}
 							else if (mMenuFocusID == 5)
 							{
@@ -5249,6 +5414,8 @@ namespace DarkUWP
 		private async Task RefreshGame()
 		{
 			mLoading = true;
+
+			MapCanvas.Visibility = Visibility.Collapsed;
 
 			AppendText("");
 			await LoadMapData();
@@ -7397,10 +7564,7 @@ namespace DarkUWP
 		{
 			var message = "그러나, 마법 지수가 충분하지 않습니다.";
 			if (result == null)
-			{
-				AppendText(new string[] { message }, true);
-				ContinueText.Visibility = Visibility.Visible;
-			}
+				AppendText(message);
 			else
 				result.Add(message);
 		}
@@ -7536,16 +7700,16 @@ namespace DarkUWP
 			FocusMenuItem();
 		}
 
-		//		private void ShowSpinner(SpinnerType spinnerType, Tuple<string, int>[] items, int defaultId)
-		//		{
-		//			mSpinnerType = spinnerType;
+		private void ShowSpinner(SpinnerType spinnerType, Tuple<string, int>[] items, int defaultId)
+		{
+			mSpinnerType = spinnerType;
 
-		//			mSpinnerItems = items;
-		//			mSpinnerID = defaultId;
+			mSpinnerItems = items;
+			mSpinnerID = defaultId;
 
-		//			AppendText(SpinnerText, mSpinnerItems[defaultId].Item1);
-		//			SpinnerText.Visibility = Visibility.Visible;
-		//		}
+			AppendText(SpinnerText, mSpinnerItems[defaultId].Item1);
+			SpinnerText.Visibility = Visibility.Visible;
+		}
 
 		//		private void ShowMenu(MenuMode menuMode, List<Tuple<string, Color>> menuItem)
 		//		{
@@ -9940,7 +10104,18 @@ namespace DarkUWP
 			SelectMedicine,
 			SelectMedicineAmount,
 			JoinPolaris,
-			JoinGeniusKie
+			JoinGeniusKie,
+			ViewCharacter,
+			CastSpell,
+			SpellCategory,
+			ChooseCureSpell,
+			ApplyCureMagic,
+			ApplyCureAllMagic,
+			ApplyPhenominaMagic,
+			VaporizeMoveDirection,
+			TransformDirection,
+			TeleportationDirection,
+			BigTransformDirection
 		}
 
 		private enum SpinnerType
@@ -10069,7 +10244,8 @@ namespace DarkUWP
 			CantBuyExp,
 			CantBuyItem,
 			CantBuyMedicine,
-			MeetGeniusKie
+			MeetGeniusKie,
+			WizardEye,
 		}
 
 		private enum BattleEvent {
@@ -10121,6 +10297,10 @@ namespace DarkUWP
 				private set;
 			}
 
+			public byte GetData(int x, int y) {
+				return Data[x + y * Width];
+			}
+
 			public int Width {
 				get;
 				private set;
@@ -10132,9 +10312,44 @@ namespace DarkUWP
 			}
 		}
 
+		private void MapCanvas_CreateResources(Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.CanvasCreateResourcesEventArgs args)
+		{
+			async Task LoadTile(CanvasDevice device)
+			{
+				try
+				{
+					mWizardEyeTile = await SpriteSheet.LoadAsync(device, new Uri("ms-appx:///Assets/WizardEyeTile.png"), new Vector2(2, 2), Vector2.Zero);
+
+				}
+				catch (Exception e)
+				{
+					Debug.WriteLine($"에러: {e.Message}");
+				}
+			}
+
+			args.TrackAsyncAction(LoadTile(sender.Device).AsAsyncAction());
+		}
+
 		private void MapCanvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
 		{
-
+			using (var sb = args.DrawingSession.CreateSpriteBatch(CanvasSpriteSortMode.None, CanvasImageInterpolation.NearestNeighbor, CanvasSpriteOptions.ClampToSourceRect))
+			{
+				lock (mWizardEye)
+				{
+					for (var y = 0; y < mWizardEye.Height; y++) {
+						for (var x = 0; x < mWizardEye.Width; x++) {
+							if (mWizardEyePosX == x && mWizardEyePosY == y) {
+								if (mWizardEyePosBlink)
+									mWizardEyeTile.Draw(sb, 12, mWizardEyeTile.SpriteSize * new Vector2(x * 2, y * 2), Vector4.One);
+								else
+									mWizardEyeTile.Draw(sb, 0, mWizardEyeTile.SpriteSize * new Vector2(x * 2, y * 2), Vector4.One);
+							}
+							else
+								mWizardEyeTile.Draw(sb, mWizardEye.GetData(x, y), mWizardEyeTile.SpriteSize * new Vector2(x * 2, y * 2), Vector4.One);
+						}
+					}
+				}
+			}
 		}
 	}
 }
