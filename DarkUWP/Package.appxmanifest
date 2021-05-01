@@ -32,7 +32,7 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="DarkUWP.App">
       <uap:VisualElements
-        DisplayName="DarkUWP"
+        DisplayName="다크 메이지 실리안 카미너스"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
         Description="DarkUWP"

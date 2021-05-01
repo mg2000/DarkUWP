@@ -13,6 +13,6 @@
 	SecondaryButtonClick="ContentDialog_SecondaryButtonClick" DefaultButton="Primary">
 
 	<Grid>
-		<TextBox x:Name="PlayerNameText"></TextBox>
+		<TextBox x:Name="PlayerNameText" FontSize="25"></TextBox>
 	</Grid>
 </ContentDialog>
