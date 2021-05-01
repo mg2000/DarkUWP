@@ -8,48 +8,6 @@ namespace DarkUWP
 {
 	class Lore
 	{
-		private static int[] mLevelUpExerpience = {
-			0,
-			1_500,
-			6_000,
-			20_000,
-			50_000,
-			150_000,
-			250_000,
-			500_000,
-			800_000,
-			1_050_000,
-			1_320_000,
-			1_620_000,
-			1_950_000,
-			2_320_000,
-			2_700_000,
-			3_120_000,
-			3_570_000,
-			4_050_000,
-			4_560_000,
-			5_100_000,
-			6_000_000,
-			7_000_000,
-			8_000_000,
-			9_000_000,
-			10_000_000,
-			12_000_000,
-			14_000_000,
-			16_000_000,
-			18_000_000,
-			20_000_000,
-			25_000_000,
-			30_000_000,
-			35_000_000,
-			40_000_000,
-			45_000_000,
-			50_000_000,
-			55_000_000,
-			60_000_000,
-			65_000_000,
-			70_000_000
-		};
 		public string Name
 		{
 			get;
@@ -434,7 +392,7 @@ namespace DarkUWP
 
 		public void UpdatePotentialExperience() {
 			if (1 <= Level && Level <= 40)
-				PotentialExperience = mLevelUpExerpience[Level - 1];
+				PotentialExperience = Common.GetLevelUpExperience(Level);
 			else
 				PotentialExperience = 0;
 		}
