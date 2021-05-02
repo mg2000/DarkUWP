@@ -169,6 +169,9 @@ namespace DarkUWP
 
 		private Lore mUnequipPlayer;
 
+		private int mPrevX;
+		private int mPrevY;
+
 		public GamePage()
 		{
 			var rootFrame = Window.Current.Content as Frame;
@@ -260,6 +263,7 @@ namespace DarkUWP
 			mEnterTypeMap[EnterType.CaveOfAsmodeus1] = "아스모데우스의 동굴";
 			mEnterTypeMap[EnterType.CaveOfAsmodeus2] = "아스모데우스의 동굴";
 			mEnterTypeMap[EnterType.FortressOfMephistopheles] = "메피스토펠레스의 요새";
+			mEnterTypeMap[EnterType.CabinOfRegulus] = "레굴루스의 오두막";
 
 			mHealthTextList.Add(new HealthTextBlock(HealthPlayerName1, HealthPoison1, HealthUnconscious1, HealthDead1));
 			mHealthTextList.Add(new HealthTextBlock(HealthPlayerName2, HealthPoison2, HealthUnconscious2, HealthDead2));
@@ -428,19 +432,19 @@ namespace DarkUWP
 							}
 							else if (GetTileInfo(x, y) == 24)
 							{
-							//	if (EnterWater())
-							//		MovePlayer(x, y);
-							//	mTriggeredDownEvent = true;
+								if (EnterWater())
+									MovePlayer(x, y);
+								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 25)
 							{
-							//	EnterSwamp();
-							//	MovePlayer(x, y);
+								EnterSwamp();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 26)
 							{
-							//	EnterLava();
-							//	MovePlayer(x, y);
+								EnterLava();
+								MovePlayer(x, y);
 							}
 							else if (27 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 47)
 							{
@@ -474,19 +478,19 @@ namespace DarkUWP
 							}
 							else if (GetTileInfo(x, y) == 48)
 							{
-								//if (EnterWater())
-								//	MovePlayer(x, y);
-								//mTriggeredDownEvent = true;
+								if (EnterWater())
+									MovePlayer(x, y);
+								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 23 || GetTileInfo(x, y) == 49)
 							{
-								//EnterSwamp();
-								//MovePlayer(x, y);
+								EnterSwamp();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								//EnterLava();
-								//MovePlayer(x, y);
+								EnterLava();
+								MovePlayer(x, y);
 							}
 							else if (24 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 47)
 							{
@@ -520,19 +524,19 @@ namespace DarkUWP
 							}
 							else if (GetTileInfo(x, y) == 48)
 							{
-								//if (EnterWater())
-								//	MovePlayer(x, y);
-								//mTriggeredDownEvent = true;
+								if (EnterWater())
+									MovePlayer(x, y);
+								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 49)
 							{
-								//EnterSwamp();
-								//MovePlayer(x, y);
+								EnterSwamp();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								//EnterLava();
-								//MovePlayer(x, y);
+								EnterLava();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 54)
 							{
@@ -572,19 +576,19 @@ namespace DarkUWP
 							}
 							else if (GetTileInfo(x, y) == 48)
 							{
-								//if (EnterWater())
-								//	MovePlayer(x, y);
-								//mTriggeredDownEvent = true;
+								if (EnterWater())
+									MovePlayer(x, y);
+								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 49)
 							{
-								//EnterSwamp();
-								//MovePlayer(x, y);
+								EnterSwamp();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								//EnterLava();
-								//MovePlayer(x, y);
+								EnterLava();
+								MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 54)
 							{
@@ -970,21 +974,35 @@ namespace DarkUWP
 							AppendText(new string[] { endMessage, "" });
 						}
 
-						if (battleEvent == BattleEvent.MenaceMurder) {
+						if (battleEvent == BattleEvent.MenaceMurder)
+						{
 							StartBattleEvent(BattleEvent.MenaceMurder);
 							return;
 						}
-						else if (battleEvent == BattleEvent.CaveOfBerialEntrance) {
+						else if (battleEvent == BattleEvent.GuardOfObsidianArmor)
+						{
+							AppendText(" 당신은 보물 파수꾼들을 물리쳤다.");
+							mParty.Etc[44] |= 1 << 3;
+						}
+						else if (battleEvent == BattleEvent.Slaim)
+							mParty.Etc[44] |= 1 << 4;
+						else if (battleEvent == BattleEvent.CaveEntrance)
+							mParty.Etc[44] |= 1 << 5;
+						else if (battleEvent == BattleEvent.CaveOfBerialEntrance)
+						{
 							mParty.Map = 15;
 							mParty.XAxis = 24;
 							mParty.YAxis = 43;
 
 							await RefreshGame();
 						}
-						else if (battleEvent == BattleEvent.CaveOfAsmodeusEntrance) {
+						else if (battleEvent == BattleEvent.CaveOfAsmodeusEntrance)
+						{
 							Lore slowestPlayer = null;
-							foreach (var player in mPlayerList) {
-								if (player.HP > 0) {
+							foreach (var player in mPlayerList)
+							{
+								if (player.HP > 0)
+								{
 									if (slowestPlayer == null || player.Agility <= slowestPlayer.Agility)
 										slowestPlayer = player;
 								}
@@ -992,7 +1010,7 @@ namespace DarkUWP
 
 							if (mAssistPlayer != null && mAssistPlayer.Agility <= slowestPlayer.Agility)
 								slowestPlayer = mAssistPlayer;
-							
+
 							AppendText(new string[] {
 								$"[color={RGB.LightMagenta}] 우욱... 하지만 나는 죽더라도 한사람은 지옥으로 보내 주겠다.[/color]",
 								"",
@@ -1042,7 +1060,13 @@ namespace DarkUWP
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
 							return;
 						}
-						
+						else if (battleEvent == BattleEvent.GuardOfObsidianArmor)
+							mParty.YAxis++;
+						else if (battleEvent == BattleEvent.Slaim)
+							mParty.YAxis--;
+						else if (battleEvent == BattleEvent.CaveEntrance)
+							mParty.YAxis++;
+
 						mEncounterEnemyList.Clear();
 						ShowMap();
 					}
@@ -1627,6 +1651,51 @@ namespace DarkUWP
 							}
 
 							mBattleEvent = BattleEvent.CaveOfAsmodeusEntrance;
+							StartBattle(false);
+						}
+						else if (specialEvent == SpecialEventType.GetCromaticShield) {
+							AppendText($"[color={RGB.LightGreen}] 유골이 지니고 있던 크로매틱 방패를 가질 사람을 고르시오.[/color]");
+
+							ShowCharacterMenu(MenuMode.ChooseEquipCromaticShield, false);
+						}
+						else if (specialEvent == SpecialEventType.GetCromaticShield)
+						{
+							AppendText($"[color={RGB.LightGreen}] 유골이 지니고 있던  양날 전투 도끼를  가질 사람을 고르시오.[/color]");
+
+							ShowCharacterMenu(MenuMode.ChooseEquipBattleAxe, false);
+						}
+						else if (specialEvent == SpecialEventType.GetObsidianArmor)
+						{
+							AppendText($"[color={RGB.LightGreen}] 호수에서 떠오른  흑요석 갑옷을 장착할 사람을 고르시오.[/color]");
+
+							ShowCharacterMenu(MenuMode.ChooseEquipObsidianArmor, false);
+						}
+						else if (specialEvent == SpecialEventType.BattleGuardOfObsidianArmor) {
+							mBattleEvent = BattleEvent.GuardOfObsidianArmor;
+
+							StartBattle(false);
+						}
+						else if (specialEvent == SpecialEventType.BattleSlaim) {
+							mBattleEvent = BattleEvent.Slaim;
+
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 8; i++)
+								JoinEnemy(22);
+
+							DisplayEnemy();
+							StartBattle(false);
+						}
+						else if (specialEvent == SpecialEventType.BattleCaveEntrance)
+						{
+							mBattleEvent = BattleEvent.CaveEntrance;
+
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 5; i++)
+								JoinEnemy(i + 25);
+
+							DisplayEnemy();
 							StartBattle(false);
 						}
 					}
@@ -2277,11 +2346,13 @@ namespace DarkUWP
 							else if (menuMode == MenuMode.ConfirmExitMap)
 							{
 								mParty.YAxis--;
-
-								mMenuMode = MenuMode.None;
 							}
-							else
-								mMenuMode = MenuMode.None;
+							else if (menuMode == MenuMode.AskEnter) {
+								if (mTryEnterType == EnterType.CabinOfRegulus) {
+									mParty.XAxis = mPrevX;
+									mParty.YAxis = mPrevY;
+								}
+							}
 						}
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
@@ -2620,6 +2691,40 @@ namespace DarkUWP
 														"동쪽으로 공간이동",
 														"서쪽으로 공간이동" });
 							}
+						}
+
+						bool VerifyWeapon(Lore equipPlayer, int weapon)
+						{
+							if (equipPlayer.ClassType == ClassCategory.Magic)
+								return false;
+							else if ((equipPlayer.Class == 1 && 1 <= weapon && weapon <= 28) ||
+								(equipPlayer.Class == 2 && 1 <= weapon && weapon <= 21) ||
+								(equipPlayer.Class == 3 && 1 <= weapon && weapon <= 7) ||
+								(equipPlayer.Class == 4 && 8 <= weapon && weapon <= 28) ||
+								(equipPlayer.Class == 6 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))) ||
+								(equipPlayer.Class == 7 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))))
+								return true;
+							else
+								return false;
+						}
+
+						bool VerifyShield(Lore equipPlayer, int shield)
+						{
+							if (equipPlayer.ClassType != ClassCategory.Sword)
+								return false;
+							else if (equipPlayer.Class == 1 || equipPlayer.Class == 2 || equipPlayer.Class == 3 || equipPlayer.Class == 7)
+								return true;
+							else
+								return false;
+						}
+
+						bool VerifyArmor(Lore equipPlayer, int armor)
+						{
+							if ((equipPlayer.ClassType == ClassCategory.Magic && armor == 1) ||
+								(equipPlayer.ClassType == ClassCategory.Sword && ((1 <= armor && armor <= 10) || armor == 255)))
+								return true;
+							else
+								return false;
 						}
 
 						var menuMode = HideMenu();
@@ -3720,20 +3825,6 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.UseWeaponCharacter)
 						{
-							bool VerifyWeapon(Lore equipPlayer, int weapon) {
-								if (equipPlayer.ClassType == ClassCategory.Magic)
-									return false;
-								else if ((equipPlayer.Class == 1 && 1 <= weapon && weapon <= 28) ||
-									(equipPlayer.Class == 2 && 1 <= weapon && weapon <= 21) ||
-									(equipPlayer.Class == 3 && 1 <= weapon && weapon <= 7) ||
-									(equipPlayer.Class == 4 && 8 <= weapon && weapon <= 28) ||
-									(equipPlayer.Class == 6 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))) ||
-									(equipPlayer.Class == 7 && ((1 <= weapon && weapon <= 7) || (15 <= weapon && weapon <= 28))))
-									return true;
-								else
-									return false;
-							}
-
 							var player = mPlayerList[mMenuFocusID];
 
 							if (VerifyWeapon(player, (mWeaponTypeID - 1) * 7 + mBuyWeaponID)) {
@@ -3764,16 +3855,6 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.UseShieldCharacter)
 						{
-							bool VerifyShield(Lore equipPlayer, int shield)
-							{
-								if (equipPlayer.ClassType != ClassCategory.Sword)
-									return false;
-								else if (equipPlayer.Class == 1 || equipPlayer.Class == 2 || equipPlayer.Class == 3 || equipPlayer.Class == 7)
-									return true;
-								else
-									return false;
-							}
-
 							var player = mPlayerList[mMenuFocusID];
 
 							if (VerifyShield(player, mBuyWeaponID))
@@ -3806,15 +3887,6 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.UseArmorCharacter)
 						{
-							bool VerifyArmor(Lore equipPlayer, int armor)
-							{
-								if ((equipPlayer.ClassType == ClassCategory.Magic && armor == 1) ||
-									(equipPlayer.ClassType == ClassCategory.Sword && ((1 <= armor && armor <= 10) || armor == 255)))
-									return true;
-								else
-									return false;
-							}
-
 							var player = mPlayerList[mMenuFocusID];
 
 							if (VerifyArmor(player, mBuyWeaponID))
@@ -4969,13 +5041,43 @@ namespace DarkUWP
 										await RefreshGame();
 
 										mFace = 5;
-										InvokeAnimation(AnimationType.EnterFortressOfMephistopheles);
+										// 메피스토텔레스 애니메이션 구현
+										//InvokeAnimation(AnimationType.EnterFortressOfMephistopheles);
+										break;
+									case EnterType.CabinOfRegulus:
+										if (mParty.Etc[9] >= 16)
+											AppendText(" 이미 오두막은 파괴된 후였다.");
+										else {
+											mParty.Map = 9;
+											mParty.XAxis = 24;
+											mParty.YAxis = 39;
+
+											await RefreshGame();
+
+											if ((mParty.Etc[32] != 0 || mParty.Etc[33] != 0) && (mParty.Etc[31] & (1 << 4)) == 0) {
+												if (mParty.Day >= mParty.Etc[33] * 256 + mParty.Etc[32]) {
+													if (mParty.Hour >= 12) {
+														UpdateTileInfo(39, 12, 49);
+														mParty.Etc[31] |= 1 << 4;
+													}
+												}
+												else if ((mParty.Etc[31] & (1 << 4)) > 0) {
+													if ((mParty.Etc[49] & (1 & 6)) == 0)
+														UpdateTileInfo(39, 12, 49);
+												}
+											}
+										}
 										break;
 								}
 							}
 							else
 							{
 								AppendText(new string[] { "" });
+
+								if (mTryEnterType == EnterType.CabinOfRegulus) {
+									mParty.XAxis = mPrevX;
+									mParty.YAxis = mPrevY;
+								}
 							}
 						}
 						//else if (menuMode == MenuMode.SwapMember)
@@ -5736,6 +5838,47 @@ namespace DarkUWP
 									ShowApplyItemResult(menuMode, $" {player.Name}의 죽음은 이 약초로는 살리지 못합니다.");
 							}
 						}
+						else if (menuMode == MenuMode.ChooseEquipCromaticShield) {
+							var player = mPlayerList[mMenuFocusID];
+							if (VerifyShield(player, 4))
+							{
+								player.Shield = 4;
+								UpdateItem(player);
+
+								AppendText($"[color={RGB.White}]{player.NameSubjectJosa} 크로매틱 방패를 장착했다.[/color]");
+								mParty.Etc[48] |= 1 << 7;
+							}
+							else
+								AppendText($"{player.Name}에게는 이 방패가 맞지 않습니다.");
+						}
+						else if (menuMode == MenuMode.ChooseEquipBattleAxe)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (VerifyWeapon(player, 13))
+							{
+								player.Weapon = 13;
+								UpdateItem(player);
+
+								AppendText($"[color={RGB.White}]{player.NameSubjectJosa} 양날 전투 도끼를 장착했다.[/color]");
+								mParty.Etc[44] |= 1;
+							}
+							else
+								AppendText($"{player.Name}에게는 이 무기가 맞지 않습니다.");
+						}
+						else if (menuMode == MenuMode.ChooseEquipObsidianArmor)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (VerifyWeapon(player, 255))
+							{
+								player.Weapon = 255;
+								UpdateItem(player);
+
+								AppendText($"[color={RGB.White}]{player.NameSubjectJosa} 흑요석 갑옷을 장착했다.[/color]");
+								mParty.Etc[44] |= 1 << 2;
+							}
+							else
+								AppendText($"{player.Name}에게는 이 갑옷이 맞지 않습니다.");
+						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
 					//				{
@@ -5855,7 +5998,7 @@ namespace DarkUWP
 				DisplayCondition();
 			}
 
-			//DetectGameOver();
+			DetectGameOver();
 
 			if (mParty.Etc[4] > 0)
 				mParty.Etc[4]--;
@@ -7654,35 +7797,240 @@ namespace DarkUWP
 		private async Task<bool> InvokeSpecialEvent(int prevX, int prevY)
 		{
 			var triggered = true;
-			if (mParty.Map == 6) {
-				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0) {
-					
+
+			void FindGold(int id, int bit, int gold) {
+				if ((mParty.Etc[id] & bit) == 0)
+				{
+					AppendText($"당신은 금화 {gold}개를 발견했다.");
+					mParty.Gold += gold;
+					mParty.Etc[id] |= bit;
+				}
+
+				triggered = false;
+			}
+
+			void FindItem(int id, int bit, int item, int count) {
+				var itemName = new string[] {
+					"체력 회복약을", "마법 회복약을", "해독의 약초를", "의식의 약초를", "부활의 약초를",
+					"소환 문서를", "대형 횃불을", "수정 구슬을", "비행 부츠를", "이동 구슬을"
+				};
+
+				if ((mParty.Etc[id] & bit) == 0) {
+					AppendText($"일행은 {itemName[item]} {count}개 발견했다.");
+
+					if (mParty.Item[item] + count < 256)
+						mParty.Item[item] += count;
+					else
+						mParty.Item[item] = 255;
+
+					mParty.Etc[id] |= bit;
+				}
+
+				triggered = false;
+			}
+
+			if (mParty.Map == 1)
+			{
+				if (mParty.XAxis == 81 && mParty.YAxis == 8)
+				{
+					mPrevX = prevX;
+					mPrevY = prevY;
+
+					ShowEnterMenu(EnterType.CabinOfRegulus);
+				}
+			}
+			else if (mParty.Map == 2)
+			{
+				if ((mParty.XAxis == 95 && mParty.YAxis == 93) || (mParty.XAxis == 95 && mParty.YAxis == 94))
+				{
+					AppendText(" 일행은 고대의 유적으로 공간 이동이 되었다.");
+					mParty.XAxis = 140;
+					mParty.YAxis = 115;
+				}
+				else if (mParty.XAxis == 136 && (114 <= mParty.YAxis && mParty.YAxis <= 118))
+				{
+					AppendText(" 일행은 공간 이동이 되었다.");
+					mParty.XAxis = 94;
+					mParty.YAxis = 100;
+				}
+				else if (mParty.XAxis == 143 && mParty.YAxis == 55)
+					FindGold(43, 1 << 1, 5_000);
+				else if (mParty.XAxis == 145 && mParty.YAxis == 56)
+					FindItem(43, 1 << 2, 7, 5);
+				else if (mParty.XAxis == 149 && mParty.YAxis == 57)
+					FindGold(43, 1 << 3, 8_000);
+				else if (mParty.XAxis == 153 && mParty.YAxis == 55)
+					FindItem(43, 1 << 4, 8, 3);
+				else if (mParty.XAxis == 136 && mParty.YAxis == 109)
+					FindGold(43, 1 << 5, 15_000);
+				else if (mParty.XAxis == 108 && mParty.YAxis == 88)
+					FindItem(43, 1 << 6, 4, 2);
+				else if (mParty.XAxis == 143 && mParty.YAxis == 79)
+					FindGold(43, 1 << 7, 20_000);
+				else if (mParty.XAxis == 104 && mParty.YAxis == 87)
+					FindGold(44, 1 << 1, 18_000);
+				else if (mParty.XAxis == 7 && mParty.YAxis == 15)
+					FindGold(46, 1, 1_000);
+				else if (mParty.XAxis == 7 && mParty.YAxis == 48)
+					FindGold(46, 1 << 1, 2_000);
+				else if (mParty.XAxis == 19 && mParty.YAxis == 54)
+					FindGold(46, 1 << 2, 3_000);
+				else if (mParty.XAxis == 22 && mParty.YAxis == 50)
+					FindGold(46, 1 << 3, 4_000);
+				else if (mParty.XAxis == 35 && mParty.YAxis == 40)
+					FindGold(46, 1 << 4, 5_000);
+				else if (mParty.XAxis == 116 && mParty.YAxis == 115)
+					FindGold(46, 1 << 5, 6_000);
+				else if (mParty.XAxis == 142 && mParty.YAxis == 72)
+					FindGold(46, 1 << 6, 7_000);
+				else if (mParty.XAxis == 166 && mParty.YAxis == 37)
+					FindGold(46, 1 << 7, 8_000);
+				else if (mParty.XAxis == 40 && mParty.YAxis == 60)
+					FindItem(47, 1, 0, 3);
+				else if (mParty.XAxis == 114 && mParty.YAxis == 6)
+					FindItem(47, 1 << 1, 1, 2);
+				else if (mParty.XAxis == 161 && mParty.YAxis == 14)
+					FindItem(47, 1 << 2, 2, 1);
+				else if (mParty.XAxis == 162 && mParty.YAxis == 50)
+					FindItem(47, 1 << 3, 3, 3);
+				else if (mParty.XAxis == 163 && mParty.YAxis == 60)
+					FindItem(47, 1 << 4, 4, 2);
+				else if (mParty.XAxis == 168 && mParty.YAxis == 51)
+					FindItem(47, 1 << 5, 5, 3);
+				else if (mParty.XAxis == 96 && mParty.YAxis == 59)
+					FindItem(47, 1 << 6, 6, 4);
+				else if (mParty.XAxis == 98 && mParty.YAxis == 111)
+					FindItem(47, 1 << 7, 7, 5);
+				else if (mParty.XAxis == 48 && mParty.YAxis == 13)
+					FindGold(48, 1, 30_000);
+				else if (mParty.XAxis == 98 && mParty.YAxis == 111)
+					FindItem(48, 1 << 1, 4, 5);
+				else if (mParty.XAxis == 139 && mParty.YAxis == 6)
+					FindGold(48, 1 << 2, 25_000);
+				else if (mParty.XAxis == 84 && mParty.YAxis == 88)
+					FindGold(48, 1 << 3, 20_000);
+				else if (mParty.XAxis == 96 && mParty.YAxis == 23)
+					FindItem(48, 1 << 4, 8, 5);
+				else if (mParty.XAxis == 73 && mParty.YAxis == 77)
+					FindGold(48, 1 << 5, 35_000);
+				else if (mParty.XAxis == 10 && mParty.YAxis == 70)
+					FindItem(48, 1 << 6, 9, 2);
+				else if (mParty.XAxis == 192 && mParty.YAxis == 118 && (mParty.Etc[48] & (1 << 7)) == 0)
+				{
+					Talk(" 일행이 밑을 보자 거기에는 뼈만 남은 기사가 쓰러져 있었다." +
+					" 그의 무기와 갑옷은 형편 없이 깨어져 있었지만  그의 크로매틱 방패는  아직 사용할 수 있었다. 일행은 그 방패를 가지기로 하였다.");
+
+					mSpecialEvent = SpecialEventType.GetCromaticShield;
+				}
+				else if (mParty.XAxis == 62 && mParty.YAxis == 67 && (mParty.Etc[44] & 1) == 0)
+				{
+					Talk(" 일행이 밑을 보자 거기에는 뼈만 남은 기사가 쓰러져 있었다." +
+					" 그의 방패와 갑옷은 형편 없이 깨어져 있었지만  그의 양날 전투 도끼는 아직 사용할 수 있었다. 일행은 그 무기를 가지기로 하였다.");
+
+					mSpecialEvent = SpecialEventType.GetBattleAxe;
+				}
+				else if (mParty.XAxis == 103 && mParty.YAxis == 9 && (mParty.Etc[44] & (1 << 2)) == 0)
+				{
+					if ((mParty.Etc[44] & (1 << 3)) > 0)
+					{
+						Talk($" 일행이 물위에 다다르자  물속에서 검은 광채를 내며  전설의 [color={RGB.LightCyan}]흑요석 갑옷[/color]이 떠올랐다." +
+						"  이 갑옷은  현재의 기술로 만들 수 있는 플래티움 재질의 갑옷보다 두배의 방어력을 지닌다고 한다.");
+
+						mSpecialEvent = SpecialEventType.GetObsidianArmor;
+					}
+				}
+				else if (((mParty.XAxis == 103 && mParty.YAxis == 13) || (mParty.XAxis == 104 && mParty.YAxis == 13)) && (mParty.Etc[44] & (1 << 3)) == 0) {
+					mEncounterEnemyList.Clear();
+
+					for (var i = 0; i < 5; i++)
+						JoinEnemy(33);
+					JoinEnemy(35);
+					JoinEnemy(38);
+					JoinEnemy(44);
+
+					DisplayEnemy();
+
+					Talk($"[color={RGB.LightMagenta}] 잠깐, 우리들은 전설의 갑옷을 지키는 파수꾼들이다. 당신들은 더 이상 들어 갈수 없다. 자 각오해라.[/color]");
+
+					mSpecialEvent = SpecialEventType.BattleGuardOfObsidianArmor;
+				}
+				else if (mParty.XAxis == 148 && mParty.YAxis == 50 && (mParty.Etc[44] & (1 << 4)) == 0) {
+					Talk(" 일행이 앞으로 진행하려 했지만  점액 생물이 일행을 포위했다.");
+
+					mSpecialEvent = SpecialEventType.BattleSlaim;
+				}
+				else if (mParty.XAxis == 148 && mParty.YAxis == 65 && (mParty.Etc[44] & (1 << 5)) == 0) {
+					Talk(" 일행이 동굴 앞에 섰을때 동굴의 입구를 지키는 괴물들이 일행의 앞을 가로 막았다.");
+
+					mSpecialEvent = SpecialEventType.BattleCaveEntrance;
+				}
+				else if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 52) {
+					if (!(mParty.XAxis == 103 && mParty.YAxis == 9) && !(GetTileInfo(mParty.XAxis, mParty.YAxis) != mMapLayer[mParty.XAxis + mParty.YAxis * mMapWidth])) {
+						AppendText(" 일행이 물위로 가려고 하자 갑자기 물은 용암으로 바뀌고 말았다.");
+
+						for (var y = 60; y < 119; y++) {
+							for (var x = 7; x < 106; x++) {
+								if (GetTileInfo(x, y) == 52)
+									mMapLayer[x + y * mMapWidth] = 50;
+							}
+
+						}
+					}
+				}
+				else if (mParty.XAxis == 183 && mParty.YAxis == 30 && mParty.Etc[10] == 1) {
+					AppendText(new string[] {
+						$" 아니 ! {mPlayerList[0].Name} 자네가 여기 웬일인가 ?",
+						" 정말 오래간 만이네.",
+						"",
+						$"[color={RGB.Cyan}] 나도 역시 반갑네. 나는 지금 라스트 디치 성주님에게 당신의 신변을 알아오라고 부탁을 받았다네. 자네가 살아 있어서 정말 다행이네.[/color]",
+						"",
+						" 그런가 ?  성주님이 나를 그렇게 생각해 주시다니 정말 고맙군.  그런 그렇고 이 안에 있는 두개의 동굴 속에는  이미 지하 세계와의 통로가  단절 되어 버렸다네." +
+						"  나와 지니어스 기가 그 곳을 탈출 하자마자  지하 세계의 마법사에 의해 입구가 봉쇄된 것 같네.  그래도 한번 탐험에 보는 것도 좋은 경험일테고." +
+						" 지금은 그것보다는  나의 안부를 성주님께 알리는게 더 중요 하겠군. 그럼 먼저 가보도록 하게."
+					});
+
+					mParty.Etc[10]++;
+				}
+			}
+			else if (mParty.Map == 6)
+			{
+				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0)
+				{
+
 					InvokeAnimation(AnimationType.LordAhnCall);
 				}
-				else if (mParty.XAxis == 40 && mParty.YAxis == 78) {
-					if ((mParty.Etc[29] & (1 << 3)) == 0) {
+				else if (mParty.XAxis == 40 && mParty.YAxis == 78)
+				{
+					if ((mParty.Etc[29] & (1 << 3)) == 0)
+					{
 						mParty.Etc[29] |= 1 << 3;
 
 						InvokeAnimation(AnimationType.GetDefaultWeapon);
 					}
 				}
-				else if ((mParty.XAxis == 50 && mParty.YAxis == 11) || (mParty.XAxis == 51 && mParty.YAxis == 11)) {
-					if ((mParty.Etc[49] & (1 << 4)) > 0 || (mParty.Etc[49] & (1 << 5)) > 0) {
-						if ((mParty.Etc[49] & (1 << 4)) > 0) {
+				else if ((mParty.XAxis == 50 && mParty.YAxis == 11) || (mParty.XAxis == 51 && mParty.YAxis == 11))
+				{
+					if ((mParty.Etc[49] & (1 << 4)) > 0 || (mParty.Etc[49] & (1 << 5)) > 0)
+					{
+						if ((mParty.Etc[49] & (1 << 4)) > 0)
+						{
 							// 전투 시스템 미구현
 						}
 					}
 				}
-				else if (mParty.XAxis == 85 && mParty.YAxis == 47) {
+				else if (mParty.XAxis == 85 && mParty.YAxis == 47)
+				{
 					AppendText(" 당신은 열쇠를 발견 했다.");
 					UpdateTileInfo(86, 47, 44);
 				}
-				else if (mParty.XAxis == 89 && mParty.YAxis == 37 && (mParty.Etc[30] & 1) == 0) {
+				else if (mParty.XAxis == 89 && mParty.YAxis == 37 && (mParty.Etc[30] & 1) == 0)
+				{
 					AppendText(" 당신은 금화 2000 개를 발견했다.");
 					mParty.Gold += 2000;
 					mParty.Etc[30] |= 1;
 				}
-				else if (mParty.XAxis == 89 && mParty.YAxis == 40 && (mParty.Etc[30] & (1 << 1)) == 0) {
+				else if (mParty.XAxis == 89 && mParty.YAxis == 40 && (mParty.Etc[30] & (1 << 1)) == 0)
+				{
 					AppendText(" 당신은 100 개의 식량을 발견했다.");
 					if (mParty.Food + 100 < 256)
 						mParty.Food += 100;
@@ -7740,11 +8088,13 @@ namespace DarkUWP
 
 					mParty.Etc[30] |= 1 << 3;
 				}
-				else if (mParty.YAxis == 94) {
+				else if (mParty.YAxis == 94)
+				{
 					ShowExitMenu();
 				}
 			}
-			else if (mParty.Map == 7) {
+			else if (mParty.Map == 7)
+			{
 				if (mParty.XAxis == 49)
 					AppendText(" 여기는  두번째의 대륙으로 이동하는  게이트입니다. 하지만 당신은 그 곳에서 하여야할 임무가 없습니다. 다시 돌아가 주십시오.");
 				else if (mParty.XAxis == 29 || mParty.XAxis == 31)
@@ -7757,7 +8107,8 @@ namespace DarkUWP
 					ShowExitMenu();
 				}
 			}
-			else if (mParty.Map == 10) {
+			else if (mParty.Map == 10)
+			{
 				if ((mParty.XAxis == 24 && mParty.YAxis == 42) || (mParty.XAxis == 25 && mParty.YAxis == 42))
 				{
 					if (mParty.Etc[9] == 1)
@@ -9919,109 +10270,127 @@ namespace DarkUWP
 			}
 		}
 
-		//		private bool EnterWater()
-		//		{
-		//			if (mParty.Etc[1] > 0)
-		//			{
-		//				mParty.Etc[1]--;
+		private bool EnterWater()
+		{
+			if (mParty.Etc[1] > 0)
+			{
+				mParty.Etc[1]--;
 
-		//				if (mRand.Next(mEncounter * 30) == 0)
-		//					EncounterEnemy();
+				if (mRand.Next(mEncounter * 30) == 0)
+					EncounterEnemy();
 
-		//				return true;
-		//			}
-		//			else
-		//				return false;
-		//		}
+				return true;
+			}
+			else
+				return false;
+		}
 
-		//		private void EnterSwamp()
-		//		{
-		//			foreach (var player in mPlayerList)
-		//			{
-		//				if (player.Poison > 0)
-		//					player.Poison++;
+		private void EnterSwamp()
+		{
+			void PoisonEffectPlayer(Lore player) {
+				if (player.Poison > 0)
+					player.Poison++;
 
-		//				if (player.Poison > 10)
-		//				{
-		//					player.Poison = 1;
+				if (player.Poison > 10)
+				{
+					player.Poison = 1;
 
-		//					if (0 < player.Dead && player.Dead < 100)
-		//						player.Dead++;
-		//					else if (player.Unconscious > 0)
-		//					{
-		//						player.Unconscious++;
+					if (0 < player.Dead && player.Dead < 100)
+						player.Dead++;
+					else if (player.Unconscious > 0)
+					{
+						player.Unconscious++;
 
-		//						if (player.Unconscious > player.Endurance * player.Level[0])
-		//							player.Dead = 1;
-		//					}
-		//					else
-		//					{
-		//						player.HP--;
-		//						if (player.HP <= 0)
-		//							player.Unconscious++;
-		//					}
+						if (player.Unconscious > player.Endurance * player.Level)
+							player.Dead = 1;
+					}
+					else
+					{
+						player.HP--;
+						if (player.HP <= 0)
+							player.Unconscious = 1;
+					}
 
-		//				}
-		//			}
+				}
+			}
+			
+			foreach (var player in mPlayerList)
+			{
+				PoisonEffectPlayer(player);
+			}
 
-		//			if (mParty.Etc[2] > 0)
-		//				mParty.Etc[2]--;
-		//			else
-		//			{
-		//				AppendText(new string[] { $"[color={RGB.LightRed}]일행은 독이 있는 늪에 들어갔다 !!![/color]", "" });
+			if (mAssistPlayer != null)
+				PoisonEffectPlayer(mAssistPlayer);
 
-		//				foreach (var player in mPlayerList)
-		//				{
-		//					if (mRand.Next(20) + 1 >= player.Luck)
-		//					{
-		//						AppendText(new string[] { $"[color={RGB.LightMagenta}]{player.Name}(은)는 중독 되었다.[/color]" }, true);
-		//						if (player.Poison == 0)
-		//							player.Poison = 1;
-		//					}
-		//				}
-		//			}
+			if (mParty.Etc[2] > 0)
+				mParty.Etc[2]--;
+			else
+			{
+				AppendText(new string[] { $"[color={RGB.LightRed}]일행은 독이 있는 늪에 들어갔다 !!![/color]", "" });
 
-		//			UpdatePlayersStat();
-		//			DetectGameOver();
-		//		}
+				foreach (var player in mPlayerList)
+				{
+					if (mRand.Next(20) + 1 >= player.Luck)
+					{
+						AppendText($"[color={RGB.LightMagenta}]{player.NameSubjectJosa}(은)는 중독 되었다.[/color]", true);
+						if (player.Poison == 0)
+							player.Poison = 1;
+					}
+				}
 
-		//		private void EnterLava()
-		//		{
-		//			AppendText(new string[] { $"[color={RGB.LightRed}]일행은 용암지대로 들어섰다 !!![/color]", "" });
+				if (mAssistPlayer != null) {
+					if (mRand.Next(20) + 1 >= mAssistPlayer.Luck)
+					{
+						AppendText($"[color={RGB.LightMagenta}]{mAssistPlayer.NameSubjectJosa}(은)는 중독 되었다.[/color]", true);
+						if (mAssistPlayer.Poison == 0)
+							mAssistPlayer.Poison = 1;
+					}
+				}
+			}
 
-		//			foreach (var player in mPlayerList)
-		//			{
-		//				var damage = mRand.Next(40) + 40 - 2 * mRand.Next(player.Luck);
+			UpdatePlayersStat();
+			DetectGameOver();
+		}
 
-		//				AppendText(new string[] { $"[color={RGB.LightMagenta}]{player.Name}(은)는 {damage}의 피해를 입었다 ![/color]" }, true);
+		private void EnterLava()
+		{
+			void LavaEffectPlayer(Lore player) {
+				var damage = (mRand.Next(40) + 40 - 2 * mRand.Next(player.Luck)) * 10;
 
-		//				if (player.HP > 0 && player.Unconscious == 0)
-		//				{
-		//					player.HP -= damage;
-		//					if (player.HP <= 0)
-		//						player.Unconscious = 1;
-		//				}
-		//				else if (player.HP > 0 && player.Unconscious > 0)
-		//					player.HP -= damage;
-		//				else if (player.Unconscious > 0 && player.Dead == 0)
-		//				{
-		//					player.Unconscious += damage;
-		//					if (player.Unconscious > player.Endurance * player.Level[0])
-		//						player.Dead = 1;
-		//				}
-		//				else if (player.Dead == 1)
-		//				{
-		//					if (player.Dead + damage > 30000)
-		//						player.Dead = 30000;
-		//					else
-		//						player.Dead += damage;
+				if (player.HP > 0 && player.Unconscious == 0)
+				{
+					player.HP -= damage;
+					if (player.HP <= 0)
+						player.Unconscious = 1;
+				}
+				else if (player.HP > 0 && player.Unconscious > 0)
+					player.HP -= damage;
+				else if (player.Unconscious > 0 && player.Dead == 0)
+				{
+					player.Unconscious += damage;
+					if (player.Unconscious > player.Endurance * player.Level)
+						player.Dead = 1;
+				}
+				else if (player.Dead > 0)
+				{
+					if (player.Dead + damage > 30_000)
+						player.Dead = 30_000;
+					else
+						player.Dead += damage;
 
-		//				}
-		//			}
+				}
+			}
 
-		//			UpdatePlayersStat();
-		//			DetectGameOver();
-		//		}
+			AppendText(new string[] { $"[color={RGB.LightRed}]일행은 용암지대로 들어섰다!!![/color]", "" });
+
+			foreach (var player in mPlayerList)
+			{
+				LavaEffectPlayer(player);
+			}
+
+			UpdatePlayersStat();
+			DetectGameOver();
+		}
 
 		private BattleEnemyData JoinEnemy(int ENumber)
 		{
@@ -10258,26 +10627,26 @@ namespace DarkUWP
 					});
 		}
 
-		//		private void DetectGameOver()
-		//		{
-		//			var allPlayerDead = true;
-		//			foreach (var player in mPlayerList)
-		//			{
-		//				if (player.IsAvailable)
-		//				{
-		//					allPlayerDead = false;
-		//					break;
-		//				}
-		//			}
+		private void DetectGameOver()
+		{
+			var allPlayerDead = true;
+			foreach (var player in mPlayerList)
+			{
+				if (player.IsAvailable)
+				{
+					allPlayerDead = false;
+					break;
+				}
+			}
 
-		//			if (allPlayerDead)
-		//			{
-		//				mParty.Etc[5] = 255;
+			if (allPlayerDead)
+			{
+				mParty.Etc[5] = 255;
 
-		//				ShowGameOver(new string[] { "일행은 모험 중에 모두 목숨을 잃었다." });
-		//				mTriggeredDownEvent = true;
-		//			}
-		//		}
+				ShowGameOver(new string[] { "일행은 모험 중에 모두 목숨을 잃었다." });
+				mTriggeredDownEvent = true;
+			}
+		}
 
 
 		private void ShowExitMenu()
@@ -10561,7 +10930,10 @@ namespace DarkUWP
 			UnequipCharacter,
 			Unequip,
 			DelistCharacter,
-			ConfirmExit
+			ConfirmExit,
+			ChooseEquipCromaticShield,
+			ChooseEquipBattleAxe,
+			ChooseEquipObsidianArmor
 		}
 
 		private enum SpinnerType
@@ -10634,7 +11006,8 @@ namespace DarkUWP
 			TeleportationGate3,
 			CaveOfAsmodeus1,
 			CaveOfAsmodeus2,
-			FortressOfMephistopheles
+			FortressOfMephistopheles,
+			CabinOfRegulus
 		}
 
 		private enum AnimationType
@@ -10701,14 +11074,23 @@ namespace DarkUWP
 			Telescope,
 			BattleCaveOfBerialEntrance,
 			InvestigationCave,
-			BattleCaveOfAsmodeusEntrance
+			BattleCaveOfAsmodeusEntrance,
+			GetCromaticShield,
+			GetBattleAxe,
+			GetObsidianArmor,
+			BattleGuardOfObsidianArmor,
+			BattleSlaim,
+			BattleCaveEntrance
 		}
 
 		private enum BattleEvent {
 			None,
 			MenaceMurder,
 			CaveOfBerialEntrance,
-			CaveOfAsmodeusEntrance
+			CaveOfAsmodeusEntrance,
+			GuardOfObsidianArmor,
+			Slaim,
+			CaveEntrance
 		}
 
 		private class HealthTextBlock
