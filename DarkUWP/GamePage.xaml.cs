@@ -172,6 +172,8 @@ namespace DarkUWP
 		private int mPrevX;
 		private int mPrevY;
 
+		private bool mPyramidQuizAllRight = true;
+
 		public GamePage()
 		{
 			var rootFrame = Window.Current.Content as Frame;
@@ -1698,6 +1700,66 @@ namespace DarkUWP
 							DisplayEnemy();
 							StartBattle(false);
 						}
+						else if (specialEvent == SpecialEventType.AstronomyQuiz) {
+							mPyramidQuizAllRight = true;
+							AppendText(" \"시그너스 X1\" 이란 별은 현대 과학에서 어떤 별로 간주 되고 있겠소 ?");
+
+							ShowMenu(MenuMode.AstronomyQuiz1, new string[] {
+								"혹성",
+								"백색 왜성",
+								"블랙홀",
+								"중성자 별"
+							});
+						}
+						else if (specialEvent == SpecialEventType.ComputerQuiz) {
+							mPyramidQuizAllRight = true;
+							AppendText(" \" 다크 메이지 실리안 카미너스 \"라는 이 게임이 지원하는 그래픽 카드는 무엇이겠소 ?");
+
+							ShowMenu(MenuMode.ComputerQuiz1, new string[] {
+								"Hercules",
+								"Color Graphics Adapter",
+								"Enhanced Graphics Adapter",
+								"Video Graphics Array"
+							});
+						}
+						else if (specialEvent == SpecialEventType.PhysicsQuiz)
+						{
+							mPyramidQuizAllRight = true;
+							AppendText(" 빛보다 더 빠르게 달릴 수 있는  가상의 입자가 있소. 그 입자의 이름은 무엇이겠소 ?");
+
+							ShowMenu(MenuMode.PhysicsQuiz1, new string[] {
+								"플라즈마",
+								"쿼크",
+								"타키온",
+								"타지온"
+							});
+						}
+						else if (specialEvent == SpecialEventType.CommonSenseQuiz)
+						{
+							mPyramidQuizAllRight = true;
+							AppendText(" 이 게임의 전작이며 1부 였던 \" 또 다른 지식의 성전 \"의 적의 최고 보스는 누구였소 ?");
+
+							ShowMenu(MenuMode.CommonSenseQuiz1, new string[] {
+								"에인션트 이블",
+								"히드라",
+								"드라코니안",
+								"네크로만서",
+								"로드 안"
+							});
+						}
+						else if (specialEvent == SpecialEventType.MathQuiz)
+						{
+							mPyramidQuizAllRight = true;
+							AppendText(" X = 7, Y = 9, Z * Z = X + Y 라면 Z 의 값은 어떻게 되겠소 ?");
+
+							ShowMenu(MenuMode.MathQuiz1, new string[] {
+								"<< 3 >>",
+								"<< 4 >>",
+								"<< 5 >>",
+								"<< 6 >>",
+								"<< 7 >>"
+							});
+						}
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -2357,6 +2419,12 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Enter || args.VirtualKey == VirtualKey.GamepadA)
 					{
+						var abilityUpPrice = new int[] {
+							30, 60, 125, 250, 500, 1_000, 2_000, 3_000, 4_000,6_000,
+							8_000, 12_000, 16_000, 24_000, 32_000, 64_000,96_000, 128_000, 192_000, 256_000,
+							384_000, 512_000, 770_000, 1_000_000, 1_500_000, 2_000_000, 2_500_000, 3_000_000, 3_500_000, 4_000_000
+						};
+
 						void SelectEnemy()
 						{
 							mMenuMode = MenuMode.EnemySelectMode;
@@ -5879,6 +5947,301 @@ namespace DarkUWP
 							else
 								AppendText($"{player.Name}에게는 이 갑옷이 맞지 않습니다.");
 						}
+						else if (menuMode == MenuMode.AstronomyQuiz1) {
+							if (mMenuFocusID != 2)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 현재 알려진 항성중에서 가장 밝은 항성은 무엇이라고 알려져 있소 ?");
+
+							ShowMenu(MenuMode.AstronomyQuiz2, new string[] {
+								"폴라리스 ( 북극성 )",
+								"시리우스",
+								"스피카",
+								"베텔규스"
+							});
+						}
+						else if (menuMode == MenuMode.AstronomyQuiz2)
+						{
+							if (mMenuFocusID != 1)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 금빛과 푸른빛의 이중성으로 알려진 아름다운 별의 이름은 무엇이겠소 ?");
+
+							ShowMenu(MenuMode.AstronomyQuiz3, new string[] {
+								"시리우스",
+								"알콜과 미자르",
+								"알비레오",
+								"베라트릭스"
+							});
+						}
+						else if (menuMode == MenuMode.AstronomyQuiz3)
+						{
+							if (mMenuFocusID != 2)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 다음중 오리온 자리의 별이 아니것을 골라 보도록 하시오.");
+
+							ShowMenu(MenuMode.AstronomyQuiz4, new string[] {
+								"베텔규스",
+								"리겔",
+								"베라트릭스",
+								"안타레스"
+							});
+						}
+						else if (menuMode == MenuMode.AstronomyQuiz4) {
+							if (mMenuFocusID != 3)
+								mPyramidQuizAllRight = false;
+
+							if (mPyramidQuizAllRight)
+							{
+								AppendText(new string[] {
+									$"[color={RGB.White}] 당신은 정말 열심히 \" 또 다른 지식의 성전 \"을 했나 보군요. 내가 낸 모든 문제는 바로 거기에서 나오는 문제들이었다오.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+								});
+
+								foreach (var player in mPlayerList)
+									player.Experience += 50_000;
+
+								mParty.Etc[45] |= 1;
+							}
+						}
+						else if (menuMode == MenuMode.PlusMentality)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (player.Mentality >= 30)
+								AppendText($"{player.NameSubjectJosa} 지금 최고의 정신력 수치입니다.");
+							else if (mParty.Gold < abilityUpPrice[player.Mentality])
+								AppendText($"일행은 {abilityUpPrice[player.Mentality].ToString("#,#0")}개의 황금이 필요합니다.");
+							else {
+								player.Mentality++;
+								mParty.Gold -= abilityUpPrice[player.Mentality];
+								AppendText($"[color={RGB.White}]{player.Name}의 정신력은 이제 {player.Mentality}입니다.");
+							}
+						}
+						else if (menuMode == MenuMode.PlusEndurance)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (player.Endurance >= 30)
+								AppendText($"{player.NameSubjectJosa} 지금 최고의 인내력 수치입니다.");
+							else if (mParty.Gold < abilityUpPrice[player.Endurance])
+								AppendText($"일행은 {abilityUpPrice[player.Endurance].ToString("#,#0")}개의 황금이 필요합니다.");
+							else
+							{
+								player.Endurance++;
+								mParty.Gold -= abilityUpPrice[player.Endurance];
+								AppendText($"[color={RGB.White}]{player.Name}의 인내력은 이제 {player.Endurance}입니다.");
+							}
+						}
+						else if (menuMode == MenuMode.PlusStrength)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (player.Strength >= 30)
+								AppendText($"{player.NameSubjectJosa} 지금 최고의 체력 수치입니다.");
+							else if (mParty.Gold < abilityUpPrice[player.Strength])
+								AppendText($"일행은 {abilityUpPrice[player.Strength].ToString("#,#0")}개의 황금이 필요합니다.");
+							else
+							{
+								player.Strength++;
+								mParty.Gold -= abilityUpPrice[player.Strength];
+								AppendText($"[color={RGB.White}]{player.Name}의 체력은 이제 {player.Strength}입니다.");
+							}
+						}
+						else if (menuMode == MenuMode.PlusAgility)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (player.Agility >= 20)
+								AppendText($"{player.NameSubjectJosa} 지금 최고의 민첩성 수치입니다.");
+							else if (mParty.Gold < abilityUpPrice[player.Agility])
+								AppendText($"일행은 {abilityUpPrice[player.Agility].ToString("#,#0")}개의 황금이 필요합니다.");
+							else
+							{
+								player.Agility++;
+								mParty.Gold -= abilityUpPrice[player.Agility];
+								AppendText($"[color={RGB.White}]{player.Name}의 민첩성은 이제 {player.Agility}입니다.");
+							}
+						}
+						else if (menuMode == MenuMode.PlusAccuracy)
+						{
+							var player = mPlayerList[mMenuFocusID];
+							if (player.Accuracy >= 20)
+								AppendText($"{player.NameSubjectJosa} 지금 최고의 정확성 수치입니다.");
+							else if (mParty.Gold < abilityUpPrice[player.Accuracy])
+								AppendText($"일행은 {abilityUpPrice[player.Accuracy].ToString("#,#0")}개의 황금이 필요합니다.");
+							else
+							{
+								player.Accuracy++;
+								mParty.Gold -= abilityUpPrice[player.Accuracy + 1];
+								AppendText($"[color={RGB.White}]{player.Name}의 정확성은 이제 {player.Accuracy}입니다.");
+							}
+						}
+						else if (menuMode == MenuMode.ComputerQuiz1)
+						{
+							if (mMenuFocusID != 3)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 다음은 여러 OS 간의 명령어라오. 이중에서 성질이 다른 하나를 찾아보도록 하시오.");
+
+							ShowMenu(MenuMode.ComputerQuiz2, new string[] {
+								"Pro - Dos : \"prefix\"",
+								"Unix      : \"ls\"",
+								"MS - Dos  : \"dir\"",
+								"Apple Dos : \"catalog\""
+							});
+						}
+						else if (menuMode == MenuMode.ComputerQuiz2)
+						{
+							if (mMenuFocusID != 0)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 그럼 이 게임을 만들때 쓰인 언어 중에서 주가되는 언어는 무엇이었겠소 ?");
+
+							ShowMenu(MenuMode.ComputerQuiz3, new string[] {
+								"FORTRAN",
+								"BASIC",
+								"Pascal",
+								"C ++"
+							});
+						}
+						else if (menuMode == MenuMode.ComputerQuiz3)
+						{
+							if (mMenuFocusID != 2)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 다음은 여러 컴퓨터 언어의 출력 함수라오. 그중 결과가 틀린 것은 무엇이겠소 ?");
+
+							ShowMenu(MenuMode.ComputerQuiz4, new string[] {
+								"FORTRAN : WRITE(*,*) \'Dark.exe\'",
+								"BASIC   : PRINT \"Dark.exe\";",
+								"Pascal  : writeln(\'Dark.exe\');",
+								"C       : puts(\"Dark.exe\");"
+							});
+						}
+						else if (menuMode == MenuMode.ComputerQuiz4)
+						{
+							if (mMenuFocusID != 1)
+								mPyramidQuizAllRight = false;
+
+							if (mPyramidQuizAllRight)
+							{
+								AppendText(new string[] {
+									$"[color={RGB.White}] 당신은 정말  열심히 컴퓨터를 공부했나 보군요.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+								});
+
+								foreach (var player in mPlayerList)
+									player.Experience += 50_000;
+
+								mParty.Etc[45] |= 1 << 1;
+							}
+							else
+								AppendText($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
+						}
+						else if (menuMode == MenuMode.PhysicsQuiz1)
+						{
+							if (mMenuFocusID != 2)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 다음중 뉴튼의 세가지 법칙에 속하지 않는 것은 어느 것이겠소 ?");
+
+							ShowMenu(MenuMode.PhysicsQuiz2, new string[] {
+								"만유 인력의 법칙",
+								"관성의 법칙",
+								"작용 반작용의 법칙",
+								"질량 보존의 법칙"
+							});
+						}
+						else if (menuMode == MenuMode.PhysicsQuiz2)
+						{
+							if (mMenuFocusID != 3)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 다음 공식중 틀린것을 한번 골라내 보도록 하시오.");
+
+							ShowMenu(MenuMode.PhysicsQuiz3, new string[] {
+								"F = ma",
+								"F = Blv",
+								"F = mg",
+								"F = Bli"
+							});
+						}
+						else if (menuMode == MenuMode.PhysicsQuiz3)
+						{
+							if (mMenuFocusID != 1)
+								mPyramidQuizAllRight = false;
+
+							if (mPyramidQuizAllRight)
+							{
+								AppendText(new string[] {
+									$"[color={RGB.White}] 당신은 물리학에도  역시 상당한 지식을 가지고 있군요.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+								});
+
+								foreach (var player in mPlayerList)
+									player.Experience += 50_000;
+
+								mParty.Etc[45] |= 1 << 2;
+							}
+							else
+								AppendText($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
+						}
+						else if (menuMode == MenuMode.CommonSenseQuiz1)
+						{
+							if (mMenuFocusID != 3)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 전작에서  드래곤이 있던 동굴에서  수도하던 최고의 초능력자는 누구였소 ?");
+
+							ShowMenu(MenuMode.CommonSenseQuiz2, new string[] {
+								"레드 안타레스",
+								"스피카",
+								"알비레오",
+								"드라코니안",
+								"로어 헌터"
+							});
+						}
+						else if (menuMode == MenuMode.CommonSenseQuiz2)
+						{
+							if (mMenuFocusID != 1)
+								mPyramidQuizAllRight = false;
+
+							AppendText(" 전작에서 당신이 모험을 했던 대륙은 모두 몇개로 이루어져 있었소 ?'");
+
+							ShowMenu(MenuMode.CommonSenseQuiz3, new string[] {
+								"3 개",
+								"4 개",
+								"5 개",
+								"6 개",
+								"7 개"
+							});
+						}
+						else if (menuMode == MenuMode.CommonSenseQuiz3)
+						{
+							if (mMenuFocusID != 2)
+								mPyramidQuizAllRight = false;
+
+							if (mPyramidQuizAllRight)
+							{
+								AppendText(new string[] {
+									$"[color={RGB.White}] 당신은 \" 또 다른 지식의 성전 \"을 정말 열심히 한것 같군요.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+								});
+
+								foreach (var player in mPlayerList)
+									player.Experience += 50_000;
+
+								mParty.Etc[45] |= 1 << 3;
+							}
+							else
+								AppendText($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
+						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
 					//				{
@@ -7841,6 +8204,32 @@ namespace DarkUWP
 			}
 			else if (mParty.Map == 2)
 			{
+				void ShowPlusAbilityMenu(MenuMode menuMode) {
+					string abilityName;
+
+					switch (menuMode) {
+						case MenuMode.PlusMentality:
+							abilityName = "정신력";
+							break;
+						case MenuMode.PlusEndurance:
+							abilityName = "인내력";
+							break;
+						case MenuMode.PlusStrength:
+							abilityName = "체력";
+							break;
+						case MenuMode.PlusAgility:
+							abilityName = "민첩성";
+							break;
+						default:
+							abilityName = "정확성";
+							break;
+					}
+
+					AppendText($" 당신은 나의 문제를 모두 맞추었소.  그 보답으로,  당신이 황금을 나에게 바친다면 당신들중의 한사람의 {abilityName}을 한 단계 올려 주겠소.");
+
+					ShowCharacterMenu(menuMode, false);
+				}
+
 				if ((mParty.XAxis == 95 && mParty.YAxis == 93) || (mParty.XAxis == 95 && mParty.YAxis == 94))
 				{
 					AppendText(" 일행은 고대의 유적으로 공간 이동이 되었다.");
@@ -7939,7 +8328,8 @@ namespace DarkUWP
 						mSpecialEvent = SpecialEventType.GetObsidianArmor;
 					}
 				}
-				else if (((mParty.XAxis == 103 && mParty.YAxis == 13) || (mParty.XAxis == 104 && mParty.YAxis == 13)) && (mParty.Etc[44] & (1 << 3)) == 0) {
+				else if (((mParty.XAxis == 103 && mParty.YAxis == 13) || (mParty.XAxis == 104 && mParty.YAxis == 13)) && (mParty.Etc[44] & (1 << 3)) == 0)
+				{
 					mEncounterEnemyList.Clear();
 
 					for (var i = 0; i < 5; i++)
@@ -7954,22 +8344,28 @@ namespace DarkUWP
 
 					mSpecialEvent = SpecialEventType.BattleGuardOfObsidianArmor;
 				}
-				else if (mParty.XAxis == 148 && mParty.YAxis == 50 && (mParty.Etc[44] & (1 << 4)) == 0) {
+				else if (mParty.XAxis == 148 && mParty.YAxis == 50 && (mParty.Etc[44] & (1 << 4)) == 0)
+				{
 					Talk(" 일행이 앞으로 진행하려 했지만  점액 생물이 일행을 포위했다.");
 
 					mSpecialEvent = SpecialEventType.BattleSlaim;
 				}
-				else if (mParty.XAxis == 148 && mParty.YAxis == 65 && (mParty.Etc[44] & (1 << 5)) == 0) {
+				else if (mParty.XAxis == 148 && mParty.YAxis == 65 && (mParty.Etc[44] & (1 << 5)) == 0)
+				{
 					Talk(" 일행이 동굴 앞에 섰을때 동굴의 입구를 지키는 괴물들이 일행의 앞을 가로 막았다.");
 
 					mSpecialEvent = SpecialEventType.BattleCaveEntrance;
 				}
-				else if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 52) {
-					if (!(mParty.XAxis == 103 && mParty.YAxis == 9) && !(GetTileInfo(mParty.XAxis, mParty.YAxis) != mMapLayer[mParty.XAxis + mParty.YAxis * mMapWidth])) {
+				else if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 52)
+				{
+					if (!(mParty.XAxis == 103 && mParty.YAxis == 9) && !(GetTileInfo(mParty.XAxis, mParty.YAxis) != mMapLayer[mParty.XAxis + mParty.YAxis * mMapWidth]))
+					{
 						AppendText(" 일행이 물위로 가려고 하자 갑자기 물은 용암으로 바뀌고 말았다.");
 
-						for (var y = 60; y < 119; y++) {
-							for (var x = 7; x < 106; x++) {
+						for (var y = 60; y < 119; y++)
+						{
+							for (var x = 7; x < 106; x++)
+							{
 								if (GetTileInfo(x, y) == 52)
 									mMapLayer[x + y * mMapWidth] = 50;
 							}
@@ -7977,7 +8373,8 @@ namespace DarkUWP
 						}
 					}
 				}
-				else if (mParty.XAxis == 183 && mParty.YAxis == 30 && mParty.Etc[10] == 1) {
+				else if (mParty.XAxis == 183 && mParty.YAxis == 30 && mParty.Etc[10] == 1)
+				{
 					AppendText(new string[] {
 						$" 아니 ! {mPlayerList[0].Name} 자네가 여기 웬일인가 ?",
 						" 정말 오래간 만이네.",
@@ -7990,6 +8387,169 @@ namespace DarkUWP
 					});
 
 					mParty.Etc[10]++;
+				}
+				else if (mParty.XAxis == 156 && mParty.YAxis == 93)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & 1) == 0)
+						{
+							Talk(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 천문학을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 4 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+							});
+
+							mSpecialEvent = SpecialEventType.AstronomyQuiz;
+						}
+						else
+							ShowPlusAbilityMenu(MenuMode.PlusMentality);
+					}
+				}
+				else if (mParty.XAxis == 156 && mParty.YAxis == 107)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & (1 << 1)) == 0)
+						{
+							Talk(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 컴퓨터를 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 4 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+							});
+
+							mSpecialEvent = SpecialEventType.ComputerQuiz;
+						}
+						else
+							ShowPlusAbilityMenu(MenuMode.PlusEndurance);
+					}
+				}
+				else if (mParty.XAxis == 170 && mParty.YAxis == 93)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & (1 << 2)) == 0)
+						{
+							Talk(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 물리학을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+							});
+
+							mSpecialEvent = SpecialEventType.PhysicsQuiz;
+						}
+						else
+							ShowPlusAbilityMenu(MenuMode.PlusStrength);
+					}
+				}
+				else if (mParty.XAxis == 169 && mParty.YAxis == 107)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & (1 << 3)) == 0)
+						{
+							Talk(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 \" 또 다른 지식의 성전 \"에 대한 상식을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+							});
+
+							mSpecialEvent = SpecialEventType.CommonSenseQuiz;
+						}
+						else
+							ShowPlusAbilityMenu(MenuMode.PlusAgility);
+					}
+				}
+				else if (mParty.XAxis == 169 && mParty.YAxis == 107)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & (1 << 4)) == 0)
+						{
+							AppendText(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 당신이 겪어 나간 운명에 관한 이해를 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 !@QfhR%{{`as& ^Z>;/~ ^^Q+\\! 쨟hs<e#냠[/color]",
+							});
+
+							InvokeAnimation(AnimationType.StatueError);
+						}
+					}
+				}
+				else if (mParty.XAxis == 185 && mParty.YAxis == 107)
+				{
+					if ((mParty.Etc[43] & 1) > 0)
+					{
+						if ((mParty.Etc[45] & (1 << 5)) == 0)
+						{
+							Talk(new string[] {
+								" 당신 앞의 석상이 입을 열었다.",
+								"",
+								$"[color={RGB.White}] 나는 고대의 유적중 수학에 대한 지식을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+							});
+
+							mSpecialEvent = SpecialEventType.MathQuiz;
+						}
+						else
+							ShowPlusAbilityMenu(MenuMode.PlusAccuracy);
+					}
+				}
+			}
+			else if (mParty.Map == 3) {
+				if (mParty.XAxis == 43 && mParty.YAxis == 44 && (mParty.Etc[34] & (1 << 5)) == 0)
+				{
+					AppendText(new string[] {
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]의식의 약초[/color][color={RGB.White}]를 발견하였다.[/color]",
+						"",
+						$"[color={RGB.LightCyan}] [[ 의식의 약초 + 4 ][/color]"
+					});
+
+					if (mParty.Item[3] + 4 < 256)
+						mParty.Item[3] += 4;
+					else
+						mParty.Item[3] = 255;
+
+					mParty.Etc[34] |= 1 << 5;
+				}
+				else if (mParty.XAxis == 53 && mParty.YAxis == 44 && (mParty.Etc[34] & (1 << 6)) == 0)
+				{
+					AppendText(new string[] {
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]체력 회복약[/color][color={RGB.White}]를 발견하였다.[/color]",
+						"",
+						$"[color={RGB.LightCyan}] [[ 체력 회복약 + 5 ][/color]"
+					});
+
+					if (mParty.Item[0] + 5 < 256)
+						mParty.Item[0] += 5;
+					else
+						mParty.Item[0] = 255;
+
+					mParty.Etc[34] |= 1 << 6;
+				}
+				else if (mParty.XAxis == 50 && mParty.YAxis == 49 && (mParty.Etc[34] & (1 << 7)) == 0)
+				{
+					AppendText(new string[] {
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]이동 구슬[/color][color={RGB.White}]를 발견하였다.[/color]",
+						"",
+						$"[color={RGB.LightCyan}] [[ 이동 구슬 + 2 ][/color]"
+					});
+
+					if (mParty.Item[0] + 5 < 256)
+						mParty.Item[0] += 5;
+					else
+						mParty.Item[0] = 255;
+
+					mParty.Etc[34] |= 1 << 7;
+				}
+				else if ((mParty.XAxis == 68 && mParty.YAxis == 37) || (mParty.XAxis == 15 && mParty.YAxis == 9) || (mParty.XAxis == 71 && mParty.YAxis == 6))
+				{
+					//InvokeAnimation()
 				}
 			}
 			else if (mParty.Map == 6)
@@ -9390,14 +9950,16 @@ namespace DarkUWP
 						Task.Delay(500).Wait();
 					}
 				}
-				else if (mAnimationEvent == AnimationType.LeaveSoldier) {
+				else if (mAnimationEvent == AnimationType.LeaveSoldier)
+				{
 					for (var i = 1; i <= 4 + Math.Abs(mParty.YAxis - 48); i++)
 					{
 						mAnimationFrame = i;
 						Task.Delay(500).Wait();
 					}
 				}
-				else if (mAnimationEvent == AnimationType.SleepLoreCastle) {
+				else if (mAnimationEvent == AnimationType.SleepLoreCastle)
+				{
 					var i = 0;
 					while (true)
 					{
@@ -9405,28 +9967,34 @@ namespace DarkUWP
 						mAnimationFrame = i;
 						if (i <= 59)
 							Task.Delay(5).Wait();
-						else if (i == 60) {
+						else if (i == 60)
+						{
 							mFace = 3;
 							mParty.YAxis = 49;
 							mParty.XAxis = 15;
 							Task.Delay(500).Wait();
 						}
-						else if (61 <= i && i <= 65) {
+						else if (61 <= i && i <= 65)
+						{
 							mParty.XAxis--;
 							Task.Delay(500).Wait();
 						}
-						else if (i == 66) {
+						else if (i == 66)
+						{
 							mFace = 1;
 							Task.Delay(1000).Wait();
 						}
-						else if (i == 67) {
+						else if (i == 67)
+						{
 							mParty.Etc[0] = 0;
 							Task.Delay(1000).Wait();
 							AppendText(" 당신은 다음날 아침까지 여기서 자기로 했다.");
 							mParty.Min = 0;
 						}
-						else if (i >= 68 && mParty.Hour != 9) {
-							void UpdateState(Lore player) {
+						else if (i >= 68 && mParty.Hour != 9)
+						{
+							void UpdateState(Lore player)
+							{
 								if (player.Dead == 0 && player.Unconscious == 0)
 								{
 									if (player.Poison == 0)
@@ -9465,7 +10033,8 @@ namespace DarkUWP
 
 							PlusTime(0, 20, 0);
 
-							foreach (var player in mPlayerList) {
+							foreach (var player in mPlayerList)
+							{
 								UpdateState(player);
 							}
 
@@ -9474,7 +10043,8 @@ namespace DarkUWP
 
 							UpdatePlayersStat();
 						}
-						else {
+						else
+						{
 							MovePlayer(mParty.XAxis + 1, mParty.YAxis);
 							mFace = 2;
 
@@ -9483,42 +10053,55 @@ namespace DarkUWP
 					}
 				}
 				else if (mAnimationEvent == AnimationType.TalkLordAhn ||
-					mAnimationEvent == AnimationType.TalkLordAhn2) {
-					for (var i = 1; i <= 59; i++) {
-						mAnimationFrame = i;
-						Task.Delay(5).Wait();
-					}
-				}
-				else if (mAnimationEvent == AnimationType.GetDefaultWeapon) {
-					for (var i = 0; i < 3; i++)
-					{
-						Task.Delay(500).Wait();
-						MovePlayer(mParty.XAxis - 1, mParty.YAxis);
-					}
-				}
-				else if (mAnimationEvent == AnimationType.EnterUnderworld) {
+					mAnimationEvent == AnimationType.TalkLordAhn2)
+				{
 					for (var i = 1; i <= 59; i++)
 					{
 						mAnimationFrame = i;
 						Task.Delay(5).Wait();
 					}
 				}
-				else if (mAnimationEvent == AnimationType.GoInsideMenace) {
-					for (var i = 0; i < 2; i++) {
+				else if (mAnimationEvent == AnimationType.GetDefaultWeapon)
+				{
+					for (var i = 0; i < 3; i++)
+					{
+						Task.Delay(500).Wait();
+						MovePlayer(mParty.XAxis - 1, mParty.YAxis);
+					}
+				}
+				else if (mAnimationEvent == AnimationType.EnterUnderworld)
+				{
+					for (var i = 1; i <= 59; i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(5).Wait();
+					}
+				}
+				else if (mAnimationEvent == AnimationType.GoInsideMenace)
+				{
+					for (var i = 0; i < 2; i++)
+					{
 						MovePlayer(mParty.XAxis, mParty.YAxis - 1);
 						Task.Delay(2000).Wait();
 					}
 				}
 				else if (mAnimationEvent == AnimationType.GoInsideMenace2)
 					Task.Delay(5000).Wait();
-				else if (mAnimationEvent == AnimationType.BuyExp) {
+				else if (mAnimationEvent == AnimationType.BuyExp)
+				{
 					var totalTrainTime = mTrainTime * 3;
 
-					for (var i = 0; i < totalTrainTime; i++) {
+					for (var i = 0; i < totalTrainTime; i++)
+					{
 						PlusTime(0, 20, 0);
 						Task.Delay(500).Wait();
 					}
 				}
+				else if (mAnimationEvent == AnimationType.StatueError || 
+					mAnimationEvent == AnimationType.StatueError2 || 
+					mAnimationEvent == AnimationType.StatueError3 ||
+					mAnimationEvent == AnimationType.StatueError4)
+					Task.Delay(2000).Wait();
 			});
 
 			await animationTask;
@@ -9628,6 +10211,31 @@ namespace DarkUWP
 
 				AppendText($"[color={RGB.White}] 일행은 훈련을 끝 마쳤다.[/color]", true);
 				ContinueText.Visibility = Visibility.Visible;
+			}
+			else if (mAnimationEvent == AnimationType.StatueError)
+			{
+				AppendText($"[color={RGB.White}]< Error  43 : Illegal assiggnment >[/color]", true);
+				InvokeAnimation(AnimationType.StatueError2);
+			}
+			else if (mAnimationEvent == AnimationType.StatueError2)
+			{
+				AppendText($"[color={RGB.White}]< Error   3 : Unknown identifier >[/color]", true);
+				InvokeAnimation(AnimationType.StatueError3);
+			}
+			else if (mAnimationEvent == AnimationType.StatueError3)
+			{
+				AppendText($"[color={RGB.White}]< Error 122 : Invalid variable reference >[/color]", true);
+				InvokeAnimation(AnimationType.StatueError2);
+			}
+			else if (mAnimationEvent == AnimationType.StatueError4)
+			{
+				AppendText(new string[] {
+					$"[color={RGB.White}] Program is Terminated !! ($F34DC1:$01BA8) [/color]",
+					"",
+					" 하지만 석상은 심하게 손상 되어 있었고 제대로 작동하지 않았다."
+				}, true);
+
+				mAnimationEvent = AnimationType.None;
 			}
 			else
 			{
@@ -10662,7 +11270,19 @@ namespace DarkUWP
 		{
 			AppendText(new string[] { "푯말에 쓰여있기로 ...\r\n\r\n" });
 
-			if (mParty.Map == 6)
+			if (mParty.Map == 2)
+			{
+				if (x == 81 && y == 100)
+					AppendText($"[color={RGB.White}]피라미드의 암흑이 호수 위를 비출때,  고대 해왔던 잊혀진 유적은 당신 앞에서  그 진가를 발하며 불멸의 생명을 안겨 줄것이다[/color]");
+				else if (x == 142 && y == 115)
+					AppendText($"[color={RGB.White}]어서오게, 친구여.  자네가 여기에 있는 6 가지의 시험을 통과한다면 영원 불멸의 생명을 영위하게 될 걸세.[/color]");
+				else if (x == 29 && y == 99)
+				{
+					AppendText($"[color={RGB.White}]오!! 현명한자여. 당신은 영원한 생명을 얻을 자격이 있소.  이제 잊혀진 유적은 당신의 의지에 순응할 것이오.[/color]");
+					mParty.Etc[43] |= 1;
+				}
+			}
+			else if (mParty.Map == 6)
 			{
 				if (x == 50 && y == 83)
 				{
@@ -10695,7 +11315,8 @@ namespace DarkUWP
 				else if (x == 76 && y == 23)
 					AppendText($"[color={RGB.White}]         여기는 헤라클레스의 집[/color]", true);
 			}
-			else if (mParty.Map == 7) {
+			else if (mParty.Map == 7)
+			{
 				if (x == 38 && y == 67)
 				{
 					AppendText(new string[] {
@@ -10933,7 +11554,29 @@ namespace DarkUWP
 			ConfirmExit,
 			ChooseEquipCromaticShield,
 			ChooseEquipBattleAxe,
-			ChooseEquipObsidianArmor
+			ChooseEquipObsidianArmor,
+			AstronomyQuiz1,
+			AstronomyQuiz2,
+			AstronomyQuiz3,
+			AstronomyQuiz4,
+			ComputerQuiz1,
+			ComputerQuiz2,
+			ComputerQuiz3,
+			ComputerQuiz4,
+			PhysicsQuiz1,
+			PhysicsQuiz2,
+			PhysicsQuiz3,
+			CommonSenseQuiz1,
+			CommonSenseQuiz2,
+			CommonSenseQuiz3,
+			MathQuiz1,
+			MathQuiz2,
+			MathQuiz3,
+			PlusMentality,
+			PlusEndurance,
+			PlusStrength,
+			PlusAgility,
+			PlusAccuracy
 		}
 
 		private enum SpinnerType
@@ -11022,7 +11665,11 @@ namespace DarkUWP
 			EnterUnderworld,
 			GoInsideMenace,
 			GoInsideMenace2,
-			BuyExp
+			BuyExp,
+			StatueError,
+			StatueError2,
+			StatueError3,
+			StatueError4
 		}
 
 		private enum SpecialEventType
@@ -11080,7 +11727,12 @@ namespace DarkUWP
 			GetObsidianArmor,
 			BattleGuardOfObsidianArmor,
 			BattleSlaim,
-			BattleCaveEntrance
+			BattleCaveEntrance,
+			AstronomyQuiz,
+			ComputerQuiz,
+			PhysicsQuiz,
+			CommonSenseQuiz,
+			MathQuiz
 		}
 
 		private enum BattleEvent {
