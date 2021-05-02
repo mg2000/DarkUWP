@@ -1119,7 +1119,36 @@ namespace DarkUWP
 					} while (mBattlePlayerID < mPlayerList.Count && !mPlayerList[mBattlePlayerID].IsAvailable);
 
 					if (mBattlePlayerID < mPlayerList.Count)
+					{
+						if (mAssistPlayer != null && mAssistPlayer.IsAvailable) {
+							void AssistAttack(bool attackAll) {
+								mBattleCommandQueue.Enqueue(new BattleCommand()
+								{
+									Player = mAssistPlayer,
+									FriendID = -1,
+									Method = 0,
+									Tool = 0,
+									EnemyID = attackAll ? -1 : 0
+								});
+							}
+
+							switch (mAssistPlayer.ClassType) {
+								case ClassCategory.Sword:
+								case ClassCategory.Unknown:
+								case ClassCategory.Giant:
+								case ClassCategory.Dragon:
+									AssistAttack(false);
+									break;
+								case ClassCategory.Elemental:
+									AssistAttack(mAssistPlayer.Weapon != 29);
+									break;
+								default:
+									AssistAttack(true);
+									break;
+							}
+						}
 						BattleMode();
+					}
 					else
 					{
 						DialogText.TextHighlighters.Clear();
@@ -4665,6 +4694,59 @@ namespace DarkUWP
 								UpdateItem(mTrainPlayer);
 							}
 						}
+						else if (menuMode == MenuMode.BattleStart)
+						{
+							var avgLuck = 0;
+							foreach (var player in mPlayerList)
+							{
+								avgLuck += player.Luck;
+							}
+
+							var playerCount = mPlayerList.Count;
+							if (mAssistPlayer != null)
+							{
+								avgLuck += mAssistPlayer.Luck;
+								playerCount++;
+							}
+
+							avgLuck /= playerCount;
+
+							var avgEnemyAgility = 0;
+							foreach (var enemy in mEncounterEnemyList)
+							{
+								avgEnemyAgility += enemy.Agility;
+							}
+							avgEnemyAgility /= mEncounterEnemyList.Count;
+
+							if (mMenuFocusID == 0)
+							{
+								var avgAgility = 0;
+								foreach (var player in mPlayerList)
+								{
+									avgAgility += player.Agility;
+								}
+
+								if (mAssistPlayer != null)
+									avgAgility = mAssistPlayer.Agility;
+
+								avgAgility /= playerCount;
+
+								if (avgAgility > avgEnemyAgility)
+									StartBattle(true);
+								else
+									StartBattle(false);
+							}
+							else if (mMenuFocusID == 1)
+							{
+								if (avgLuck > avgEnemyAgility)
+								{
+									mBattleTurn = BattleTurn.RunAway;
+									await EndBattle();
+								}
+								else
+									StartBattle(false);
+							}
+						}
 						else if (menuMode == MenuMode.BattleCommand)
 						{
 							mBattleCommandID = mMenuFocusID;
@@ -4797,12 +4879,17 @@ namespace DarkUWP
 								else if (player.ESPMagic > 99)
 									availCount = 5;
 
-								var espMagicMenuItem = new string[availCount];
+								if (availCount == 0)
+									BattleMode();
+								else
+								{
+									var espMagicMenuItem = new string[availCount];
 
-								for (var i = 1; i <= availCount; i++)
-									espMagicMenuItem[i] = Common.GetMagicName(5, i);
+									for (var i = 1; i <= availCount; i++)
+										espMagicMenuItem[i] = Common.GetMagicName(5, i);
 
-								ShowMenu(MenuMode.ChooseESPMagic, espMagicMenuItem);
+									ShowMenu(MenuMode.ChooseESPMagic, espMagicMenuItem);
+								}
 							}
 
 							return;
@@ -7312,7 +7399,17 @@ namespace DarkUWP
 
 				if (battleCommand.Method == 0)
 				{
-					AttackOne();
+					if (battleCommand.EnemyID == -1) { 
+						for (var i = 0; i < mEncounterEnemyList.Count; i++) {
+							if (!mEncounterEnemyList[i].Dead && ((!mEncounterEnemyList[i].Unconscious && !mParty.Cruel) || mParty.Cruel))
+							{
+								battleCommand.EnemyID = i;
+								AttackOne();
+							}
+						}
+					}
+					else
+						AttackOne();
 				}
 				else if (battleCommand.Method == 1)
 				{
