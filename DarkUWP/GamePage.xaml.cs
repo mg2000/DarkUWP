@@ -2226,7 +2226,7 @@ namespace DarkUWP
 						if (availCount > 0)
 						{
 							menuStr = new string[availCount];
-							for (var i = 1; i <= 10; i++)
+							for (var i = 1; i <= availCount; i++)
 							{
 								menuStr[i - 1] = Common.GetMagicName(1, i);
 							}
@@ -7392,13 +7392,13 @@ namespace DarkUWP
 							return;
 						}
 
-						if (player.SP < 1000)
+						if (player.SP < 1_000)
 						{
 							battleResult.Add($"마법 지수가 부족했다");
 							return;
 						}
 
-						player.SP -= 1000;
+						player.SP -= 1_000;
 						DisplaySP();
 
 						if (mRand.Next(40) < enemy.Resistance)
@@ -8293,7 +8293,7 @@ namespace DarkUWP
 			void FindGold(int id, int bit, int gold) {
 				if ((mParty.Etc[id] & bit) == 0)
 				{
-					AppendText($"당신은 금화 {gold}개를 발견했다.");
+					AppendText($"당신은 금화 {gold.ToString("#,#0")}개를 발견했다.");
 					mParty.Gold += gold;
 					mParty.Etc[id] |= bit;
 				}
@@ -8713,11 +8713,7 @@ namespace DarkUWP
 					UpdateTileInfo(86, 47, 44);
 				}
 				else if (mParty.XAxis == 89 && mParty.YAxis == 37 && (mParty.Etc[30] & 1) == 0)
-				{
-					AppendText(" 당신은 금화 2000 개를 발견했다.");
-					mParty.Gold += 2000;
-					mParty.Etc[30] |= 1;
-				}
+					FindGold(30, 1, 2_000);
 				else if (mParty.XAxis == 89 && mParty.YAxis == 40 && (mParty.Etc[30] & (1 << 1)) == 0)
 				{
 					AppendText(" 당신은 100 개의 식량을 발견했다.");
@@ -8727,56 +8723,22 @@ namespace DarkUWP
 						mParty.Food = 255;
 
 					mParty.Etc[30] |= 1 << 1;
+					triggered = false;
 				}
 				else if (mParty.XAxis == 89 && mParty.YAxis == 41 && (mParty.Etc[30] & (1 << 2)) == 0)
-				{
-					AppendText(" 당신은 금화 1000 개를 발견했다.");
-					mParty.Gold += 1000;
-
-					mParty.Etc[30] |= 1 << 2;
-				}
+					FindGold(30, 1 << 2, 1_000);
 				else if (mParty.XAxis == 89 && mParty.YAxis == 42 && (mParty.Etc[30] & (1 << 3)) == 0)
-				{
-					AppendText(" 당신은 금화 2500 개를 발견했다.");
-					mParty.Gold += 2500;
-
-					mParty.Etc[30] |= 1 << 3;
-				}
+					FindGold(30, 1 << 3, 2_500);
 				else if (mParty.XAxis == 89 && mParty.YAxis == 43 && (mParty.Etc[30] & (1 << 4)) == 0)
-				{
-					AppendText(" 당신은 금화 5000 개를 발견했다.");
-					mParty.Gold += 5000;
-
-					mParty.Etc[30] |= 1 << 4;
-				}
+					FindGold(30, 1 << 4, 5_000);
 				else if (mParty.XAxis == 81 && mParty.YAxis == 51 && (mParty.Etc[31] & 1) == 0)
-				{
-					AppendText(" 당신은 금화 5000 개를 발견했다.");
-					mParty.Gold += 5000;
-
-					mParty.Etc[31] |= 1;
-				}
+					FindGold(31, 1, 5_000);
 				else if (mParty.XAxis == 83 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 1)) == 0)
-				{
-					AppendText(" 당신은 금화 5000 개를 발견했다.");
-					mParty.Gold += 5000;
-
-					mParty.Etc[30] |= 1 << 1;
-				}
+					FindGold(31, 1 << 1, 5_000);
 				else if (mParty.XAxis == 88 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 2)) == 0)
-				{
-					AppendText(" 당신은 금화 5000 개를 발견했다.");
-					mParty.Gold += 5000;
-
-					mParty.Etc[30] |= 1 << 2;
-				}
+					FindGold(31, 1 << 2, 5_000);
 				else if (mParty.XAxis == 90 && mParty.YAxis == 51 && (mParty.Etc[31] & (1 << 3)) == 0)
-				{
-					AppendText(" 당신은 금화 5000 개를 발견했다.");
-					mParty.Gold += 5000;
-
-					mParty.Etc[30] |= 1 << 3;
-				}
+					FindGold(31, 1 << 3, 5_000);
 				else if (mParty.YAxis == 94)
 				{
 					ShowExitMenu();
@@ -11415,17 +11377,17 @@ namespace DarkUWP
 
 		private void ShowSign(int x, int y)
 		{
-			AppendText(new string[] { "푯말에 쓰여있기로 ...\r\n\r\n" });
+			AppendText(new string[] { "푯말에 쓰여있기로 ...", "", "" });
 
 			if (mParty.Map == 2)
 			{
 				if (x == 81 && y == 100)
-					AppendText($"[color={RGB.White}]피라미드의 암흑이 호수 위를 비출때,  고대 해왔던 잊혀진 유적은 당신 앞에서  그 진가를 발하며 불멸의 생명을 안겨 줄것이다[/color]");
+					AppendText($"[color={RGB.White}]피라미드의 암흑이 호수 위를 비출때,  고대 해왔던 잊혀진 유적은 당신 앞에서  그 진가를 발하며 불멸의 생명을 안겨 줄것이다[/color]", true);
 				else if (x == 142 && y == 115)
-					AppendText($"[color={RGB.White}]어서오게, 친구여.  자네가 여기에 있는 6 가지의 시험을 통과한다면 영원 불멸의 생명을 영위하게 될 걸세.[/color]");
+					AppendText($"[color={RGB.White}]어서오게, 친구여.  자네가 여기에 있는 6 가지의 시험을 통과한다면 영원 불멸의 생명을 영위하게 될 걸세.[/color]", true);
 				else if (x == 29 && y == 99)
 				{
-					AppendText($"[color={RGB.White}]오!! 현명한자여. 당신은 영원한 생명을 얻을 자격이 있소.  이제 잊혀진 유적은 당신의 의지에 순응할 것이오.[/color]");
+					AppendText($"[color={RGB.White}]오!! 현명한자여. 당신은 영원한 생명을 얻을 자격이 있소.  이제 잊혀진 유적은 당신의 의지에 순응할 것이오.[/color]", true);
 					mParty.Etc[43] |= 1;
 				}
 			}
@@ -11469,12 +11431,12 @@ namespace DarkUWP
 					AppendText(new string[] {
 						$"[color={RGB.White}]       여기는[/color] [color={RGB.LightCyan}]라스트디치성[/color][color={RGB.White}]입니다[/color]",
 						$"[color={RGB.White}]          여러분을 환영합니다[/color]"
-					});
+					}, true);
 				}
 				else if (x == 38 && y == 7)
-					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드 의 입구[/color]");
+					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드 의 입구[/color]", true);
 				else if (x == 53 && y == 8)
-					AppendText($"[color={RGB.LightGreen}]       여기는 그라운드 게이트의 입구[/color]");
+					AppendText($"[color={RGB.LightGreen}]       여기는 그라운드 게이트의 입구[/color]", true);
 			}
 		}
 
