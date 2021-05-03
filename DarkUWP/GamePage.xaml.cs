@@ -174,6 +174,10 @@ namespace DarkUWP
 
 		private bool mPyramidQuizAllRight = true;
 
+		private AfterDialogType mAfterDialogType = AfterDialogType.None;
+		private MenuMode mAfterMenuMode;
+		private string[] mAfterMenuList;
+
 		public GamePage()
 		{
 			var rootFrame = Window.Current.Content as Frame;
@@ -513,7 +517,7 @@ namespace DarkUWP
 								var oriY = mParty.YAxis;
 								MovePlayer(x, y);
 								if (await InvokeSpecialEvent(oriX, oriY))
-									 mTriggeredDownEvent = true;
+									mTriggeredDownEvent = true;
 							}
 							else if ((1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 40) || GetTileInfo(x, y) == 51)
 							{
@@ -718,7 +722,7 @@ namespace DarkUWP
 
 					if (magicEnableClass[mTrainPlayer.Class - 1, 0] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  공격 마법 능력치 :\t{mTrainPlayer.AttackMagic, 5}[/color]", true);
+						AppendText($"[color={RGB.LightCyan}]  공격 마법 능력치 :\t{mTrainPlayer.AttackMagic,5}[/color]", true);
 						trainSkillMenuList.Add("  공격 마법 능력치");
 						mTrainSkillList.Add(new Tuple<int, int>(0, magicEnableClass[mTrainPlayer.Class - 1, 0]));
 					}
@@ -1096,6 +1100,39 @@ namespace DarkUWP
 					mBattleTurn = BattleTurn.None;
 				}
 
+				void AddAssistAttackCommand() {
+					if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
+					{
+						void AssistAttack(bool attackAll)
+						{
+							mBattleCommandQueue.Enqueue(new BattleCommand()
+							{
+								Player = mAssistPlayer,
+								FriendID = -1,
+								Method = 0,
+								Tool = 0,
+								EnemyID = attackAll ? -1 : 0
+							});
+						}
+
+						switch (mAssistPlayer.ClassType)
+						{
+							case ClassCategory.Sword:
+							case ClassCategory.Unknown:
+							case ClassCategory.Giant:
+							case ClassCategory.Dragon:
+								AssistAttack(false);
+								break;
+							case ClassCategory.Elemental:
+								AssistAttack(mAssistPlayer.Weapon != 29);
+								break;
+							default:
+								AssistAttack(true);
+								break;
+						}
+					}
+				}
+
 				void AddBattleCommand(bool skip = false)
 				{
 					if (!skip)
@@ -1120,37 +1157,12 @@ namespace DarkUWP
 
 					if (mBattlePlayerID < mPlayerList.Count)
 					{
-						if (mAssistPlayer != null && mAssistPlayer.IsAvailable) {
-							void AssistAttack(bool attackAll) {
-								mBattleCommandQueue.Enqueue(new BattleCommand()
-								{
-									Player = mAssistPlayer,
-									FriendID = -1,
-									Method = 0,
-									Tool = 0,
-									EnemyID = attackAll ? -1 : 0
-								});
-							}
-
-							switch (mAssistPlayer.ClassType) {
-								case ClassCategory.Sword:
-								case ClassCategory.Unknown:
-								case ClassCategory.Giant:
-								case ClassCategory.Dragon:
-									AssistAttack(false);
-									break;
-								case ClassCategory.Elemental:
-									AssistAttack(mAssistPlayer.Weapon != 29);
-									break;
-								default:
-									AssistAttack(true);
-									break;
-							}
-						}
 						BattleMode();
 					}
 					else
 					{
+						AddAssistAttackCommand();
+						
 						DialogText.TextHighlighters.Clear();
 						DialogText.Blocks.Clear();
 
@@ -1177,7 +1189,7 @@ namespace DarkUWP
 						mCureResult.Clear();
 					}
 
-					Talk(resultPart.ToArray());
+					Dialog(resultPart.ToArray());
 				}
 
 				void ShowWeaponTypeMenu(int weaponCategory) {
@@ -1195,8 +1207,8 @@ namespace DarkUWP
 							else if (Common.GetWeaponName(mWeaponTypeID * 7 + i).Length < 5)
 								weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t\t금 {weaponPrice[mWeaponTypeID, i - 1].ToString("#,#0")} 개";
 							else
-								
-							weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t금 {weaponPrice[mWeaponTypeID, i - 1].ToString("#,#0")} 개";
+
+								weaponNameArr[i - 1] = $"{Common.GetWeaponName(mWeaponTypeID * 7 + i)}\t금 {weaponPrice[mWeaponTypeID, i - 1].ToString("#,#0")} 개";
 						}
 
 						ShowMenu(MenuMode.BuyWeapon, weaponNameArr);
@@ -1205,7 +1217,7 @@ namespace DarkUWP
 						AppendText($"[color={RGB.White}]어떤 방패를 원하십니까?[/color]");
 
 						var shieldNameArr = new string[5];
-						for (var i = 1; i <= 5; i++){
+						for (var i = 1; i <= 5; i++) {
 							if (Common.GetShieldName(i).Length <= 5)
 								shieldNameArr[i - 1] = $"{Common.GetShieldName(i)}\t\t금 {shieldPrice[i - 1].ToString("#,#0")} 개";
 							else
@@ -1811,18 +1823,34 @@ namespace DarkUWP
 					}
 					else if (mRemainDialog.Count > 0)
 					{
-						DialogText.Blocks.Clear();
-						DialogText.TextHighlighters.Clear();
+						ClearDialog();
+
+						var remainDialog = new List<string>();
+						remainDialog.AddRange(mRemainDialog);
+						mRemainDialog.Clear();
 
 						var added = true;
-						while (added && mRemainDialog.Count > 0)
+						while (added && remainDialog.Count > 0)
 						{
-							added = AppendText(mRemainDialog[0], true);
+							added = AppendText(remainDialog[0], true);
 							if (added)
-								mRemainDialog.RemoveAt(0);
+								remainDialog.RemoveAt(0);
 						}
 
-						ContinueText.Visibility = Visibility.Visible;
+						if (mRemainDialog.Count > 0)
+							ContinueText.Visibility = Visibility.Visible;
+						else
+						{
+							switch (mAfterDialogType)
+							{
+								case AfterDialogType.PressKey:
+									ContinueText.Visibility = Visibility.Visible;
+									break;
+								case AfterDialogType.Menu:
+									ShowMenu(mAfterMenuMode, mAfterMenuList);
+									break;
+							}
+						}
 					}
 					else if (mSpecialEvent != SpecialEventType.None)
 						await InvokeSpecialEventLaterPart();
@@ -2238,7 +2266,7 @@ namespace DarkUWP
 					{
 						int curePoint;
 
-						mMagicPlayer = mPlayerList[mBattlePlayerID];
+						mMagicPlayer = player;
 						if (mMagicPlayer.ClassType == ClassCategory.Magic)
 							curePoint = mMagicPlayer.CureMagic / 10;
 						else
@@ -2385,6 +2413,10 @@ namespace DarkUWP
 					}
 					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
 					{
+						// 닫을 수 없는 메뉴
+						if (mMenuMode == MenuMode.BattleStart || mMenuMode == MenuMode.BattleCommand)
+							return;
+
 						AppendText("");
 						var menuMode = HideMenu();
 
@@ -2431,15 +2463,14 @@ namespace DarkUWP
 							}
 							else if (menuMode == MenuMode.ApplyBattleCureSpell || menuMode == MenuMode.ApplyBattleCureAllSpell)
 								ShowCureDestMenu(mPlayerList[mBattlePlayerID], MenuMode.ChooseBattleCureSpell);
-							else if (menuMode == MenuMode.BattleStart ||
-								menuMode == MenuMode.BattleCommand)
-								return;
 							else if (menuMode == MenuMode.ConfirmExitMap)
 							{
 								mParty.YAxis--;
 							}
-							else if (menuMode == MenuMode.AskEnter) {
-								if (mTryEnterType == EnterType.CabinOfRegulus) {
+							else if (menuMode == MenuMode.AskEnter)
+							{
+								if (mTryEnterType == EnterType.CabinOfRegulus)
+								{
 									mParty.XAxis = mPrevX;
 									mParty.YAxis = mPrevY;
 								}
@@ -2543,7 +2574,7 @@ namespace DarkUWP
 							var yInit = 0;
 							var width = 0;
 							var height = 0;
-							
+
 							if (mMapWidth <= 100) {
 								xInit = 0;
 								width = mMapWidth;
@@ -2644,7 +2675,7 @@ namespace DarkUWP
 										}
 
 										var tileInfo = GetTileInfo(x, y);
-										if (mPosition == PositionType.Town)  {
+										if (mPosition == PositionType.Town) {
 											if ((1 <= tileInfo && tileInfo <= 18) || tileInfo == 20 || tileInfo == 21)
 												mWizardEye.Data[offset] = WHITE;
 											else if (tileInfo == 22)
@@ -2829,7 +2860,7 @@ namespace DarkUWP
 						if (menuMode == MenuMode.EnemySelectMode)
 						{
 							AddBattleCommand();
-						}							
+						}
 						else if (menuMode == MenuMode.Game)
 						{
 							if (mMenuFocusID == 0)
@@ -2962,7 +2993,7 @@ namespace DarkUWP
 								StatAbility6Title.Text = "소환 마법 능력치 :";
 								StatAbility6Value.Text = player.SummonMagic.ToString();
 							}
-		
+
 							StatExp.Text = player.Experience.ToString("#,#0");
 							StatLevel.Text = player.Level.ToString();
 
@@ -3086,6 +3117,7 @@ namespace DarkUWP
 									AppendText($"[color={RGB.White}]일행은 마법의 횃불을 밝혔습니다.[/color]");
 									mMagicPlayer.SP--;
 									DisplaySP();
+									UpdateView();
 								}
 							}
 							else if (mMenuFocusID == 1) {
@@ -3589,7 +3621,7 @@ namespace DarkUWP
 										AppendText(new string[] { $"[color={RGB.LightGreen}] #[/color] [color={RGB.White}]당신은 어떤 힘에 의해 예언을 방해 받고 있다[/color]" }, true);
 									else
 										AppendText(new string[] { $"[color={RGB.LightGreen}] #[/color] [color={RGB.White}]당신은 {predictStr[predict]} 것이다[/color]" }, true);
-									
+
 									mMagicPlayer.SP -= 5;
 									DisplaySP();
 								}
@@ -3665,7 +3697,7 @@ namespace DarkUWP
 									AppendText("갑옷을 바꿀 일원");
 									break;
 							}
-							
+
 							ShowCharacterMenu(MenuMode.ExchangeItemWhom, false);
 						}
 						else if (menuMode == MenuMode.ExchangeItemWhom) {
@@ -3724,7 +3756,7 @@ namespace DarkUWP
 								UseItem(mPlayerList[mMenuFocusID], false);
 							else
 								AppendText($" {mPlayerList[mMenuFocusID].NameSubjectJosa} 물품을 사용할 수 있는 상태가 아닙니다.");
-						}	
+						}
 						else if (menuMode == MenuMode.GameOptions)
 						{
 							if (mMenuFocusID == 0)
@@ -4023,7 +4055,7 @@ namespace DarkUWP
 								AppendText($"[color={RGB.White}]  일행은 ${mMenuFocusID + 1}시간동안 훈련을 받게 되었다.");
 								mTrainTime = mMenuFocusID + 1;
 								InvokeAnimation(AnimationType.BuyExp);
-							}						
+							}
 						}
 						else if (menuMode == MenuMode.SelectItem) {
 							AppendText($"[color={RGB.White}] 갯수를 지정 하십시오.[/color]");
@@ -4087,12 +4119,12 @@ namespace DarkUWP
 							}
 
 							mParty.Gold -= mMedicinePrices[mBuyMedicineID] * (mMenuFocusID + 1);
-							
+
 							if (mParty.Item[mBuyMedicineID] + mMenuFocusID + 1 < 256)
 								mParty.Item[mBuyMedicineID] += mMenuFocusID + 1;
 							else
 								mParty.Item[mBuyMedicineID] = 255;
-						
+
 							ShowItemStoreMenu();
 						}
 						else if (menuMode == MenuMode.Hospital)
@@ -4210,7 +4242,7 @@ namespace DarkUWP
 							else if (mMenuFocusID == 3)
 							{
 								if (mCurePlayer.Dead == 0)
-									AppendText($"[color={RGB.White}]{mCurePlayer.Name}(은)는 죽지 않았습니다[/color]");
+									AppendText($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 죽지 않았습니다[/color]");
 
 								if (mCurePlayer.Dead == 0)
 								{
@@ -4233,7 +4265,7 @@ namespace DarkUWP
 
 										DisplayCondition();
 
-										Talk($"[color={RGB.White}]{mCurePlayer.Name}(은)는 다시 살아났습니다[/color]");
+										Talk($"[color={RGB.White}]{mCurePlayer.NameSubjectJosa} 다시 살아났습니다[/color]");
 										mSpecialEvent = SpecialEventType.CureComplete;
 									}
 								}
@@ -4605,7 +4637,7 @@ namespace DarkUWP
 								}
 							}
 
-							AppendText(new string[] { 
+							AppendText(new string[] {
 								$"[color={RGB.LightRed}]당신이 바뀌고 싶은 계급을 고르시오.[/color]",
 								$"[color={RGB.White}]비용 : 금 10000 개[/color]"
 							});
@@ -4801,7 +4833,7 @@ namespace DarkUWP
 											else if (player.ClassType == ClassCategory.Magic) {
 												if (player.AttackMagic > 9 || player.SP > player.AttackMagic) {
 													method = 1;
-													tool = 0;
+													tool = 1;
 												}
 												else {
 													method = 0;
@@ -4819,6 +4851,8 @@ namespace DarkUWP
 											});
 										}
 									}
+
+									AddAssistAttackCommand();
 
 									DialogText.TextHighlighters.Clear();
 									DialogText.Blocks.Clear();
@@ -6349,7 +6383,7 @@ namespace DarkUWP
 					//					AppendText(new string[] { $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]" }, true);
 					//					ShowCharacterMenu(MenuMode.Extrasense);
 					//				}
-					
+
 				}
 				else if (args.VirtualKey == VirtualKey.R || args.VirtualKey == VirtualKey.GamepadLeftShoulder)
 				{
@@ -6455,7 +6489,7 @@ namespace DarkUWP
 
 			if (!(GetTileInfo(moveX, moveY) == 0 || (mPosition == PositionType.Den && GetTileInfo(moveX, moveY) == 52)) && mRand.Next(mEncounter * 20) == 0)
 				EncounterEnemy();
-				
+
 
 			if (mPosition == PositionType.Ground)
 				PlusTime(0, 2, 0);
@@ -6536,7 +6570,7 @@ namespace DarkUWP
 
 					foreach (var enemy in mEncounterEnemyList)
 					{
-						if (!enemy.Dead)
+						if (!enemy.Dead && ((!mParty.Cruel && !enemy.Unconscious) || mParty.Cruel))
 						{
 							allEnemyDead = false;
 							break;
@@ -6643,7 +6677,7 @@ namespace DarkUWP
 					if (!AllEnemyDead())
 					{
 						var enemyID = battleCommand.EnemyID;
-						while (mEncounterEnemyList[enemyID].Dead)
+						while (mEncounterEnemyList[enemyID].Dead || (!mParty.Cruel && mEncounterEnemyList[enemyID].Unconscious))
 							enemyID = (enemyID + 1) % mEncounterEnemyList.Count;
 
 						return mEncounterEnemyList[enemyID];
@@ -6710,7 +6744,7 @@ namespace DarkUWP
 							battleResult.Add($"[color={RGB.White}]일행은 도망을 시도했다[/color]");
 							break;
 						default:
-							battleResult.Add($"[color={RGB.White}]{player.Name}(은)는 잠시 주저했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} 잠시 주저했다[/color]");
 							break;
 					}
 				}
@@ -6843,7 +6877,7 @@ namespace DarkUWP
 					}
 					else
 					{
-						battleResult.Add($"적은 [color={RGB.White}]{attackPoint}[/color]만큼의 피해를 입었다");
+						battleResult.Add($"적은 [color={RGB.White}]{attackPoint.ToString("#,#0")}[/color]만큼의 피해를 입었다");
 					}
 				}
 
@@ -6856,8 +6890,6 @@ namespace DarkUWP
 					GetBattleStatus(enemy);
 
 					var player = battleCommand.Player;
-
-					battleResult.Add($"[color={RGB.White}]{Common.GetWeaponNameJosa(player.Weapon)}로 {enemy.NameJosa} 공격했다[/color]");
 
 					if (enemy.Unconscious)
 					{
@@ -6917,7 +6949,7 @@ namespace DarkUWP
 					}
 					else
 					{
-						battleResult.Add($"{enemy.NameSubjectJosa} [color={RGB.White}]{magicPoint}[/color]만큼의 피해를 입었다");
+						battleResult.Add($"{enemy.NameSubjectJosa} [color={RGB.White}]{magicPoint.ToString("#,#0")}[/color]만큼의 피해를 입었다");
 					}
 				}
 
@@ -7259,7 +7291,7 @@ namespace DarkUWP
 						}
 
 						enemy.Dead = true;
-						battleResult.Add($"[color={RGB.LightGreen}]{enemy.Name}(은)는 겁을 먹고는 도망가 버렸다[/color]");
+						battleResult.Add($"[color={RGB.LightGreen}]{enemy.NameSubjectJosa} 겁을 먹고는 도망가 버렸다[/color]");
 					}
 					else if (battleCommand.Tool == 3) {
 						var enemy = GetDestEnemy();
@@ -7399,7 +7431,7 @@ namespace DarkUWP
 
 				if (battleCommand.Method == 0)
 				{
-					if (battleCommand.EnemyID == -1) { 
+					if (battleCommand.EnemyID == -1) {
 						for (var i = 0; i < mEncounterEnemyList.Count; i++) {
 							if (!mEncounterEnemyList[i].Dead && ((!mEncounterEnemyList[i].Unconscious && !mParty.Cruel) || mParty.Cruel))
 							{
@@ -7606,7 +7638,7 @@ namespace DarkUWP
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}에게 독 공격을 시도했다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {destPlayer.Name}에게 독 공격을 시도했다[/color]");
 								if (mRand.Next(40) > enemy.Agility)
 								{
 									battleResult.Add($"독 공격은 실패했다");
@@ -7615,11 +7647,11 @@ namespace DarkUWP
 
 								if (mRand.Next(20) < destPlayer.Luck)
 								{
-									battleResult.Add($"그러나, {destPlayer.Name}(은)는 독 공격을 피했다");
+									battleResult.Add($"그러나, {destPlayer.NameSubjectJosa} 독 공격을 피했다");
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.Name}(은)는 중독 되었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 중독 되었다 !![/color]");
 
 								if (destPlayer.Poison == 0)
 									destPlayer.Poison = 1;
@@ -7639,7 +7671,7 @@ namespace DarkUWP
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}에게 치명적 공격을 시도했다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {destPlayer.Name}에게 치명적 공격을 시도했다[/color]");
 								if (mRand.Next(50) > enemy.Agility)
 								{
 									battleResult.Add($"치명적 공격은 실패했다");
@@ -7648,11 +7680,11 @@ namespace DarkUWP
 
 								if (mRand.Next(20) < destPlayer.Luck)
 								{
-									battleResult.Add($"그러나, {destPlayer.Name}(은)는 치명적 공격을 피했다");
+									battleResult.Add($"그러나, {destPlayer.NameSubjectJosa} 치명적 공격을 피했다");
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.Name}(은)는 의식불명이 되었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 의식불명이 되었다 !![/color]");
 
 								if (destPlayer.Unconscious == 0)
 								{
@@ -7677,7 +7709,7 @@ namespace DarkUWP
 
 								var destPlayer = normalList[mRand.Next(normalList.Count)];
 
-								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}(은)는 {destPlayer.Name}에게 죽음의 공격을 시도했다[/color]");
+								battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {destPlayer.Name}에게 죽음의 공격을 시도했다[/color]");
 								if (mRand.Next(60) > enemy.Agility)
 								{
 									battleResult.Add($"죽음의 공격은 실패했다");
@@ -7686,11 +7718,11 @@ namespace DarkUWP
 
 								if (mRand.Next(20) < destPlayer.Luck)
 								{
-									battleResult.Add($"그러나, {destPlayer.Name}(은)는 죽음의 공격을 피했다");
+									battleResult.Add($"그러나, {destPlayer.NameSubjectJosa} 죽음의 공격을 피했다");
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.Name}(은)는 죽었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 죽었다 !![/color]");
 
 								if (destPlayer.Dead == 0)
 								{
@@ -7723,7 +7755,7 @@ namespace DarkUWP
 						{
 							if (mRand.Next(20) >= enemy.Accuracy[0])
 							{
-								battleResult.Add($"{enemy.Name}(은)는 빗맞추었다");
+								battleResult.Add($"{enemy.NameSubjectJosa} 빗맞추었다");
 								return;
 							}
 
@@ -7767,7 +7799,7 @@ namespace DarkUWP
 								destPlayer.HP -= attackPoint;
 
 							battleResult.Add($"[color={RGB.LightMagenta}]{destPlayer.NameSubjectJosa} {enemy.Name}에게 공격받았다[/color]");
-							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{attackPoint}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
+							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{attackPoint.ToString("#,#0")}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 						}
 
 						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0 || enemy.CastLevel == 0)
@@ -7807,7 +7839,7 @@ namespace DarkUWP
 								if (player.HP > 0)
 									player.HP -= castPower;
 
-								battleResult.Add($"[color={RGB.Magenta}]{player.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{castPower}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
+								battleResult.Add($"[color={RGB.Magenta}]{player.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{castPower.ToString("#,#0")}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 							}
 
 							void CastAttackOne(Lore player)
@@ -8913,7 +8945,7 @@ namespace DarkUWP
 					if (whomPlayer.HP <= 0)
 						whomPlayer.HP = 1;
 
-					cureResult.Add($"[color={RGB.White}]{whomPlayer.Name}(은)는 의식을 되찾았습니다.[/color]");
+					cureResult.Add($"[color={RGB.White}]{whomPlayer.NameSubjectJosa} 의식을 되찾았습니다.[/color]");
 				}
 			}
 		}
@@ -8945,7 +8977,7 @@ namespace DarkUWP
 					if (whomPlayer.Unconscious == 0)
 						whomPlayer.Unconscious = 1;
 
-					cureResult.Add($"[color={RGB.White}]{whomPlayer.Name}(은)는 다시 생명을 얻었습니다.[/color]");
+					cureResult.Add($"[color={RGB.White}]{whomPlayer.NameSubjectJosa} 다시 생명을 얻었습니다.[/color]");
 
 				}
 			}
@@ -9209,6 +9241,8 @@ namespace DarkUWP
 
 			var totalLen = 0;
 
+			var noText = textBlock.Blocks.Count > 0 ? true : false;
+
 			if (append)
 			{
 				foreach (Paragraph prevParagraph in textBlock.Blocks)
@@ -9345,7 +9379,7 @@ namespace DarkUWP
 
 			var lineCount = lineHeight == 0 ? 0 : (int)Math.Ceiling(DialogText.ActualHeight / lineHeight);
 
-			if (lineCount > DIALOG_MAX_LINES)
+			if (lineCount > DIALOG_MAX_LINES && !noText)
 			{
 				textBlock.Blocks.Remove(paragraph);
 				foreach (var highlighter in highlighters)
@@ -9357,6 +9391,24 @@ namespace DarkUWP
 				return true;
 		}
 
+		private void ClearDialog() {
+			DialogText.TextHighlighters.Clear();
+			DialogText.Blocks.Clear();
+		}
+
+		private void Dialog(string dialog, bool append = false) {
+			Dialog(new string[] { dialog }, append);
+		}
+
+		private void Dialog(string[] dialog, bool append = false) {
+			AppendText(dialog, append);
+
+			mAfterDialogType = AfterDialogType.None;
+
+			if (mRemainDialog.Count > 0)
+				ContinueText.Visibility = Visibility.Visible;
+		}
+
 		private void Talk(string dialog)
 		{
 			Talk(new string[] { dialog });
@@ -9365,7 +9417,32 @@ namespace DarkUWP
 		private void Talk(string[] dialog)
 		{
 			AppendText(dialog);
+
+			if (mRemainDialog.Count > 0)
+				mAfterDialogType = AfterDialogType.PressKey;
+			else
+				mAfterDialogType = AfterDialogType.None;
+
 			ContinueText.Visibility = Visibility.Visible;
+		}
+
+		private void Ask(string dialog, MenuMode menuMode, string[] menuList) {
+			Ask(new string[] { dialog }, menuMode, menuList);
+		}
+
+		private void Ask(string[] dialog, MenuMode menuMode, string[] menuList)
+		{
+			AppendText(dialog);
+
+			if (mRemainDialog.Count > 0) {
+				mAfterDialogType = AfterDialogType.Menu;
+				mAfterMenuMode = menuMode;
+				mAfterMenuList = menuList;
+				ContinueText.Visibility = Visibility.Visible;
+			}
+			else {
+				ShowMenu(menuMode, menuList);
+			}	
 		}
 
 		private void TalkMode(int moveX, int moveY, VirtualKey key = VirtualKey.None)
@@ -9955,7 +10032,7 @@ namespace DarkUWP
 				{
 					if (mParty.Etc[10] == 0)
 					{
-						AppendText(new string[] {
+						Dialog(new string[] {
 							$" 잘왔소, {mPlayerList[0].Name}공.",
 							" 공만이 이 일을 해결할 수 있을것 같아서  한가지 부탁을 하겠소." +
 							" 벌써 발견했는 지는 모르겠지만 이 성의 남쪽에는 알 수 없는 피라미드가 땅속 깊은 곳으로 부터 솟아 올랐소." +
@@ -10543,21 +10620,21 @@ namespace DarkUWP
 					if ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && tileIdx == 52)
 						tileIdx = 0;
 				}
-				else if (tileIdx == 0)
+				else if (tileIdx == 0 || ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && tileIdx == 52))
 				{
 					switch (mParty.Map)
 					{
 						case 1:
-							tileIdx = 2;
+							tileIdx = 41;
 							break;
 						case 2:
-							tileIdx = 0;
+							tileIdx = 44;
 							break;
 						case 3:
-							tileIdx = 0;
+							tileIdx = 10;
 							break;
 						case 4:
-							tileIdx = 41;
+							tileIdx = 10;
 							break;
 						case 5:
 							tileIdx = 0;
@@ -10572,61 +10649,34 @@ namespace DarkUWP
 							tileIdx = 47;
 							break;
 						case 9:
-							tileIdx = 44;
+							tileIdx = 47;
 							break;
 						case 10:
-							tileIdx = 27;
+							tileIdx = 0;
 							break;
 						case 11:
-							tileIdx = 44;
+							tileIdx = 41;
 							break;
 						case 12:
 							tileIdx = 0;
 							break;
 						case 13:
-							tileIdx = 42;
+							tileIdx = 41;
 							break;
 						case 14:
-							tileIdx = 44;
-							break;
-						case 15:
-							tileIdx = 39;
-							break;
-						case 16:
-							tileIdx = 41;
-							break;
-						case 17:
-							tileIdx = 41;
-							break;
-						case 18:
 							tileIdx = 43;
 							break;
-						case 19:
-							tileIdx = 49;
-							break;
-						case 20:
+						case 15:
 							tileIdx = 44;
 							break;
-						case 21:
-							tileIdx = 40;
+						case 16:
+							tileIdx = 42;
 							break;
-						case 22:
-							tileIdx = 40;
+						case 17:
+							tileIdx = 0;
 							break;
-						case 23:
-							tileIdx = 46;
-							break;
-						case 24:
-							tileIdx = 47;
-							break;
-						case 25:
+						case 18:
 							tileIdx = 41;
-							break;
-						case 26:
-							tileIdx = 44;
-							break;
-						case 27:
-							tileIdx = 44;
 							break;
 					}
 				}
@@ -11037,7 +11087,7 @@ namespace DarkUWP
 				{
 					if (mRand.Next(20) + 1 >= player.Luck)
 					{
-						AppendText($"[color={RGB.LightMagenta}]{player.NameSubjectJosa}(은)는 중독 되었다.[/color]", true);
+						AppendText($"[color={RGB.LightMagenta}]{player.NameSubjectJosa} 중독 되었다.[/color]", true);
 						if (player.Poison == 0)
 							player.Poison = 1;
 					}
@@ -11046,7 +11096,7 @@ namespace DarkUWP
 				if (mAssistPlayer != null) {
 					if (mRand.Next(20) + 1 >= mAssistPlayer.Luck)
 					{
-						AppendText($"[color={RGB.LightMagenta}]{mAssistPlayer.NameSubjectJosa}(은)는 중독 되었다.[/color]", true);
+						AppendText($"[color={RGB.LightMagenta}]{mAssistPlayer.NameSubjectJosa} 중독 되었다.[/color]", true);
 						if (mAssistPlayer.Poison == 0)
 							mAssistPlayer.Poison = 1;
 					}
@@ -11840,6 +11890,13 @@ namespace DarkUWP
 			GuardOfObsidianArmor,
 			Slaim,
 			CaveEntrance
+		}
+
+		private enum AfterDialogType {
+			None,
+			PressKey,
+			Menu,
+			Animation
 		}
 
 		private class HealthTextBlock

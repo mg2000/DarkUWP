@@ -139,19 +139,19 @@ namespace DarkUWP
 		{
 			get
 			{
-				if ((Name[Name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
-					return Name + "는";
-				else
+				if (Common.HasJongsung(Name[Name.Length - 1]))
 					return Name + "은";
+				else
+					return Name + "는";
 			}
 		}
 
 		public string NameJosa {
 			get {
-				if ((Name[Name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
-					return Name + "를";
-				else
+				if (Common.HasJongsung(Name[Name.Length - 1]))
 					return Name + "을";
+				else
+					return Name + "를";
 			}
 		}
 	}

@@ -98,10 +98,10 @@ namespace DarkUWP
 		public static string GetMagicNameMokjukJosa(int playerClass, int magic) {
 			var magicName = GetMagicName(playerClass, magic);
 
-			if ((magicName[magicName.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
-				return magicName + "를";
-			else
+			if (HasJongsung(magicName[magicName.Length - 1]))
 				return magicName + "을";
+			else
+				return magicName + "를";	
 		}
 
 		public static int GetLevelUpExperience(int level) {
@@ -153,10 +153,31 @@ namespace DarkUWP
 
 
 		private static string AddJosa(string name) {
-			if ((name[name.Length - 1] - 0xAC00) % 28 + 0x11A8 - 1 == 0)
-				return name;
+			if (GetJongsungType(name[name.Length - 1]) == 0)
+				return name;			
 			else
 				return name + "으";
+		}
+
+		public static bool HasJongsung(char chr) {
+			if (chr < 0xAC00 || chr > 0xD7A3)
+				return false;
+			else if ((chr - 0xAc00) % 28 > 0)
+				return true;
+			else
+				return false;
+		}
+
+		public static int GetJongsungType(char chr) {
+			if (chr < 0xAC00 || chr > 0xD7A3)
+				return 0;
+			else {
+				var idx = (chr - 0xAc00) % 28;
+				if (idx == 0 || idx == 8)
+					return 0;
+				else
+					return 1;
+			}
 		}
 	}
 }
