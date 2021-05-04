@@ -657,7 +657,7 @@ namespace DarkUWP
 
 					if (swordEnableClass[mTrainPlayer.Class - 1, 0] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  베는 무기  기술치  :\t{mTrainPlayer.SwordSkill,5}[/color]", true);
+						AppendText($"[color={RGB.LightCyan}]  베는 무기  기술치  :\t{mTrainPlayer.SwordSkill}[/color]", true);
 						trainSkillMenuList.Add("  베는  무기  기술치");
 						mTrainSkillList.Add(new Tuple<int, int>(0, swordEnableClass[mTrainPlayer.Class - 1, 0]));
 					}
@@ -722,7 +722,7 @@ namespace DarkUWP
 
 					if (magicEnableClass[mTrainPlayer.Class - 1, 0] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  공격 마법 능력치 :\t{mTrainPlayer.AttackMagic,5}[/color]", true);
+						AppendText($"[color={RGB.LightCyan}]  공격 마법 능력치 :\t{mTrainPlayer.AttackMagic}[/color]", true);
 						trainSkillMenuList.Add("  공격 마법 능력치");
 						mTrainSkillList.Add(new Tuple<int, int>(0, magicEnableClass[mTrainPlayer.Class - 1, 0]));
 					}
@@ -1898,7 +1898,7 @@ namespace DarkUWP
 						//GoWeaponShop();
 					}
 				}
-				else if (mMenuMode == MenuMode.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
+				else if (mMenuMode == MenuMode.None && mSpinnerType == SpinnerType.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
 				{
 					AppendText($"[color={RGB.Red}]당신의 명령을 고르시오 ===>[/color]");
 
@@ -2107,12 +2107,12 @@ namespace DarkUWP
 									do
 									{
 										levelUp++;
-									} while (levelUp < Common.GetLevelUpExperience(levelUp) || levelUp > 40);
+									} while (exp > Common.GetLevelUpExperience(levelUp) && levelUp <= 40);
 									levelUp--;
 
 									if (player.Level < levelUp || levelUp == 40) {
 										if (levelUp < 40 || player.Level != 40) {
-											AppendText($"[color={RGB.LightCyan}]{player.Name}의 레벨은 {levelUp}입니다");
+											AppendText($"[color={RGB.LightCyan}]{player.Name}의 레벨은 {levelUp}입니다", true);
 											player.Level = levelUp;
 										}
 									}
@@ -2336,7 +2336,7 @@ namespace DarkUWP
 						mUsableItemIDList.Clear();
 						mItemUsePlayer = player;
 
-						var itemNames = new string[] { "체력 회복약', '마법 회복약', '해독의 약초', '의식의 약초', '부활의 약초', '소환 문서', '대형 횃불', '수정 구슬', '비행 부츠', '이동 구슬" };
+						var itemNames = new string[] { "체력 회복약", "마법 회복약", "해독의 약초", "의식의 약초", "부활의 약초", "소환 문서", "대형 횃불", "수정 구슬", "비행 부츠", "이동 구슬" };
 
 						var itemMenuItemList = new List<string>();
 						for (var i = 0; i < mParty.Item.Length; i++) {
@@ -2610,7 +2610,7 @@ namespace DarkUWP
 
 							if (mMapHeight <= 80) {
 								yInit = 0;
-								Height = mMapHeight;
+								height = mMapHeight;
 							}
 							else
 							{
@@ -4583,6 +4583,13 @@ namespace DarkUWP
 
 									await RefreshGame();
 								}
+								else if (mParty.Map == 12) {
+									mParty.Map = 2;
+									mParty.XAxis = 148;
+									mParty.YAxis = 65;
+
+									await RefreshGame();
+								}
 							}
 							else
 							{
@@ -4967,15 +4974,15 @@ namespace DarkUWP
 
 							ShowCureResult();
 						}
-						//else if (menuMode == MenuMode.BattleLose)
-						//{
-						//	mMenuMode = MenuMode.None;
+						else if (menuMode == MenuMode.BattleLose)
+						{
+							mMenuMode = MenuMode.None;
 
-						//	if (mMenuFocusID == 0)
-						//		ShowFileMenu(MenuMode.ChooseGameOverLoadGame);
-						//	else
-						//		CoreApplication.Exit();
-						//}
+							if (mMenuFocusID == 0)
+								ShowFileMenu(MenuMode.ChooseGameOverLoadGame);
+							else
+								CoreApplication.Exit();
+						}
 						else if (menuMode == MenuMode.AskEnter)
 						{
 							if (mMenuFocusID == 0)
@@ -7477,10 +7484,899 @@ namespace DarkUWP
 				}
 				else if (battleCommand.Method == 4)
 				{
-					//if (battleCommand.FriendID < mPlayerList.Count)
-					//	CureSpell(battleCommand.Player, mPlayerList[battleCommand.FriendID], battleCommand.Tool, battleResult);
-					//else
-					//	CureAllSpell(battleCommand.Player, battleCommand.Tool, battleResult);
+					int GetBonusPoint(int seed) {
+						return mRand.Next(seed * 2 + 1) - seed;
+					}
+
+					if (battleCommand.Tool == 0) {
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Male,
+							Class = 0,
+							ClassType = ClassCategory.Elemental,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Endurance = 10 + GetBonusPoint(5),
+							Resistance = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Accuracy = 10 + GetBonusPoint(5),
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Weapon = 29,
+							WeaPower = battleCommand.Player.SummonMagic * 3,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							AC = 0,
+							PotentialAC = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							ShieldSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(4)) {
+							case 0:
+								mAssistPlayer.Name = "불의 정령";
+								break;
+							case 1:
+								mAssistPlayer.Name = "사라만다";
+								break;
+							case 2:
+								mAssistPlayer.Name = "아저";
+								break;
+							default:
+								mAssistPlayer.Name = "이프리트";
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 1)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Female,
+							Class = 0,
+							ClassType = ClassCategory.Elemental,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Endurance = 8 + GetBonusPoint(5),
+							Resistance = 12 + GetBonusPoint(5),
+							Agility = 0,
+							Accuracy = 10 + GetBonusPoint(5),
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Weapon = 30,
+							WeaPower = battleCommand.Player.SummonMagic * 2,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							AC = 0,
+							PotentialAC = 1,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							ShieldSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(9))
+						{
+							case 0:
+								mAssistPlayer.Name = "님프";
+								break;
+							case 1:
+								mAssistPlayer.Name = "드리어드스";
+								break;
+							case 2:
+								mAssistPlayer.Name = "네레이드스";
+								break;
+							case 3:
+								mAssistPlayer.Name = "나이어드스";
+								break;
+							case 4:
+								mAssistPlayer.Name = "나파이어스";
+								break;
+							case 5:
+								mAssistPlayer.Name = "오레이어드스";
+								break;
+							case 6:
+								mAssistPlayer.Name = "알세이드스";
+								break;
+							case 7:
+								mAssistPlayer.Name = "마리드";
+								break;
+							default:
+								mAssistPlayer.Name = "켈피";
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 2)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Female,
+							Class = 0,
+							ClassType = ClassCategory.Elemental,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Endurance = 6 + GetBonusPoint(5),
+							Resistance = 14 + GetBonusPoint(5),
+							Agility = 0,
+							Accuracy = 13 + GetBonusPoint(5),
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Weapon = 31,
+							WeaPower = battleCommand.Player.SummonMagic,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							AC = 1,
+							PotentialAC = 1,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							ShieldSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(5))
+						{
+							case 0:
+								mAssistPlayer.Name = "공기의 정령";
+								break;
+							case 1:
+								mAssistPlayer.Name = "실프";
+								break;
+							case 2:
+								mAssistPlayer.Name = "실피드";
+								break;
+							case 3:
+								mAssistPlayer.Name = "디지니";
+								break;
+							default:
+								mAssistPlayer.Name = "인비저블 스토커";
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 3)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Male,
+							Class = 0,
+							ClassType = ClassCategory.Elemental,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Endurance = 14 + GetBonusPoint(5),
+							Resistance = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Accuracy = 6 + GetBonusPoint(5),
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Weapon = 32,
+							WeaPower = battleCommand.Player.SummonMagic * 4,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							AC = 3,
+							PotentialAC = 3,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							ShieldSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(3))
+						{
+							case 0:
+								mAssistPlayer.Name = "땅의 정령";
+								break;
+							case 1:
+								mAssistPlayer.Name = "놈";
+								break;
+							default:
+								mAssistPlayer.Name = "다오";
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 4)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Level = battleCommand.Player.SummonMagic / 5,
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+						};
+
+						if (mRand.Next(2) == 0) {
+							mAssistPlayer.Name = "에인션트 나이트";
+							mAssistPlayer.Class = 2;
+							mAssistPlayer.ClassType = ClassCategory.Sword;
+							mAssistPlayer.Strength = 12 + GetBonusPoint(5);
+							mAssistPlayer.Mentality = 6 + GetBonusPoint(5);
+							mAssistPlayer.Endurance = 15 + GetBonusPoint(5);
+							mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+							mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
+							mAssistPlayer.SP = 0;
+							mAssistPlayer.Weapon = 6;
+							mAssistPlayer.WeaPower = 60 + GetBonusPoint(10);
+							mAssistPlayer.Shield = 2;
+							mAssistPlayer.ShiPower = 2;
+							mAssistPlayer.Armor = 3 + GetBonusPoint(1);
+							mAssistPlayer.PotentialAC = 2;
+							mAssistPlayer.AC = mAssistPlayer.Armor + mAssistPlayer.PotentialAC;
+							mAssistPlayer.SwordSkill = battleCommand.Player.SummonMagic;
+							mAssistPlayer.AxeSkill = 0;
+							mAssistPlayer.SpearSkill = 0;
+							mAssistPlayer.BowSkill = 0;
+							mAssistPlayer.FistSkill = 0;
+							mAssistPlayer.ShieldSkill = battleCommand.Player.SummonMagic;
+						}
+						else {
+							mAssistPlayer.Name = "에인션트 메이지";
+							mAssistPlayer.Class = 1;
+							mAssistPlayer.ClassType = ClassCategory.Magic;
+							mAssistPlayer.Strength = 7 + GetBonusPoint(5);
+							mAssistPlayer.Mentality = 12 + GetBonusPoint(5);
+							mAssistPlayer.Endurance = 7 + GetBonusPoint(5);
+							mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+							mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
+							mAssistPlayer.SP = mAssistPlayer.Mentality * mAssistPlayer.Level;
+							mAssistPlayer.Weapon = 29;
+							mAssistPlayer.WeaPower = 2;
+							mAssistPlayer.Shield = 0;
+							mAssistPlayer.ShiPower = 0;
+							mAssistPlayer.Armor = 0;
+							mAssistPlayer.PotentialAC = 0;
+							mAssistPlayer.AC = 0;
+							mAssistPlayer.SwordSkill = 0;
+							mAssistPlayer.AxeSkill = 0;
+							mAssistPlayer.SpearSkill = 0;
+							mAssistPlayer.BowSkill = 0;
+							mAssistPlayer.FistSkill = 0;
+							mAssistPlayer.ShieldSkill = 0;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 5)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Neutral,
+							Class = 0,
+							ClassType = ClassCategory.Unknown,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(8))
+						{
+							case 0:
+								mAssistPlayer.Name = "밴더스내치";
+								mAssistPlayer.Endurance = 15 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 8 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 33;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 3;
+								break;
+							case 1:
+								mAssistPlayer.Name = "캐리온 크롤러";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 14 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 34;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
+								mAssistPlayer.PotentialAC = 3;
+								mAssistPlayer.AC = 3;
+								break;
+							case 2:
+								mAssistPlayer.Name = "켄타우루스";
+								mAssistPlayer.Endurance = 17 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 12 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 18 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 35;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 1.5);
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 3:
+								mAssistPlayer.Name = "데모고르곤";
+								mAssistPlayer.Endurance = 18 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 17 + GetBonusPoint(3);
+								mAssistPlayer.Weapon = 36;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+							case 4:
+								mAssistPlayer.Name = "듈라한";
+								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 20;
+								mAssistPlayer.Accuracy = 17;
+								mAssistPlayer.Weapon = 16;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
+								mAssistPlayer.PotentialAC = 3;
+								mAssistPlayer.AC = 3;
+								break;
+							case 5:
+								mAssistPlayer.Name = "에틴";
+								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10;
+								mAssistPlayer.Accuracy = 10 + GetBonusPoint(9);
+								mAssistPlayer.Weapon = 8;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 0.8);
+								mAssistPlayer.PotentialAC = 1;
+								mAssistPlayer.AC = 1;
+								break;
+							case 6:
+								mAssistPlayer.Name = "헬하운드";
+								mAssistPlayer.Endurance = 14 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 9 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 11 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 33;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 7:
+								mAssistPlayer.Name = "미노타우루스";
+								mAssistPlayer.Endurance = 13 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 11 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 14 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 9;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 6)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Male,
+							Class = 0,
+							ClassType = ClassCategory.Unknown,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(8))
+						{
+							case 0:
+								mAssistPlayer.Name = "밴더스내치";
+								mAssistPlayer.Endurance = 15 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 8 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 33;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 3;
+								break;
+							case 1:
+								mAssistPlayer.Name = "캐리온 크롤러";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 14 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 34;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
+								mAssistPlayer.PotentialAC = 3;
+								mAssistPlayer.AC = 3;
+								break;
+							case 2:
+								mAssistPlayer.Name = "켄타우루스";
+								mAssistPlayer.Endurance = 17 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 12 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 18 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 35;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 1.5);
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 3:
+								mAssistPlayer.Name = "데모고르곤";
+								mAssistPlayer.Endurance = 18 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 17 + GetBonusPoint(3);
+								mAssistPlayer.Weapon = 36;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+							case 4:
+								mAssistPlayer.Name = "듈라한";
+								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 20;
+								mAssistPlayer.Accuracy = 17;
+								mAssistPlayer.Weapon = 16;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
+								mAssistPlayer.PotentialAC = 3;
+								mAssistPlayer.AC = 3;
+								break;
+							case 5:
+								mAssistPlayer.Name = "에틴";
+								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10;
+								mAssistPlayer.Accuracy = 10 + GetBonusPoint(9);
+								mAssistPlayer.Weapon = 8;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 0.8);
+								mAssistPlayer.PotentialAC = 1;
+								mAssistPlayer.AC = 1;
+								break;
+							case 6:
+								mAssistPlayer.Name = "헬하운드";
+								mAssistPlayer.Endurance = 14 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 9 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 11 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 33;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 7:
+								mAssistPlayer.Name = "미노타우루스";
+								mAssistPlayer.Endurance = 13 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 11 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 14 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 9;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 6)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Male,
+							Class = 0,
+							ClassType = ClassCategory.Giant,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(6))
+						{
+							case 0:
+								mAssistPlayer.Name = "클라우드자이언트";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 15 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 10 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 37;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 2.5);
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 1:
+								mAssistPlayer.Name = "파이어 자이언트";
+								mAssistPlayer.Endurance = 25 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 38;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 2:
+								mAssistPlayer.Name = "프로스트자이언트";
+								mAssistPlayer.Endurance = 30 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 8 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 8 + GetBonusPoint(2);
+								mAssistPlayer.Weapon = 2;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 2;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 3:
+								mAssistPlayer.Name = "힐 자이언트";
+								mAssistPlayer.Endurance = 40 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 7 + GetBonusPoint(3);
+								mAssistPlayer.Weapon = 39;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 1.5);
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 4:
+								mAssistPlayer.Name = "스톤 자이언트";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 11 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 37;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 2.5);
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+							case 5:
+								mAssistPlayer.Name = "스토엄 자이언트";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 15 + GetBonusPoint(9);
+								mAssistPlayer.Weapon = 40;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 6;
+								mAssistPlayer.PotentialAC = 1;
+								mAssistPlayer.AC = 1;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 7)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Neutral,
+							Class = 0,
+							ClassType = ClassCategory.Golem,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(4))
+						{
+							case 0:
+								mAssistPlayer.Name = "글레이 고렘";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 15 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 41;
+								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 0.5);
+								mAssistPlayer.PotentialAC = 3;
+								mAssistPlayer.AC = 3;
+								break;
+							case 1:
+								mAssistPlayer.Name = "프레쉬 고렘";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
+								mAssistPlayer.Weapon = 0;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
+								mAssistPlayer.PotentialAC = 1;
+								mAssistPlayer.AC = 1;
+								break;
+							case 2:
+								mAssistPlayer.Name = "아이언 고렘";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 10 + GetBonusPoint(2);
+								mAssistPlayer.Weapon = 42;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
+								mAssistPlayer.PotentialAC = 5;
+								mAssistPlayer.AC = 5;
+								break;
+							case 3:
+								mAssistPlayer.Name = "스톤 고렘";
+								mAssistPlayer.Endurance = 25 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 13 + GetBonusPoint(3);
+								mAssistPlayer.Weapon = 0;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 2;
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 8)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Endurance = 30 + GetBonusPoint(10),
+							Resistance = 10 + GetBonusPoint(10),
+							Accuracy = 15 + GetBonusPoint(5),
+							WeaPower = battleCommand.Player.SummonMagic * mRand.Next(5) + 1,
+							PotentialAC = 3,
+							AC = 3,
+							Class = 0,
+							ClassType = ClassCategory.Dragon,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(12))
+						{
+							case 0:
+								mAssistPlayer.Name = "블랙 드래곤";
+								mAssistPlayer.Weapon = 43;
+								break;
+							case 1:
+								mAssistPlayer.Name = "블루 드래곤";
+								mAssistPlayer.Weapon = 44;
+								break;
+							case 2:
+								mAssistPlayer.Name = "블래스 드래곤";
+								mAssistPlayer.Weapon = 45;
+								break;
+							case 3:
+								mAssistPlayer.Name = "브론즈 드래곤";
+								mAssistPlayer.Weapon = 44;
+								break;
+							case 4:
+								mAssistPlayer.Name = "크로매틱 드래곤";
+								mAssistPlayer.Weapon = 46;
+								break;
+							case 5:
+								mAssistPlayer.Name = "코퍼 드래곤";
+								mAssistPlayer.Weapon = 43;
+								break;
+							case 6:
+								mAssistPlayer.Name = "골드 드래곤";
+								mAssistPlayer.Weapon = 46;
+								break;
+							case 7:
+								mAssistPlayer.Name = "그린 드래곤";
+								mAssistPlayer.Weapon = 47;
+								break;
+							case 8:
+								mAssistPlayer.Name = "플래티움 드래곤";
+								mAssistPlayer.Weapon = 48;
+								break;
+							case 9:
+								mAssistPlayer.Name = "레드 드래곤";
+								mAssistPlayer.Weapon = 46;
+								break;
+							case 10:
+								mAssistPlayer.Name = "실버 드래곤";
+								mAssistPlayer.Weapon = 49;
+								break;
+							case 11:
+								mAssistPlayer.Name = "화이트 드래곤";
+								mAssistPlayer.Weapon = 49;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
+					else if (battleCommand.Tool == 9)
+					{
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Male,
+							Class = 0,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						mAssistPlayer = new Lore()
+						{
+							Gender = GenderType.Neutral,
+							Class = 0,
+							ClassType = ClassCategory.Golem,
+							Level = battleCommand.Player.SummonMagic / 5,
+							Strength = 10 + GetBonusPoint(5),
+							Mentality = 10 + GetBonusPoint(5),
+							Concentration = 10 + GetBonusPoint(5),
+							Agility = 0,
+							Luck = 10 + GetBonusPoint(5),
+							Poison = 0,
+							Unconscious = 0,
+							Dead = 0,
+							SP = 0,
+							Experience = 0,
+							PotentialExperience = 0,
+							Shield = 0,
+							ShiPower = 0,
+							Armor = 0,
+							SwordSkill = 0,
+							AxeSkill = 0,
+							SpearSkill = 0,
+							BowSkill = 0,
+							FistSkill = 0
+						};
+
+						switch (mRand.Next(2))
+						{
+							case 0:
+								mAssistPlayer.Name = "늑대 인간";
+								mAssistPlayer.ClassType = ClassCategory.Unknown;
+								mAssistPlayer.Endurance = 25;
+								mAssistPlayer.Resistance = 15;
+								mAssistPlayer.Accuracy = 18;
+								mAssistPlayer.Weapon = 36;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
+								mAssistPlayer.PotentialAC = 2;
+								mAssistPlayer.AC = 2;
+								break;
+							case 1:
+								mAssistPlayer.Name = "드래곤 뉴트";
+								mAssistPlayer.ClassType = ClassCategory.Dragon;
+								mAssistPlayer.Endurance = 30;
+								mAssistPlayer.Resistance = 18;
+								mAssistPlayer.Accuracy = 19;
+								mAssistPlayer.Weapon = 6;
+								mAssistPlayer.WeaPower = (int)(Math.Round(battleCommand.Player.SummonMagic * 4.5));
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+							case 2:
+								mAssistPlayer.Name = "아이언 고렘";
+								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 10 + GetBonusPoint(2);
+								mAssistPlayer.Weapon = 42;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
+								mAssistPlayer.PotentialAC = 5;
+								mAssistPlayer.AC = 5;
+								break;
+							case 3:
+								mAssistPlayer.Name = "스톤 고렘";
+								mAssistPlayer.Endurance = 25 + GetBonusPoint(5);
+								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
+								mAssistPlayer.Accuracy = 13 + GetBonusPoint(3);
+								mAssistPlayer.Weapon = 0;
+								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 2;
+								mAssistPlayer.PotentialAC = 4;
+								mAssistPlayer.AC = 4;
+								break;
+						}
+
+						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
+					}
 				}
 				else if (battleCommand.Method == 5)
 				{
@@ -8810,6 +9706,95 @@ namespace DarkUWP
 				}
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
+			}
+			else if (mParty.Map == 12) {
+				if ((mParty.XAxis == 38 && mParty.YAxis == 37) || (mParty.XAxis == 11 && mParty.YAxis == 37) || (mParty.XAxis == 11 && mParty.YAxis == 12) || (mParty.XAxis == 38 && mParty.YAxis == 12))
+				{
+					int lever;
+					if (mParty.XAxis == 38 && mParty.YAxis == 37)
+						lever = 1;
+					else if (mParty.XAxis == 11 && mParty.YAxis == 37)
+						lever = 1 << 1;
+					else if (mParty.XAxis == 11 && mParty.YAxis == 12)
+						lever = 1 << 2;
+					else
+						lever = 1 << 3;
+
+					if ((mParty.Etc[34] & lever) == 0)
+					{
+						Dialog($"[color={RGB.White}] 당신은 그 곳의 레버를 당겼다.[/color]");
+
+						mParty.Etc[34] |= lever;
+						if ((mParty.Etc[34] & 0x0F) == 0x0F)
+						{
+							for (var x = 24; x < 26; x++)
+							{
+								for (var y = 17; y < 27; y++)
+									UpdateTileInfo(x, y, 44);
+							}
+
+							UpdateTileInfo(24, 27, 54);
+							UpdateTileInfo(25, 27, 54);
+							UpdateTileInfo(23, 27, 54);
+							UpdateTileInfo(26, 27, 54);
+
+							for (var x = 23; x < 27; x++)
+								UpdateTileInfo(x, 28, 36);
+
+							Dialog(new string[] { "", $"[color={RGB.White}] 그러자, 갑자기 호수 쪽에서 괴음이 들렸다.[/color]" }, true);
+						}
+					}
+					else
+					{
+						mParty.Etc[34] ^= lever;
+						Dialog("[color={RGB.White}] 당신은 레버를 원 상태로 놓았다.[/color]");
+					}
+				}
+				else if (((mParty.XAxis == 24 && mParty.YAxis == 24) || (mParty.XAxis == 25 && mParty.YAxis == 37)) && (mParty.Etc[31] & (1 << 7)) == 0)
+				{
+					Lore lastPerson = null;
+
+					foreach (var person in mPlayerList)
+					{
+						if (person.IsAvailable)
+						{
+							lastPerson = person;
+						}
+					}
+
+					if (lastPerson == mPlayerList[0])
+					{
+						Dialog(" 당신은 무심코 발 아래에서 반짝이는  도자기의 조각을 보았다. 그것을 자세히 조사해 보니 어떤 석판의 조각이었다." +
+						"  거기에는 알 수없는 고대어가 잔뜩 쓰여 있었다. 당장은 읽을 수가 없었지만 가져가기로 했다.");
+					}
+					else
+					{
+						Dialog(new string[] {
+							$" 갑자기 일행의 제일 뒤에 있던 {lastPerson.NameSubjectJosa} 뭔가를 발견하고 일행을 불러 세웠다.",
+							"",
+							$"[color={RGB.Cyan}] 잠깐, 자네들 여기를 보게.[/color]",
+							"",
+							$" {lastPerson.GenderPronoun}가 말했다.",
+							"",
+							$"[color={RGB.Cyan}] 방금 내가 뒤 따라 오다가 땅 속에 반쯤 묻힌 석판을 발견 했다네.  이것 보게나." +
+							" 어떤 글자가 쓰여 있군.  고대어인 것 같은데 어쨌든 가져 가도록 하지."
+						});
+					}
+
+					mParty.Etc[31] |= 1 << 7;
+				}
+				else if (mParty.YAxis == 44)
+				{
+					ShowExitMenu();
+				}
+				else if (mParty.Etc[3] == 0)
+				{
+					mParty.XAxis = prevX;
+					mParty.YAxis = prevY;
+					Dialog(" 일행은 낭떠러지로 떨어 질뻔 했다.");
+				}
+				else
+					triggered = false;
 			}
 
 			return triggered;
@@ -10582,8 +11567,13 @@ namespace DarkUWP
 					if ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && tileIdx == 52)
 						tileIdx = 0;
 				}
-				else if (tileIdx == 0 || ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && tileIdx == 52))
+				else if (mParty.Map == 2 && tileIdx == 52)
+					tileIdx = 48;
+				else if (tileIdx == 0)
 				{
+					//#if DEBUG
+					//					tileIdx = 0;
+					//#else
 					switch (mParty.Map)
 					{
 						case 1:
@@ -10641,6 +11631,7 @@ namespace DarkUWP
 							tileIdx = 41;
 							break;
 					}
+					//#endif
 				}
 
 				if (mAnimationEvent == AnimationType.LordAhnCall) {
@@ -11437,6 +12428,10 @@ namespace DarkUWP
 					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드 의 입구[/color]", true);
 				else if (x == 53 && y == 8)
 					AppendText($"[color={RGB.LightGreen}]       여기는 그라운드 게이트의 입구[/color]", true);
+			}
+			else if (mParty.Map == 12) {
+				if (x == 24 && y == 40)
+					Dialog($"[color={RGB.White}]   당신이 지하 세계로 통하는 입구를 열고 싶다면 동굴 속의 4개의 레버를 모두 당겨 주십시오.", true);
 			}
 		}
 
