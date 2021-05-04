@@ -40,10 +40,16 @@ namespace DarkUWP
 		};
 
 		public static string GetClass(ClassCategory category, int playerClass) {
-			if (category == ClassCategory.Sword)
-				return SwordClass[playerClass - 1];
+
+			if (1 <= playerClass && playerClass <= 10)
+			{
+				if (category == ClassCategory.Sword)
+					return SwordClass[playerClass - 1];
+				else
+					return MagicClass[playerClass - 1];
+			}
 			else
-				return MagicClass[playerClass - 1];
+				return "불확실함";
 		}
 
 		public static string GetWeaponName(int weapon) {

@@ -14,6 +14,11 @@ namespace DarkUWP
 			set;
 		}
 
+		public Lore AssistPlayer {
+			get;
+			set;
+		}
+
 		public LorePlayer Party
 		{
 			get;

@@ -5298,6 +5298,7 @@ namespace DarkUWP
 							var saveData = new SaveData()
 							{
 								PlayerList = mPlayerList,
+								AssistPlayer = mAssistPlayer,
 								Party = mParty,
 								Map = new Map()
 								{
@@ -7482,13 +7483,21 @@ namespace DarkUWP
 						}
 					}
 				}
-				else if (battleCommand.Method == 4)
+				else if (battleCommand.Method == 5)
 				{
-					int GetBonusPoint(int seed) {
+					CastESP();
+				}
+				else if (battleCommand.Method == 6)
+				{
+					GetBattleStatus(null);
+
+					int GetBonusPoint(int seed)
+					{
 						return mRand.Next(seed * 2 + 1) - seed;
 					}
 
-					if (battleCommand.Tool == 0) {
+					if (battleCommand.Tool == 0)
+					{
 						mAssistPlayer = new Lore()
 						{
 							Gender = GenderType.Male,
@@ -7523,7 +7532,8 @@ namespace DarkUWP
 							FistSkill = 0
 						};
 
-						switch (mRand.Next(4)) {
+						switch (mRand.Next(4))
+						{
 							case 0:
 								mAssistPlayer.Name = "불의 정령";
 								break;
@@ -7735,7 +7745,8 @@ namespace DarkUWP
 							PotentialExperience = 0,
 						};
 
-						if (mRand.Next(2) == 0) {
+						if (mRand.Next(2) == 0)
+						{
 							mAssistPlayer.Name = "에인션트 나이트";
 							mAssistPlayer.Class = 2;
 							mAssistPlayer.ClassType = ClassCategory.Sword;
@@ -7759,7 +7770,8 @@ namespace DarkUWP
 							mAssistPlayer.FistSkill = 0;
 							mAssistPlayer.ShieldSkill = battleCommand.Player.SummonMagic;
 						}
-						else {
+						else
+						{
 							mAssistPlayer.Name = "에인션트 메이지";
 							mAssistPlayer.Class = 1;
 							mAssistPlayer.ClassType = ClassCategory.Magic;
@@ -8377,10 +8389,8 @@ namespace DarkUWP
 
 						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
 					}
-				}
-				else if (battleCommand.Method == 5)
-				{
-					CastESP();
+
+					DisplayPlayerInfo();
 				}
 				else if (battleCommand.Method == 8)
 				{
@@ -11850,6 +11860,7 @@ namespace DarkUWP
 
 			mParty = saveData.Party;
 			mPlayerList = saveData.PlayerList;
+			mAssistPlayer = saveData.AssistPlayer;
 
 			if (saveData.Map.Data.Length == 0)
 			{
@@ -11885,11 +11896,15 @@ namespace DarkUWP
 
 		private void DisplayPlayerInfo()
 		{
-			for (var i = 0; i < 6; i++)
+			for (var i = 0; i < mPlayerNameList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
 				{
 					mPlayerNameList[i].Text = mPlayerList[i].Name;
+					mPlayerNameList[i].Foreground = new SolidColorBrush(Colors.White);
+				}
+				else if (i == mPlayerList.Count && mAssistPlayer != null) {
+					mPlayerNameList[i].Text = mAssistPlayer.Name;
 					mPlayerNameList[i].Foreground = new SolidColorBrush(Colors.White);
 				}
 				else
