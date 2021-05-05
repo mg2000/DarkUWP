@@ -1039,6 +1039,8 @@ namespace DarkUWP
 							mParty.Etc[42] = 0;
 							mParty.Etc[40] |= 1 << 6;
 						}
+						else if (battleEvent == BattleEvent.Wisp)
+							mParty.Etc[41] |= 1;
 
 						mEncounterEnemyList.Clear();
 						mBattleEvent = 0;
@@ -1237,7 +1239,7 @@ namespace DarkUWP
 				}
 				else if (ContinueText.Visibility == Visibility.Visible)
 				{
-					async Task InvokeSpecialEventLaterPart()
+					void InvokeSpecialEventLaterPart()
 					{
 						var specialEvent = mSpecialEvent;
 						mSpecialEvent = SpecialEventType.None;
@@ -1390,7 +1392,7 @@ namespace DarkUWP
 								" 즉 월식을 말하는 것이며 그 월식이 3번 일어난 후 \"어둠이 깨어난다\" 즉 실리안 카미너스라는 존재가 생겨난다는 것이네.  그리고는 그녀가 이 세계를 멸망시킨다는 것이네."
 							});
 
-							specialEvent = SpecialEventType.MeetLordAhn7;
+							mSpecialEvent = SpecialEventType.MeetLordAhn7;
 						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn7)
 						{
@@ -1402,21 +1404,13 @@ namespace DarkUWP
 								" 그럼 내일 아침에 보도록하세."
 							});
 
-							specialEvent = SpecialEventType.SleepLoreCastle;
+							mSpecialEvent = SpecialEventType.SleepLoreCastle;
 							mParty.Etc[9]++;
 						}
 						else if (specialEvent == SpecialEventType.SleepLoreCastle)
-						{
 							InvokeAnimation(AnimationType.SleepLoreCastle);
-
-							specialEvent = SpecialEventType.None;
-						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn8)
-						{
 							InvokeAnimation(AnimationType.TalkLordAhn);
-
-							specialEvent = SpecialEventType.None;
-						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn9)
 						{
 							mAnimationEvent = AnimationType.None;
@@ -1806,6 +1800,26 @@ namespace DarkUWP
 
 							mParty.Etc[31] |= 1 << 5;
 						}
+						else if (specialEvent == SpecialEventType.HoleInMenace)
+							InvokeAnimation(AnimationType.LandUnderground);
+						else if (specialEvent == SpecialEventType.CompleteUnderground)
+							InvokeAnimation(AnimationType.ReturnCastleLore);
+						else if (specialEvent == SpecialEventType.BattleWisp) {
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 8; i++)
+							{
+								var enemy = JoinEnemy(32);
+								enemy.Endurance = 30;
+								enemy.HP = enemy.Endurance * enemy.Level * 10;
+								enemy.CastLevel = 6;
+							}
+
+							DisplayEnemy();
+							StartBattle(true);
+
+							mBattleEvent = BattleEvent.Wisp;
+						}
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -1854,7 +1868,7 @@ namespace DarkUWP
 						}
 					}
 					else if (mSpecialEvent != SpecialEventType.None)
-						await InvokeSpecialEventLaterPart();
+						InvokeSpecialEventLaterPart();
 					else if (mBattleTurn == BattleTurn.Player)
 					{
 						if (mBattleCommandQueue.Count == 0)
@@ -4610,7 +4624,11 @@ namespace DarkUWP
 							else
 							{
 								AppendText("");
-								if (mParty.Map != 2)
+								if (mParty.Map == 9) {
+									mParty.XAxis = mPrevX;
+									mParty.YAxis = mPrevY;
+								}
+								else if (mParty.Map != 2)
 									mParty.YAxis--;
 							}
 						}
@@ -6482,6 +6500,12 @@ namespace DarkUWP
 							}
 							else
 								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
+						}
+						else if (menuMode == MenuMode.MeetAhnYoungKi) {
+							if (mMenuFocusID == 0)
+								InvokeAnimation(AnimationType.RecallToCastleLore);
+							else
+								Dialog(" 자네 마음에 들었네. 그럼 잘해보게나.");
 						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
@@ -9664,6 +9688,7 @@ namespace DarkUWP
 						mParty.Item[3] = 255;
 
 					mParty.Etc[34] |= 1 << 5;
+					triggered = false;
 				}
 				else if (mParty.XAxis == 53 && mParty.YAxis == 44 && (mParty.Etc[34] & (1 << 6)) == 0)
 				{
@@ -9679,6 +9704,7 @@ namespace DarkUWP
 						mParty.Item[0] = 255;
 
 					mParty.Etc[34] |= 1 << 6;
+					triggered = false;
 				}
 				else if (mParty.XAxis == 50 && mParty.YAxis == 49 && (mParty.Etc[34] & (1 << 7)) == 0)
 				{
@@ -9694,10 +9720,44 @@ namespace DarkUWP
 						mParty.Item[0] = 255;
 
 					mParty.Etc[34] |= 1 << 7;
+					triggered = false;
 				}
 				else if ((mParty.XAxis == 68 && mParty.YAxis == 37) || (mParty.XAxis == 15 && mParty.YAxis == 9) || (mParty.XAxis == 71 && mParty.YAxis == 6))
 				{
-					//InvokeAnimation()
+					Ask(" 여어 오래간 만이군.  나는 이 게임의 제작자인 안영기라네. 저번에도 많이 만났었지." +
+					" 혹시 당신이 이 곳에서 더 이상 게임 진행이 안된다면 지금 나에게 도움을 청하게. 어떤가 ?",
+					MenuMode.MeetAhnYoungKi, new string[] {
+						"정말 그렇습니다",
+						"아니오. 내 힘으로도 가능합니다."
+					});
+				}
+				else if (mParty.XAxis == 50 && mParty.YAxis == 50 && (mParty.Etc[8] & 0x0F) == 0x0F) {
+					Talk(new string[] {
+						" 당신은 이 곳에서 할 일을 모두 끝냈다.",
+						" 일행은 마법의 힘을 합쳐 다시 지상으로 공간이동을 시작 했다.",
+						"",
+						$"[color={RGB.Yellow}] 렐 그라브 .. 바스 포르 ..[/color]"
+					});
+
+					mSpecialEvent = SpecialEventType.CompleteUnderground;
+				}
+				else if (mParty.XAxis == 22 && mParty.YAxis == 34 && (mParty.Etc[8] & (1 << 5)) > 0) {
+					Dialog(" 일행은 공간 이동 되어졌다.");
+
+					mParty.XAxis = 15;
+					mParty.YAxis = 94;
+				}
+				else if (mParty.XAxis == 7 && mParty.YAxis == 73 && (mParty.Etc[8] & (1 << 5)) > 0)
+				{
+					Dialog(" 일행은 공간 이동 되어졌다.");
+
+					mParty.XAxis = 70;
+					mParty.YAxis = 7;
+				}
+				else if (mParty.XAxis == 72 && mParty.YAxis == 9 && (mParty.Etc[41] & 1) == 0) {
+					Talk(" 일행은 무언가  희미한 불빛이 떠다니는 것을 보았고 그것이 도깨비 불이라는 것을 알아차리고 선제 공격을 시작했다.");
+
+					mSpecialEvent = SpecialEventType.BattleWisp;
 				}
 			}
 			else if (mParty.Map == 6)
@@ -9804,6 +9864,9 @@ namespace DarkUWP
 					});
 				}
 				else if (mParty.XAxis < 7 || mParty.XAxis > 43 || mParty.YAxis < 8 || mParty.YAxis > 42) {
+					mPrevX = prevX;
+					mPrevY = prevY;
+
 					ShowExitMenu();
 				}
 			}
@@ -9833,16 +9896,16 @@ namespace DarkUWP
 				}
 				else if (22 <= mParty.XAxis && mParty.XAxis <= 27 && 8 <= mParty.YAxis && mParty.YAxis <= 11)
 				{
-					Talk(" 일행이 절벽에 서자마자  위압적인 힘이 일행을 끌어 당기기 시작했고 결국 일행은 그 힘을 버티지 못하고  의문의 구멍 속으로 빠져 들고 말았다.");
-
 					mParty.Map = 3;
 					mParty.XAxis = 50;
 					mParty.YAxis = 50;
 
 					await RefreshGame();
 
-					// 추가 구현 필요
-					//mSpecialEvent = SpecialEventType.ManHoleInMenace;
+					Talk(" 일행이 절벽에 서자마자  위압적인 힘이 일행을 끌어 당기기 시작했고 결국 일행은 그 힘을 버티지 못하고  의문의 구멍 속으로 빠져 들고 말았다.");
+					mSpecialEvent = SpecialEventType.HoleInMenace;
+
+					mFace = -1;
 				}
 				else if (10 <= mParty.XAxis && mParty.XAxis <= 14 && 9 <= mParty.YAxis && mParty.YAxis <= 11)
 				{
@@ -10932,7 +10995,7 @@ namespace DarkUWP
 						else {
 							AppendText(new string[] {
 								" 메너스에 지하 세계로의 통로가  열리게 되는 첫번째 월식때 까지 기다리게.",
-								" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 그때를 위해 열심히 훈련하도록 하게나."
+								$" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 그때를 위해 열심히 훈련하도록 하게나."
 							});
 						}
 					}
@@ -11250,10 +11313,8 @@ namespace DarkUWP
 				}
 				else if (mAnimationEvent == AnimationType.SleepLoreCastle)
 				{
-					var i = 0;
-					while (true)
+					for (var i = 1; i <= 67; i++)
 					{
-						i++;
 						mAnimationFrame = i;
 						if (i <= 59)
 							Task.Delay(5).Wait();
@@ -11278,69 +11339,14 @@ namespace DarkUWP
 						{
 							mParty.Etc[0] = 0;
 							Task.Delay(1000).Wait();
-							AppendText(" 당신은 다음날 아침까지 여기서 자기로 했다.");
-							mParty.Min = 0;
-						}
-						else if (i >= 68 && mParty.Hour != 9)
-						{
-							void UpdateState(Lore player)
-							{
-								if (player.Dead == 0 && player.Unconscious == 0)
-								{
-									if (player.Poison == 0)
-									{
-										player.HP += player.Level;
-										if (player.HP > player.Endurance * player.Level * 10)
-											player.HP = player.Endurance * player.Level * 10;
-									}
-									else
-									{
-										player.HP--;
-										if (player.HP <= 0)
-											player.Unconscious = 1;
-									}
-								}
-								else if (player.Dead == 0 && player.Unconscious > 0)
-								{
-									if (player.Poison == 0)
-									{
-										if (player.Unconscious - player.Level > 0)
-											player.Unconscious = player.Unconscious + player.Level;
-										else
-										{
-											player.Unconscious = 0;
-											player.HP = 1;
-										}
-									}
-									else
-									{
-										player.Unconscious++;
-										if (player.Unconscious > player.Endurance * player.Level)
-											player.Dead = 1;
-									}
-								}
-							}
-
-							PlusTime(0, 20, 0);
-
-							foreach (var player in mPlayerList)
-							{
-								UpdateState(player);
-							}
-
-							if (mAssistPlayer != null)
-								UpdateState(mAssistPlayer);
-
-							UpdatePlayersStat();
-						}
-						else
-						{
-							MovePlayer(mParty.XAxis + 1, mParty.YAxis);
-							mFace = 2;
 
 							break;
 						}
 					}
+				}
+				else if (mAnimationEvent == AnimationType.SleepLoreCastle2) {
+					if (mParty.Hour != 9)
+						Task.Delay(500).Wait();
 				}
 				else if (mAnimationEvent == AnimationType.TalkLordAhn ||
 					mAnimationEvent == AnimationType.TalkLordAhn2)
@@ -11392,6 +11398,30 @@ namespace DarkUWP
 					mAnimationEvent == AnimationType.StatueError3 ||
 					mAnimationEvent == AnimationType.StatueError4)
 					Task.Delay(2000).Wait();
+				else if (mAnimationEvent == AnimationType.LandUnderground)
+				{
+					for (var i = 1; i <= 59; i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(5).Wait();
+					}
+				}
+				else if (mAnimationEvent == AnimationType.RecallToCastleLore)
+				{
+					for (var i = 1; i <= 59; i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(5).Wait();
+					}
+				}
+				else if (mAnimationEvent == AnimationType.ReturnCastleLore)
+				{
+					for (var i = 1; i <= 59; i++)
+					{
+						mAnimationFrame = i;
+						Task.Delay(5).Wait();
+					}
+				}
 			});
 
 			await animationTask;
@@ -11417,10 +11447,76 @@ namespace DarkUWP
 			}
 			else if (mAnimationEvent == AnimationType.SleepLoreCastle)
 			{
-				AppendText($"[color={RGB.White}] 아침이 밝았다.[/color]");
+				AppendText(" 당신은 다음날 아침까지 여기서 자기로 했다.");
+				mParty.Min = 0;
 
-				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
+				InvokeAnimation(AnimationType.SleepLoreCastle2);
+			}
+			else if (mAnimationEvent == AnimationType.SleepLoreCastle2) {
+				void UpdateState(Lore player)
+				{
+					if (player.Dead == 0 && player.Unconscious == 0)
+					{
+						if (player.Poison == 0)
+						{
+							player.HP += player.Level;
+							if (player.HP > player.Endurance * player.Level * 10)
+								player.HP = player.Endurance * player.Level * 10;
+						}
+						else
+						{
+							player.HP--;
+							if (player.HP <= 0)
+								player.Unconscious = 1;
+						}
+					}
+					else if (player.Dead == 0 && player.Unconscious > 0)
+					{
+						if (player.Poison == 0)
+						{
+							if (player.Unconscious - player.Level > 0)
+								player.Unconscious = player.Unconscious + player.Level;
+							else
+							{
+								player.Unconscious = 0;
+								player.HP = 1;
+							}
+						}
+						else
+						{
+							player.Unconscious++;
+							if (player.Unconscious > player.Endurance * player.Level)
+								player.Dead = 1;
+						}
+					}
+				}
+
+				PlusTime(0, 20, 0);
+
+				foreach (var player in mPlayerList)
+				{
+					UpdateState(player);
+				}
+
+				if (mAssistPlayer != null)
+					UpdateState(mAssistPlayer);
+
+				UpdatePlayersStat();
+
+				if (mParty.Hour == 9)
+				{
+					AppendText($"[color={RGB.White}] 아침이 밝았다.[/color]");
+
+					MovePlayer(mParty.XAxis + 1, mParty.YAxis);
+					mFace = 2;
+
+					mAnimationEvent = AnimationType.None;
+					mAnimationFrame = 0;
+				}
+				else {
+					InvokeAnimation(AnimationType.SleepLoreCastle2);
+				}
 			}
 			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn)
 			{
@@ -11524,6 +11620,41 @@ namespace DarkUWP
 					"",
 					" 하지만 석상은 심하게 손상 되어 있었고 제대로 작동하지 않았다."
 				}, true);
+
+				mAnimationEvent = AnimationType.None;
+			}
+			else if (mAnimationEvent == AnimationType.LandUnderground)
+			{
+				mFace = 4;
+				Dialog(" 한참후에 일행이 깨어나서 본 것은 지상의 세계와  다름 없는 세상이었다.  다만 다른 것이 있다면  인공의 태양이 지상의 태양과 같이 나타났다가 사라졌다 하는 것 뿐이었다.");
+
+				mParty.Etc[8] |= 1;
+
+				mAnimationEvent = AnimationType.None;
+			}
+			else if (mAnimationEvent == AnimationType.RecallToCastleLore) {
+				mParty.Map = 1;
+				mParty.XAxis = 19;
+				mParty.YAxis = 11;
+
+				await RefreshGame();
+
+				Dialog(" 당신은 로어성 근처로 공간 이동 되어졌다.");
+
+				mAnimationEvent = AnimationType.None;
+			}
+			else if (mAnimationEvent == AnimationType.RecallToCastleLore)
+			{
+				mParty.Map = 10;
+				mParty.XAxis = 25;
+				mParty.YAxis = 9;
+
+				await RefreshGame();
+
+				Dialog(" 일행은 다시 메너스로 돌아왔고  지하 세계로의 입구는 다시 봉쇄 되었다.");
+
+				mParty.Etc[8] = 0;
+				mParty.Etc[9]++;
 
 				mAnimationEvent = AnimationType.None;
 			}
@@ -11652,6 +11783,14 @@ namespace DarkUWP
 
 		private void canvas_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
 		{
+			void AnimateTransition(int frame, int x, int y) {
+				// 총 59 프레임
+				for (var i = 0; i < frame; i++) {
+					args.DrawingSession.FillRectangle(new Rect((x - 4) * 52 + (i * 4) - 1, (y - 5) * 52, 2, 52 * 11), Colors.Black);
+					args.DrawingSession.FillRectangle(new Rect((x - 4) * 52 + ((117 - i) * 4) - 1, (y - 5) * 52, 2, 52 * 11), Colors.Black);
+				}
+			}
+			
 			var playerX = mParty.XAxis;
 			var playerY = mParty.YAxis;
 
@@ -11693,14 +11832,19 @@ namespace DarkUWP
 					}
 				}
 
-				if (mCharacterTiles != null)
+				if (mCharacterTiles != null && mFace >= 0)
 				{
 					mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY), Vector4.One);
+					
+					if (mMenuMode == MenuMode.MeetAhnYoungKi)
+						mCharacterTiles.Draw(sb, 24, mCharacterTiles.SpriteSize * new Vector2(playerX - 1, playerY), Vector4.One);
 				}
 			}
 
-			//for (var i = 0; i < 117; i++)
-			//	args.DrawingSession.FillRectangle(new Rect((playerX - 4)* 52 + (i * 4), (playerY - 5) * 52, 2, 52 * 11), Colors.Black);
+			if ((mAnimationEvent == AnimationType.SleepLoreCastle || 
+				mAnimationEvent == AnimationType.LandUnderground ||
+				mAnimationEvent == AnimationType.RecallToCastleLore) && mAnimationFrame <= 59)
+				AnimateTransition(mAnimationFrame, playerX, playerY);
 		}
 
 		void DrawTile(CanvasSpriteBatch sb, byte[] layer, int index, int playerX, int playerY)
@@ -12892,7 +13036,8 @@ namespace DarkUWP
 			PlusStrength,
 			PlusAgility,
 			PlusAccuracy,
-			JoinRegulus
+			JoinRegulus,
+			MeetAhnYoungKi
 		}
 
 		private enum SpinnerType
@@ -12975,6 +13120,7 @@ namespace DarkUWP
 			LordAhnCall,
 			LeaveSoldier,
 			SleepLoreCastle,
+			SleepLoreCastle2,
 			TalkLordAhn,
 			TalkLordAhn2,
 			GetDefaultWeapon,
@@ -12985,7 +13131,10 @@ namespace DarkUWP
 			StatueError,
 			StatueError2,
 			StatueError3,
-			StatueError4
+			StatueError4,
+			LandUnderground,
+			RecallToCastleLore,
+			ReturnCastleLore
 		}
 
 		private enum SpecialEventType
@@ -13050,7 +13199,10 @@ namespace DarkUWP
 			CommonSenseQuiz,
 			MathQuiz,
 			SkipTurn,
-			MeetRegulus
+			MeetRegulus,
+			HoleInMenace,
+			CompleteUnderground,
+			BattleWisp,
 		}
 
 		private enum BattleEvent {
@@ -13060,7 +13212,8 @@ namespace DarkUWP
 			CaveOfAsmodeusEntrance,
 			GuardOfObsidianArmor,
 			Slaim,
-			CaveEntrance
+			CaveEntrance,
+			Wisp
 		}
 
 		private enum AfterDialogType {
