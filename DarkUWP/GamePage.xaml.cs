@@ -440,17 +440,16 @@ namespace DarkUWP
 							{
 								if (EnterWater())
 									MovePlayer(x, y);
-								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 25)
 							{
-								EnterSwamp();
-								MovePlayer(x, y);
+								if (EnterSwamp())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 26)
 							{
-								EnterLava();
-								MovePlayer(x, y);
+								if (EnterLava())
+									MovePlayer(x, y);
 							}
 							else if (27 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 47)
 							{
@@ -486,17 +485,16 @@ namespace DarkUWP
 							{
 								if (EnterWater())
 									MovePlayer(x, y);
-								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 23 || GetTileInfo(x, y) == 49)
 							{
-								EnterSwamp();
-								MovePlayer(x, y);
+								if (EnterSwamp())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								EnterLava();
-								MovePlayer(x, y);
+								if (EnterLava())
+									MovePlayer(x, y);
 							}
 							else if (24 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 47)
 							{
@@ -532,17 +530,16 @@ namespace DarkUWP
 							{
 								if (EnterWater())
 									MovePlayer(x, y);
-								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 49)
 							{
-								EnterSwamp();
-								MovePlayer(x, y);
+								if (EnterSwamp())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								EnterLava();
-								MovePlayer(x, y);
+								if (EnterLava())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 54)
 							{
@@ -567,7 +564,8 @@ namespace DarkUWP
 								var oriX = mParty.XAxis;
 								var oriY = mParty.YAxis;
 								MovePlayer(x, y);
-								InvokeSpecialEvent(oriX, oriY);
+								if (await InvokeSpecialEvent(oriX, oriY))
+									mTriggeredDownEvent = true;
 
 								mTriggeredDownEvent = true;
 							}
@@ -584,17 +582,16 @@ namespace DarkUWP
 							{
 								if (EnterWater())
 									MovePlayer(x, y);
-								mTriggeredDownEvent = true;
 							}
 							else if (GetTileInfo(x, y) == 49)
 							{
-								EnterSwamp();
-								MovePlayer(x, y);
+								if (EnterSwamp())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 50)
 							{
-								EnterLava();
-								MovePlayer(x, y);
+								if (EnterLava())
+									MovePlayer(x, y);
 							}
 							else if (GetTileInfo(x, y) == 54)
 							{
@@ -771,13 +768,13 @@ namespace DarkUWP
 				void ShowChooseTrainSkillMemberMenu()
 				{
 					AppendText($"[color={RGB.White}]누가 훈련을 받겠습니까?[/color]");
-					ShowCharacterMenu(MenuMode.ChooseTrainSkillMember);
+					ShowCharacterMenu(MenuMode.ChooseTrainSkillMember, false);
 				}
 
 				void ShowChooseTrainMagicMemberMenu()
 				{
 					AppendText($"[color={RGB.White}]누가 가르침을 받겠습니까?[/color]");
-					ShowCharacterMenu(MenuMode.ChooseTrainMagicMember);
+					ShowCharacterMenu(MenuMode.ChooseTrainMagicMember, false);
 				}
 
 				bool EnoughMoneyToChangeJob() {
@@ -1172,24 +1169,15 @@ namespace DarkUWP
 					}
 				}
 
-				void ShowCureResult()
+				void ShowCureResult(bool battleCure)
 				{
-					var resultPart = new List<string>();
-					if (mCureResult.Count > DIALOG_MAX_LINES)
+					if (battleCure)
 					{
-						for (var i = 0; i < DIALOG_MAX_LINES; i++)
-						{
-							resultPart.Add(mCureResult[0]);
-							mCureResult.RemoveAt(0);
-						}
+						Talk(mCureResult.ToArray());
+						mSpecialEvent = SpecialEventType.SkipTurn;
 					}
 					else
-					{
-						resultPart.AddRange(mCureResult);
-						mCureResult.Clear();
-					}
-
-					Dialog(resultPart.ToArray());
+						Dialog(mCureResult.ToArray());
 				}
 
 				void ShowWeaponTypeMenu(int weaponCategory) {
@@ -1801,6 +1789,23 @@ namespace DarkUWP
 								"<< 7 >>"
 							});
 						}
+						else if (specialEvent == SpecialEventType.SkipTurn) {
+							AddBattleCommand(true);
+						}
+						else if (specialEvent == SpecialEventType.MeetRegulus) {
+							Dialog(new string[] {
+								" 아참 그리고 내가 이번에는 해독 약초를 많이 캤다네. 자네에게도 몇개 주지. 여행에 도움이 될걸세.",
+								"",
+								$"[color={RGB.LightCyan}] 일행은 약간의 해독 약초를 그에게 받았다.[/color]"
+							});
+
+							if (mParty.Etc[2] + 5 < 256)
+								mParty.Etc[2] += 5;
+							else
+								mParty.Etc[2] = 255;
+
+							mParty.Etc[31] |= 1 << 5;
+						}
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -1817,11 +1822,7 @@ namespace DarkUWP
 					//	DialogText.TextHighlighters.Clear();
 					//}
 
-					if (mCureResult.Count > 0)
-					{
-						ShowCureResult();
-					}
-					else if (mRemainDialog.Count > 0)
+					if (mRemainDialog.Count > 0)
 					{
 						ClearDialog();
 
@@ -1854,11 +1855,6 @@ namespace DarkUWP
 					}
 					else if (mSpecialEvent != SpecialEventType.None)
 						await InvokeSpecialEventLaterPart();
-					else if (mCureBattle)
-					{
-						mCureBattle = false;
-						//AddBattleCommand(true);
-					}
 					else if (mBattleTurn == BattleTurn.Player)
 					{
 						if (mBattleCommandQueue.Count == 0)
@@ -2774,7 +2770,7 @@ namespace DarkUWP
 
 						void ShowCureSpellMenu(Lore player, int whomID, MenuMode applyCureMode, MenuMode applyAllCureMode)
 						{
-							if (whomID < mPlayerList.Count)
+							if ((whomID < mPlayerList.Count && mAssistPlayer == null) || (whomID < mPlayerList.Count + 1 && mAssistPlayer != null))
 							{
 								int availableCount;
 								if (player.ClassType == ClassCategory.Magic)
@@ -2799,11 +2795,17 @@ namespace DarkUWP
 								else
 									availableCount = player.AxeSkill / 10 - 5;
 
-								var cureMagicMenu = new string[availableCount];
-								for (var i = 6; i < 6 + availableCount; i++)
-									cureMagicMenu[i - 6] = Common.GetMagicName(3, i);
+								if (availableCount < 1) {
+									var cureMagicMenu = new string[availableCount];
+									for (var i = 6; i < 6 + availableCount; i++)
+										cureMagicMenu[i - 6] = Common.GetMagicName(3, i);
 
-								ShowMenu(applyAllCureMode, cureMagicMenu);
+									ShowMenu(applyAllCureMode, cureMagicMenu);
+								}
+								else {
+									Talk(" 강한 치료 마법은 아직 불가능 합니다.");
+									mSpecialEvent = SpecialEventType.BackToBattleMode;
+								}
 							}
 						}
 
@@ -2896,7 +2898,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 4)
 							{
-								ShowCharacterMenu(MenuMode.Extrasense);
+								ShowCharacterMenu(MenuMode.Extrasense, false);
 							}
 							else if (mMenuFocusID == 5)
 							{
@@ -3086,7 +3088,7 @@ namespace DarkUWP
 
 							CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
 
-							ShowCureResult();
+							ShowCureResult(false);
 						}
 						else if (menuMode == MenuMode.ApplyCureAllMagic)
 						{
@@ -3097,7 +3099,7 @@ namespace DarkUWP
 
 							CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
 
-							ShowCureResult();
+							ShowCureResult(false);
 						}
 						else if (menuMode == MenuMode.ApplyPhenominaMagic)
 						{
@@ -4052,7 +4054,7 @@ namespace DarkUWP
 								mSpecialEvent = SpecialEventType.CantBuyExp;
 							}
 							else {
-								AppendText($"[color={RGB.White}]  일행은 ${mMenuFocusID + 1}시간동안 훈련을 받게 되었다.");
+								AppendText($"[color={RGB.White}]  일행은 {mMenuFocusID + 1}시간동안 훈련을 받게 되었다.[/color]");
 								mTrainTime = mMenuFocusID + 1;
 								InvokeAnimation(AnimationType.BuyExp);
 							}
@@ -4576,10 +4578,24 @@ namespace DarkUWP
 
 									await RefreshGame();
 								}
+								else if (mParty.Map == 9) {
+									mParty.Map = 1;
+									mParty.XAxis = 81;
+									mParty.YAxis = 9;
+
+									await RefreshGame();
+								}
 								else if (mParty.Map == 10) {
 									mParty.Map = 1;
 									mParty.XAxis = 17;
 									mParty.YAxis = 88;
+
+									await RefreshGame();
+								}
+								else if (mParty.Map == 11) {
+									mParty.Map = 2;
+									mParty.XAxis = 15;
+									mParty.YAxis = 16;
 
 									await RefreshGame();
 								}
@@ -4927,7 +4943,7 @@ namespace DarkUWP
 									var espMagicMenuItem = new string[availCount];
 
 									for (var i = 1; i <= availCount; i++)
-										espMagicMenuItem[i] = Common.GetMagicName(5, i);
+										espMagicMenuItem[i - 1] = Common.GetMagicName(5, i + 5);
 
 									ShowMenu(MenuMode.ChooseESPMagic, espMagicMenuItem);
 								}
@@ -4959,9 +4975,7 @@ namespace DarkUWP
 
 							CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
 
-							mCureBattle = true;
-
-							ShowCureResult();
+							ShowCureResult(true);
 						}
 						else if (menuMode == MenuMode.ApplyBattleCureAllSpell)
 						{
@@ -4970,9 +4984,7 @@ namespace DarkUWP
 
 							CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
 
-							mCureBattle = true;
-
-							ShowCureResult();
+							ShowCureResult(true);
 						}
 						else if (menuMode == MenuMode.BattleLose)
 						{
@@ -5251,7 +5263,7 @@ namespace DarkUWP
 											await RefreshGame();
 
 											if ((mParty.Etc[32] != 0 || mParty.Etc[33] != 0) && (mParty.Etc[31] & (1 << 4)) == 0) {
-												if (mParty.Day >= mParty.Etc[33] * 256 + mParty.Etc[32]) {
+												if (mParty.Year > mParty.Etc[32] || (mParty.Year == mParty.Etc[32] && mParty.Day >= mParty.Etc[33])) {
 													if (mParty.Hour >= 12) {
 														UpdateTileInfo(39, 12, 49);
 														mParty.Etc[31] |= 1 << 4;
@@ -6123,7 +6135,7 @@ namespace DarkUWP
 
 							if (mPyramidQuizAllRight)
 							{
-								AppendText(new string[] {
+								Dialog(new string[] {
 									$"[color={RGB.White}] 당신은 정말 열심히 \" 또 다른 지식의 성전 \"을 했나 보군요. 내가 낸 모든 문제는 바로 거기에서 나오는 문제들이었다오.[/color]",
 									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
 									"",
@@ -6135,6 +6147,8 @@ namespace DarkUWP
 
 								mParty.Etc[45] |= 1;
 							}
+							else
+								Dialog($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
 						}
 						else if (menuMode == MenuMode.PlusMentality)
 						{
@@ -6371,6 +6385,104 @@ namespace DarkUWP
 							else
 								AppendText($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
 						}
+						else if (menuMode == MenuMode.MathQuiz1)
+						{
+							if (mMenuFocusID != 1)
+								mPyramidQuizAllRight = false;
+
+							Ask(" X + Y = 7, X - Y = 1 에서 X 와 Y 를 알아내서 X * Y 의 답을 말해 주시오.", MenuMode.MathQuiz2, new string[] {
+								"<<  0 >>",
+								"<<  7 >>",
+								"<< 10 >>",
+								"<< 12 >>",
+								"<< 14 >>"
+							});
+						}
+						else if (menuMode == MenuMode.MathQuiz2)
+						{
+							if (mMenuFocusID != 3)
+								mPyramidQuizAllRight = false;
+
+							Ask(" 당신은 아마 로어 헌터를 만났을 것이오.  그가 있었던 좌표의 ( X - Y ) 는 어떻게 되오 ?", MenuMode.MathQuiz3, new string[] {
+								"<< 153 >>",
+								"<< 168 >>",
+								"<< 171 >>",
+								"<< -57 >>",
+								"<< -25 >>'"
+							});
+						}
+						else if (menuMode == MenuMode.MathQuiz3)
+						{
+							if (mMenuFocusID != 0)
+								mPyramidQuizAllRight = false;
+
+							if (mPyramidQuizAllRight)
+							{
+								Dialog(new string[] {
+									$"[color={RGB.White}] 당신은 수학 실력 또한 대단 하군요,[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+								});
+
+								foreach (var player in mPlayerList)
+									player.Experience += 50_000;
+
+								mParty.Etc[45] |= 1 << 5;
+							}
+							else
+								AppendText($"[color={RGB.White}] 당신은 모든 문제를 모두 맞추지 못했소.[/color]");
+						}
+						else if (menuMode == MenuMode.JoinRegulus)
+						{
+							if (mPlayerList.Count < 5)
+							{
+								Lore regulus = new Lore()
+								{
+									Name = "레굴루스",
+									Gender = GenderType.Male,
+									Class = 5,
+									ClassType = ClassCategory.Sword,
+									Level = 4,
+									Strength = 19,
+									Mentality = 5,
+									Concentration = 6,
+									Endurance = 15,
+									Resistance = 10,
+									Agility = 10,
+									Accuracy = 17,
+									Luck = 7,
+									Poison = 0,
+									Unconscious = 0,
+									Dead = 0,
+									SP = 0,
+									Experience = 0,
+									Weapon = 0,
+									Shield = 0,
+									Armor = 2,
+									PotentialAC = 2,
+									SwordSkill = 25,
+									AxeSkill = 0,
+									SpearSkill = 0,
+									BowSkill = 0,
+									ShieldSkill = 0,
+									FistSkill = 0
+								};
+
+								regulus.HP = regulus.Endurance * regulus.Level * 10;
+								regulus.UpdatePotentialExperience();
+								UpdateItem(regulus);
+
+								mPlayerList.Add(regulus);
+								UpdateTileInfo(39, 12, 47);
+
+								mParty.Etc[49] |= 1 << 6;
+
+								DisplayPlayerInfo();
+							}
+							else
+								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
+						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
 					//				{
@@ -6490,19 +6602,20 @@ namespace DarkUWP
 				DisplayCondition();
 			}
 
-			DetectGameOver();
+			if (!DetectGameOver())
+			{
+				if (mParty.Etc[4] > 0)
+					mParty.Etc[4]--;
 
-			if (mParty.Etc[4] > 0)
-				mParty.Etc[4]--;
-
-			if (!(GetTileInfo(moveX, moveY) == 0 || (mPosition == PositionType.Den && GetTileInfo(moveX, moveY) == 52)) && mRand.Next(mEncounter * 20) == 0)
-				EncounterEnemy();
+				if (!(GetTileInfo(moveX, moveY) == 0 || (mPosition == PositionType.Den && GetTileInfo(moveX, moveY) == 52)) && mRand.Next(mEncounter * 20) == 0)
+					EncounterEnemy();
 
 
-			if (mPosition == PositionType.Ground)
-				PlusTime(0, 2, 0);
-			else
-				PlusTime(0, 0, 5);
+				if (mPosition == PositionType.Ground)
+					PlusTime(0, 2, 0);
+				else
+					PlusTime(0, 0, 5);
+			}
 		}
 
 
@@ -6737,7 +6850,7 @@ namespace DarkUWP
 							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {enemy.Name}에게 {Common.GetMagicNameJosa(4, battleCommand.Tool)}로 특수 공격을 했다[/color]");
 							break;
 						case 4:
-							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {mPlayerList[battleCommand.FriendID].Name}에게 {Common.GetMagicNameMokjukJosa(3, battleCommand.Tool)} 사용했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {mPlayerList[battleCommand.FriendID].Name}에게 {Common.GetMagicNameMokjukJosa(3, battleCommand.Tool + 1)} 사용했다[/color]");
 							break;
 						case 5:
 							if (enemy == null)
@@ -6746,7 +6859,7 @@ namespace DarkUWP
 								battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {enemy.Name}에게 {Common.GetMagicNameMokjukJosa(5, battleCommand.Tool)} 사용했다[/color]");
 							break;
 						case 6:
-							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameMokjukJosa(6, battleCommand.Tool)} 사용했다[/color]");
+							battleResult.Add($"[color={RGB.White}]{player.NameSubjectJosa} {Common.GetMagicNameMokjukJosa(6, 3)} 사용했다[/color]");
 							break;
 						case 8:
 							battleResult.Add($"[color={RGB.White}]일행은 도망을 시도했다[/color]");
@@ -9499,7 +9612,7 @@ namespace DarkUWP
 							ShowPlusAbilityMenu(MenuMode.PlusAgility);
 					}
 				}
-				else if (mParty.XAxis == 169 && mParty.YAxis == 107)
+				else if (mParty.XAxis == 185 && mParty.YAxis == 94)
 				{
 					if ((mParty.Etc[43] & 1) > 0)
 					{
@@ -9664,6 +9777,36 @@ namespace DarkUWP
 					ShowExitMenu();
 				}
 			}
+			else if (mParty.Map == 9) {
+				if (mParty.XAxis == 17 && mParty.YAxis == 29 && (mParty.Etc[31] & (1 << 4)) == 0) {
+					if (mParty.Etc[32] == 0 && mParty.Etc[33] == 0)
+					{
+						var day = mParty.Day + 10;
+						int year;
+
+						if (day > 360)
+						{
+							day %= 360;
+							year = mParty.Year + 1;
+						}
+						else
+							year = mParty.Year;
+
+						mParty.Etc[32] = year;
+						mParty.Etc[33] = day;
+					}
+
+					Dialog(new string[] {
+						" 당신은 상자를 뒤지던 중  그 위에 놓여 있는 쪽지를 발견 했다.  그 것은 레굴루스가 쓴 것임을 알 수가 있었다.",
+						"",
+						$"[color={RGB.White}] 저는 지금 약초를 찾으러 다른 대륙에 가있습니다." +
+						$"  제가 돌아오기로 되어 있는 날은 {mParty.Etc[33] / 30 + 1}월 {mParty.Etc[33] % 30 + 1}일이므로 그때 찾아 오십시오."
+					});
+				}
+				else if (mParty.XAxis < 7 || mParty.XAxis > 43 || mParty.YAxis < 8 || mParty.YAxis > 42) {
+					ShowExitMenu();
+				}
+			}
 			else if (mParty.Map == 10)
 			{
 				if ((mParty.XAxis == 24 && mParty.YAxis == 42) || (mParty.XAxis == 25 && mParty.YAxis == 42))
@@ -9717,6 +9860,27 @@ namespace DarkUWP
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
 			}
+			else if (mParty.Map == 11) {
+				if (mParty.YAxis == 25 && (mParty.Etc[30] & (1 << 5)) == 0) {
+					Dialog(" 당신은 이 곳에 놓여 있는  어떤 석판을 발견했다.  하지만 알 수 없는 고대어로 쓰여져 있어서 도저히 읽을 수 없었다.  하지만  일행은 그것을 가져 가기로 했다.");
+					mParty.Etc[30] |= 1 << 5;
+				}
+				else if (mParty.YAxis == 30 && (mParty.Etc[30] & (1 << 5)) > 0 && (mParty.Etc[30] & (1 << 6)) == 0) {
+					if (mPlayerList.Count > 3 && mPlayerList[2].IsAvailable) {
+						Dialog(new string[] {
+							$" {mPlayerList[2].NameSubjectJosa}  한동안 생각하더니 말을 꺼냈다.",
+							"",
+							$"[color={RGB.Cyan}] 잠깐,  그 고대어를 예전에 보았던 곳을 방금 생각 해냈다네." +
+							" 내가 1 년전에 로드 안님의 일을 도와주고 있었을때  로드 안께서 이런 글이 적혀 있는 고서를  읽곤 했었다네." +
+							"  분명히 이것을 로드 안님께 가져가면  분명히 해독이 될걸세.[/color]"
+						});
+					}
+
+					mParty.Etc[30] |= 1 << 6;
+				}
+				else if (mParty.YAxis == 44)
+					ShowExitMenu();
+			}
 			else if (mParty.Map == 12) {
 				if ((mParty.XAxis == 38 && mParty.YAxis == 37) || (mParty.XAxis == 11 && mParty.YAxis == 37) || (mParty.XAxis == 11 && mParty.YAxis == 12) || (mParty.XAxis == 38 && mParty.YAxis == 12))
 				{
@@ -9760,7 +9924,7 @@ namespace DarkUWP
 						Dialog("[color={RGB.White}] 당신은 레버를 원 상태로 놓았다.[/color]");
 					}
 				}
-				else if (((mParty.XAxis == 24 && mParty.YAxis == 24) || (mParty.XAxis == 25 && mParty.YAxis == 37)) && (mParty.Etc[31] & (1 << 7)) == 0)
+				else if (((mParty.XAxis == 24 && mParty.YAxis == 24) || (mParty.XAxis == 25 && mParty.YAxis == 24)) && (mParty.Etc[31] & (1 << 7)) == 0)
 				{
 					Lore lastPerson = null;
 
@@ -9836,8 +10000,8 @@ namespace DarkUWP
 					DisplaySP();
 
 					whomPlayer.HP += needSP * 10;
-					if (whomPlayer.HP > whomPlayer.Level * whomPlayer.Endurance)
-						whomPlayer.HP = whomPlayer.Level * whomPlayer.Endurance;
+					if (whomPlayer.HP > whomPlayer.Level * whomPlayer.Endurance * 10)
+						whomPlayer.HP = whomPlayer.Level * whomPlayer.Endurance * 10;
 
 					cureResult.Add($"[color={RGB.White}]{whomPlayer.NameSubjectJosa} 치료되어 졌습니다.[/color]");
 				}
@@ -10028,48 +10192,15 @@ namespace DarkUWP
 		{
 			AppendText($"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]", true);
 
-			var menuStr = new string[mPlayerList.Count + (mAssistPlayer != null ? 1 : 0)];
+			var menuStr = new string[mPlayerList.Count + (includeAssistPlayer && mAssistPlayer != null ? 1 : 0)];
 			for (var i = 0; i < mPlayerList.Count; i++)
 				menuStr[i] = mPlayerList[i].Name;
 
-			if (mAssistPlayer != null)
+			if (includeAssistPlayer && mAssistPlayer != null)
 				menuStr[menuStr.Length - 1] = mAssistPlayer.Name;
 
 			ShowMenu(menuMode, menuStr);
 		}
-
-		//		private void JoinMember(Lore player)
-		//		{
-		//			if (mPlayerList.Count < 6)
-		//			{
-		//				mPlayerList.Add(player);
-		//				DisplayPlayerInfo();
-
-		//				if (mMemberLeftTile > 0)
-		//					LeaveMemberPosition();
-		//			}
-		//			else
-		//			{
-		//				AppendText(new string[] { "교체 시킬 인물은 누구입니까 ?" });
-		//				var memberNames = new string[mPlayerList.Count - 1];
-		//				for (var i = 1; i < mPlayerList.Count; i++)
-		//					memberNames[i - 1] = mPlayerList[i].Name;
-
-		//				mReserveMember = player;
-
-		//				ShowMenu(MenuMode.SwapMember, memberNames);
-		//			}
-		//		}
-
-		//		private void LeaveMemberPosition()
-		//		{
-		//			if (mMemberX >= 0 && mMemberY >= 0)
-		//				mMapLayer[mMemberX + mMapWidth * mMemberY] = mMemberLeftTile;
-
-		//			mMemberLeftTile = 0;
-		//			mMemberX = -1;
-		//			mMemberY = -1;
-		//		}
 
 		private Color GetColor(string color) {
 			return Color.FromArgb(0xff, Convert.ToByte(color.Substring(0, 2), 16), Convert.ToByte(color.Substring(2, 2), 16), Convert.ToByte(color.Substring(4, 2), 16));
@@ -11065,6 +11196,34 @@ namespace DarkUWP
 					}
 				}
 			}
+			else if (mParty.Map == 9) {
+				if ((mParty.Etc[31] & (1 << 5)) == 0) {
+					Talk(new string[] {
+						$" 아니! {mPlayerList[0].Name}.",
+						" 정말 오래간 만이군. 여기에는 무슨일인가 ?",
+						"",
+						$"[color={RGB.Cyan}] 나는 지니어스 기가 남긴 쪽지를 보고 당신을 찾아 왔다네. 그가 말하기로 자네가 그가 있는 위치를 안다고 해서 말일세.[/color]",
+						"",
+						" 지니어스 기가 있는 곳을 알고 싶다는 것이군. 내가 이번에 약초를 구해왔을때 잠시 라스트디치에 약초를 팔기 위해 들렸었지." +
+						" 그때 무기상점 근처에 있는 지니어스 기를 만났었다네.",
+						" 그는 얼마후에 긴 여행을 떠난다고 하던데 빨리 가보면 만날 수 있을 걸세."
+					});
+
+					mSpecialEvent = SpecialEventType.MeetRegulus;
+				}
+				else if (mParty.Etc[4] == 0)
+					Dialog(" 자네가 약초를 더 원한다면 라스트 디치의 병원에 가보게. 그 곳에 내가 약초를 팔았다네.");
+				else {
+					Ask(new string[] {
+						$" 잠깐 ! {mPlayerList[0].Name} !",
+						" 자네의 모습을 보니 갑자기 예전의 그 때처럼 정의를 위해 싸워보고 싶군. 사실 이런 약초나 캐러 다니는 일은 나에게 맞지 않다네. 이제는 이 일에도 지쳐 버렸고...",
+						"나를 모험에 참가 시켜주게."
+					}, MenuMode.JoinRegulus, new string[] {
+						"나 역시 자네의 도움이 필요했다네",
+						"자네가 일부러 나서지 않아도 될 일이네"
+					});
+				}
+			}
 		}
 		
 		private async void InvokeAnimation(AnimationType animationEvent, int aniX = 0, int aniY = 0)
@@ -11345,22 +11504,22 @@ namespace DarkUWP
 			}
 			else if (mAnimationEvent == AnimationType.StatueError)
 			{
-				AppendText($"[color={RGB.White}]< Error  43 : Illegal assiggnment >[/color]", true);
+				Dialog($"[color={RGB.White}]< Error  43 : Illegal assiggnment >[/color]", true);
 				InvokeAnimation(AnimationType.StatueError2);
 			}
 			else if (mAnimationEvent == AnimationType.StatueError2)
 			{
-				AppendText($"[color={RGB.White}]< Error   3 : Unknown identifier >[/color]", true);
+				Dialog($"[color={RGB.White}]< Error   3 : Unknown identifier >[/color]", true);
 				InvokeAnimation(AnimationType.StatueError3);
 			}
 			else if (mAnimationEvent == AnimationType.StatueError3)
 			{
-				AppendText($"[color={RGB.White}]< Error 122 : Invalid variable reference >[/color]", true);
-				InvokeAnimation(AnimationType.StatueError2);
+				Dialog($"[color={RGB.White}]< Error 122 : Invalid variable reference >[/color]", true);
+				InvokeAnimation(AnimationType.StatueError4);
 			}
 			else if (mAnimationEvent == AnimationType.StatueError4)
 			{
-				AppendText(new string[] {
+				Dialog(new string[] {
 					$"[color={RGB.White}] Program is Terminated !! ($F34DC1:$01BA8) [/color]",
 					"",
 					" 하지만 석상은 심하게 손상 되어 있었고 제대로 작동하지 않았다."
@@ -11930,9 +12089,9 @@ namespace DarkUWP
 			for (var i = 0; i < mPlayerHPList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
-					mPlayerHPList[i].Text = mPlayerList[i].HP.ToString();
+					mPlayerHPList[i].Text = mPlayerList[i].HP.ToString("#,#0");
 				else if (i == mPlayerList.Count && mAssistPlayer != null)
-					mPlayerHPList[i].Text = mAssistPlayer.HP.ToString();
+					mPlayerHPList[i].Text = mAssistPlayer.HP.ToString("#,#0");
 				else
 					mPlayerHPList[i].Text = "";
 			}
@@ -11943,9 +12102,9 @@ namespace DarkUWP
 			for (var i = 0; i < mPlayerSPList.Count; i++)
 			{
 				if (i < mPlayerList.Count)
-					mPlayerSPList[i].Text = mPlayerList[i].SP.ToString();
+					mPlayerSPList[i].Text = mPlayerList[i].SP.ToString("#,#0");
 				else if (i == mPlayerList.Count && mAssistPlayer != null)
-					mPlayerSPList[i].Text = mAssistPlayer.SP.ToString();
+					mPlayerSPList[i].Text = mAssistPlayer.SP.ToString("#,#0");
 				else
 					mPlayerSPList[i].Text = "";
 			}
@@ -11999,8 +12158,8 @@ namespace DarkUWP
 			{
 				mParty.Etc[1]--;
 
-				if (mRand.Next(mEncounter * 30) == 0)
-					EncounterEnemy();
+				//if (mRand.Next(mEncounter * 30) == 0)
+				//	EncounterEnemy();
 
 				return true;
 			}
@@ -12008,7 +12167,7 @@ namespace DarkUWP
 				return false;
 		}
 
-		private void EnterSwamp()
+		private bool EnterSwamp()
 		{
 			void PoisonEffectPlayer(Lore player) {
 				if (player.Poison > 0)
@@ -12072,10 +12231,13 @@ namespace DarkUWP
 			}
 
 			UpdatePlayersStat();
-			DetectGameOver();
+			if (!DetectGameOver())
+				return true;
+			else
+				return false;
 		}
 
-		private void EnterLava()
+		private bool EnterLava()
 		{
 			void LavaEffectPlayer(Lore player) {
 				var damage = (mRand.Next(40) + 40 - 2 * mRand.Next(player.Luck)) * 10;
@@ -12112,7 +12274,10 @@ namespace DarkUWP
 			}
 
 			UpdatePlayersStat();
-			DetectGameOver();
+			if (DetectGameOver())
+				return true;
+			else
+				return false;
 		}
 
 		private BattleEnemyData JoinEnemy(int ENumber)
@@ -12350,7 +12515,7 @@ namespace DarkUWP
 					});
 		}
 
-		private void DetectGameOver()
+		private bool DetectGameOver()
 		{
 			var allPlayerDead = true;
 			foreach (var player in mPlayerList)
@@ -12368,7 +12533,11 @@ namespace DarkUWP
 
 				ShowGameOver(new string[] { "일행은 모험 중에 모두 목숨을 잃었다." });
 				mTriggeredDownEvent = true;
+
+				return true;
 			}
+			else
+				return false;
 		}
 
 
@@ -12383,7 +12552,7 @@ namespace DarkUWP
 
 		private void ShowSign(int x, int y)
 		{
-			AppendText(new string[] { "푯말에 쓰여있기로 ...", "", "" });
+			Dialog(new string[] { "푯말에 쓰여있기로 ...", "", "" });
 
 			if (mParty.Map == 2)
 			{
@@ -12447,6 +12616,33 @@ namespace DarkUWP
 			else if (mParty.Map == 12) {
 				if (x == 24 && y == 40)
 					Dialog($"[color={RGB.White}]   당신이 지하 세계로 통하는 입구를 열고 싶다면 동굴 속의 4개의 레버를 모두 당겨 주십시오.", true);
+			}
+			else if (mParty.Map == 18) {
+				if (x == 23 && y == 39) {
+					Dialog(new string[] {
+						$"[color={RGB.LightGreen}]   반드시 메피스토펠레스를 무찔러 주시오. 건투를 빌겠소.[/color]",
+						"",
+						"",
+						"",
+						"",
+						"",
+						"",
+						"",
+						$"[color={RGB.Yellow}]      로드 안과 에인션트 이블로 부터[/color]"
+					});
+				}
+				else if (x == 26 && y == 39) {
+					Dialog(new string[] {
+						$"[color={RGB.LightGreen}]   역시 나의 게임은 훌륭하지 않소 ?[/color]",
+						$"[color={RGB.LightGreen}]   이제 나의 16 번째 자작 게임의 결말이 다가오고 있소. 거의 한달 가까이 만들었었는데...[/color]",
+						"",
+						"   제작 기간 :  93/12/08 - 94/01/04",
+						"",
+						$"[color={RGB.White}]    동아 대학교 전기 공학과 92 학번[/color]",
+						$"[color={RGB.White}]        자칭 사상 최고의 프로그래머[/color]",
+						$"[color={RGB.Yellow}]                      안 영기로부터[/color]"
+					});
+				}
 			}
 		}
 
@@ -12695,7 +12891,8 @@ namespace DarkUWP
 			PlusEndurance,
 			PlusStrength,
 			PlusAgility,
-			PlusAccuracy
+			PlusAccuracy,
+			JoinRegulus
 		}
 
 		private enum SpinnerType
@@ -12851,7 +13048,9 @@ namespace DarkUWP
 			ComputerQuiz,
 			PhysicsQuiz,
 			CommonSenseQuiz,
-			MathQuiz
+			MathQuiz,
+			SkipTurn,
+			MeetRegulus
 		}
 
 		private enum BattleEvent {
