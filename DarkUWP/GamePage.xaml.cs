@@ -12573,7 +12573,9 @@ namespace DarkUWP
 				mAnimationEvent == AnimationType.LandUnderground ||
 				mAnimationEvent == AnimationType.RecallToCastleLore ||
 				mAnimationEvent == AnimationType.ReturnCastleLore ||
-				mAnimationEvent == AnimationType.ReturnCastleLore2) && mAnimationFrame <= 59)
+				mAnimationEvent == AnimationType.ReturnCastleLore2 ||
+				mAnimationEvent == AnimationType.TalkLordAhn ||
+				mAnimationEvent == AnimationType.TalkLordAhn2) && mAnimationFrame <= 59)
 				AnimateTransition(mAnimationFrame, playerX, playerY);
 		}
 
