@@ -1945,6 +1945,105 @@ namespace DarkUWP
 									player.Experience += 100_000;
 							}
 						}
+						else if (specialEvent == SpecialEventType.ReadDiary) {
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 10 월 15 일[/color]",
+								"",
+								" 지금 내가 하고 있는 일이  정말 옳은 일인지 스스로가 의심이간다." +
+								"  이미 빛의 사원은 이름과는 다른 어둠의 사원으로 변해가고 있고  나가 따르고 있는 메피스토펠레스님은 선을 표방하고만 있을뿐 실지로는  선을 위시한 악을 행하고 있다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary1;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary1)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 10 월 18 일[/color]",
+								"",
+								" 오늘도 나는 또 한 사람의 재물을 죽였다. 아스모데우스님의 명령을 어길수 없어서  어쩔수 없이 죽였지만  나의 마음은  양심의 가책으로 번민하고 있다." +
+								" 어쩌면 나는 메피스토펠레스님에게  이용만 당하고 있다는 느낌이 드는게 사실이다." +
+								" 하지만 이렇게 해서라도 세계가 좀 더 좋아질 수만 있다면  나는 이용 당해도 좋다는 생각이 든다. 정말 세상은 너무 더러워 졌다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary2;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary2)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 10 월 23 일[/color]",
+								"",
+								" 낮에 너무 끔찍한 말을 들었다.  지금도 나의 가슴은 방망이질 하듯이 두근거린다. 메피스토펠레스님과 몰록님과의 대화를  우연히 옅들었다." +
+								" 그들이 궁극적으로 하고자 하는 일은 바로 세계 멸망이었다." +
+								"  그들이 표상하는 종교는 바로 마교 였다.  그들이 나에게  재물을 죽이게 하고는  그 생명력을 받아들여 점점 그들의 마력을 강하게 해왔던 것이었다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary3;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary3)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 10 월 25 일[/color]",
+								"",
+								" 나는 드디어 빛의 사원을 탈출했다. 그리고는 여기 필멸의 생존이란 동굴에 은신했다.  그들의 보복이 두려웠기 때문이었다." +
+								"  하지만 얼마가지 않아 그들의 마력에 노출 되어 버릴것 같다. 나는 그들의 마력의 강함을 쭉 봐왔으니까 아마 틀림 없을 것이다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary4;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary4)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 10 월 26 일[/color]",
+								"",
+								" 아침에 내가 조금 더 안전 할 수 있는 방법이 문득 떠올라 실행하기로 했다.  동굴의 입구를 늪으로 막고 또 통로를 모두 차단해 버렸다." +
+								"아무리 공간 이동의 달인이라고 하더라도 이렇게 깊은 동굴을 일일이 투시해서 나를 찾아 낸 후 여기까지 공간 이동을 해 올 수는 없으리라고 생각한다." +
+								"  이제는 편안히 잘 수 있을 것이다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary5;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary5)
+						{
+							Talk(new string[] {
+								$"[color={RGB.White}] 773 년 11 월 3 일[/color]",
+								"",
+								" 나의 계산은 틀렸다. 오늘 아침에 4명의 어둠의 추종자의 막내격인  베리알이 나를 찾아 내었다." +
+								"  그는 그들을 배신한 나를 하루 종일 괴로워 하며 죽도록 독이 있는 창으로 나를 찔렀다. 지금 고통이 너무 심하다." +
+								" 손도 떨리고 정신도 맑지않다. 이제는 마지막인가 보다."
+							});
+
+							mSpecialEvent = SpecialEventType.ReadDiary6;
+						}
+						else if (specialEvent == SpecialEventType.ReadDiary6)
+						{
+							Dialog(new string[] {
+								$"[color={RGB.White}] 773 년 11 월 4 일[/color]",
+								"",
+								" 내 생명도 오늘까지 겠지." +
+								"  그래서 내가 죽은 뒤에 누군가가 나를 발견할지도 모르니 그들에 대한 특징을 알려주어  다른 사람들도 주의 할 수 있도록 해야 겠다는 생각이 들었다.",
+								" 4 번째 보스인 베리알은 마법능력을 제외하고 는 보통 인간과 같을 정도의 체력을 가졌다." +
+								" 하지만 마법 능력도  다른 3 명에 비하면 보잘것 없다. 하지만 결코 무시할 수는 없다.",
+								" 3 번째 보스인 몰록은  환상의 마법에 대가이다. 아마 최고의 환상 마법사이다.",
+								" 2 번째 보스인 아스모데우스는 계략의 천재이다.  하지만 마법사이기 보다는 마법을 사용하는 전사쪽에 가깝다.",
+								" 최고 보스인 메피스토펠레스는 기사격의 체력에 대마법사의 마법을 가지고 있다. 특기는 공중 핵융합에 의해 기를 뿜어내어  적을 공격하는 방법이다.",
+								"",
+								" 그리고 지금 그들은 또 다른 2개의 대륙에 각각 떨어져서 어둠의 영혼을 부활 시킬 힘을 분산해서 모으고 있다." +
+								"  내가 아는 것은 이게 전부이다. 내가 죽더라도 이 글이 도움이 되었으면 한다. 그리고 ... ..."
+							});
+
+							if ((mParty.Etc[8] & (1 << 3)) == 0)
+							{
+								Dialog(new string[] {
+									"",
+									$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ][/color]"
+								}, true);
+
+								foreach (var player in mPlayerList) {
+									player.Experience += 100_000;
+								}
+								mParty.Etc[8] |= 1 << 3;
+							}
+						}
 					}
 
 					if (args.VirtualKey == VirtualKey.Up || args.VirtualKey == VirtualKey.GamepadLeftThumbstickUp || args.VirtualKey == VirtualKey.GamepadDPadUp ||
@@ -3330,7 +3429,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 6)
 							{
-								if (mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+								if (mParty.Map == 3 || mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
 									AppendText(new string[] { $"[color={RGB.LightMagenta}]이 지역의 악의 힘이 지형 변화를 방해 합니다.[/color]" });
 								else if (mMagicPlayer.SP < 30)
 									ShowNotEnoughSP();
@@ -3371,7 +3470,7 @@ namespace DarkUWP
 								}
 							}
 							else if (mMenuFocusID == 9) {
-								if (mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
+								if (mParty.Map == 3 || mParty.Map == 4 || mParty.Map == 15 || mParty.Map == 16 || mParty.Map == 17)
 									AppendText(new string[] { $"[color={RGB.LightMagenta}]이 지역의 악의 힘이 지형 변화를 방해 합니다.[/color]" });
 								else if (mMagicPlayer.SP < 60)
 									ShowNotEnoughSP();
@@ -4767,6 +4866,27 @@ namespace DarkUWP
 									mParty.YAxis = 65;
 
 									await RefreshGame();
+								}
+								else if (mParty.Map == 13) {
+									mParty.Map = 3;
+									mParty.XAxis = 88;
+									mParty.YAxis = 92;
+
+									await RefreshGame();
+								}
+								else if (mParty.Map == 14) {
+									mParty.Map = 3;
+									mParty.XAxis = 32;
+									mParty.YAxis = 49;
+
+									await RefreshGame();
+
+									if ((mParty.Etc[39] & (1 << 7)) == 0)
+										mParty.Etc[39] |= 1 << 7;
+									else {
+										for (var y = 50; y < 67; y++)
+											UpdateTileInfo(32, y, 0);
+									}
 								}
 							}
 							else
@@ -6690,7 +6810,18 @@ namespace DarkUWP
 
 								mBattleEvent = BattleEvent.WarriorOfCrux;
 							}
-								
+						}
+						else if (menuMode == MenuMode.GetArbalest) {
+							var player = mPlayerList[mMenuFocusID];
+							if (VerifyWeapon(player, 28)) {
+								player.Weapon = 28;
+								UpdateItem(player);
+
+								Dialog($"[color={RGB.White}]{player.NameSubjectJosa} 아르발레스트를 장착했다.");
+								mParty.Etc[39] |= 1 << 5;
+							}
+							else
+								Dialog($"{player.Name}에게는 이 무기가 맞지 않습니다.");
 						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
@@ -9558,6 +9689,8 @@ namespace DarkUWP
 
 					ShowEnterMenu(EnterType.CabinOfRegulus);
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 2)
 			{
@@ -9859,6 +9992,8 @@ namespace DarkUWP
 							ShowPlusAbilityMenu(MenuMode.PlusAccuracy);
 					}
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 3)
 			{
@@ -10085,6 +10220,8 @@ namespace DarkUWP
 				{
 					ShowExitMenu();
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 7)
 			{
@@ -10099,6 +10236,8 @@ namespace DarkUWP
 				{
 					ShowExitMenu();
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 8)
 			{
@@ -10116,6 +10255,8 @@ namespace DarkUWP
 						mParty.Item[1] = 255;
 
 					mParty.Etc[39] |= 1 << 1;
+
+					triggered = false;
 				}
 				else if (mParty.XAxis == 10 && mParty.YAxis == 32 && (mParty.Etc[39] & (1 << 2)) == 0)
 				{
@@ -10131,6 +10272,8 @@ namespace DarkUWP
 						mParty.Arrow = 32767;
 
 					mParty.Etc[39] |= 1 << 2;
+
+					triggered = false;
 				}
 				else if (mParty.XAxis == 10 && mParty.YAxis == 39 && (mParty.Etc[39] & (1 << 3)) == 0)
 				{
@@ -10146,6 +10289,8 @@ namespace DarkUWP
 						mParty.Item[7] = 255;
 
 					mParty.Etc[39] |= 1 << 3;
+
+					triggered = false;
 				}
 				else if (mParty.XAxis == 10 && mParty.YAxis == 42 && (mParty.Etc[39] & (1 << 4)) == 0)
 				{
@@ -10161,9 +10306,13 @@ namespace DarkUWP
 						mParty.Item[5] = 255;
 
 					mParty.Etc[39] |= 1 << 4;
+
+					triggered = false;
 				}
 				else if (mParty.XAxis < 7 || mParty.YAxis < 8 || mParty.XAxis > 43 || mParty.YAxis > 92)
 					ShowExitMenu();
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 9)
 			{
@@ -10200,6 +10349,8 @@ namespace DarkUWP
 
 					ShowExitMenu();
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 10)
 			{
@@ -10253,6 +10404,8 @@ namespace DarkUWP
 				}
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 11)
 			{
@@ -10278,6 +10431,8 @@ namespace DarkUWP
 				}
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 12)
 			{
@@ -10320,7 +10475,7 @@ namespace DarkUWP
 					else
 					{
 						mParty.Etc[34] ^= lever;
-						Dialog("[color={RGB.White}] 당신은 레버를 원 상태로 놓았다.[/color]");
+						Dialog($"[color={RGB.White}] 당신은 레버를 원 상태로 놓았다.[/color]");
 					}
 				}
 				else if (((mParty.XAxis == 24 && mParty.YAxis == 24) || (mParty.XAxis == 25 && mParty.YAxis == 24)) && (mParty.Etc[31] & (1 << 7)) == 0)
@@ -10366,6 +10521,100 @@ namespace DarkUWP
 					mParty.YAxis = prevY;
 					Dialog(" 일행은 낭떠러지로 떨어 질뻔 했다.");
 				}
+				else
+					triggered = false;
+			}
+			else if (mParty.Map == 13) {
+				if (mParty.YAxis <= 5)
+					ShowExitMenu();
+				else if (6 <= mParty.YAxis && mParty.YAxis <= 31)
+				{
+					if (mParty.Etc[0] > 0)
+						mParty.Etc[0] = 0;
+					triggered = false;
+				}
+				else if (mParty.YAxis == 33 && (mParty.Etc[39] & (1 << 6)) == 0)
+				{
+					Dialog($" 일행이 사원안으로 들어 왔을때는 이미 [color={RGB.LightCyan}]어둠의 추종자들[/color]이라고 불리우는 사람들은  사라진 후였다.");
+					mParty.Etc[39] |= 1 << 6;
+				}
+				else if (mParty.YAxis == 42)
+				{
+					Dialog(new string[] {
+						$" 그곳에는  소위 어둠의 추종자들이 우리 일행에게 보내는 메세지가 있었다.",
+						"",
+						$"[color={RGB.LightMagenta}] 당신들이  우리 어둠의 추종자들을 쫓고 있다는 것을 알고있다." +
+						" 하지만 그 정도의 실력으로는  우리에게 대항하지 조차 못한다는 것을 알것이다.  우리들은 너희들의 움직임을  낱낱히 파악하고 있다." +
+						"  이미 실리안 카미너스는 우리들이 안전한 곳으로 옮겨 놓았지. 하지만 너희들은 우리에게 적극 협조해야만 할 것이다." +
+						" 우리들은 신에 의해 선택 되어진 사람들이고  이 세상은 너무나 더렵혀져 있지. 이 세상을 다시 깨끗하게 하기 위해서는  매우 거대한 힘이 필요하겠지." +
+						" 그래서 우리가 선택한 것은 바로 실리안 카미너스라는 악의 집합체인 것이다.  우리들은 새로운 세상을 위해서는 악의 힘이라도 사양하지 않는다." +
+						"  당신도 우리의 뜻을 알았다면  이제 포기하고  우리들의 의지를 따르기를 바라는 바이다."
+					});
+
+					UpdateTileInfo(10, 38, 52);
+
+					if ((mParty.Etc[8] & (1 << 2)) == 0)
+					{
+						Dialog(new string[] {
+							"",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ][/color]"
+						}, true);
+
+						foreach (var player in mPlayerList)
+							player.Experience += 100_000;
+
+						mParty.Etc[8] |= 1 << 2;
+					}
+				}
+				else if (mParty.XAxis == 10 && mParty.YAxis == 38 && (mParty.Etc[39] & (1 << 5)) == 0)
+				{
+					AskWhom(" 일행은  여기서 대궁 아르발레스트를 발견 하였다. 아르발레스트를 가질 사람을 고르시오.", MenuMode.GetArbalest, ChooseMode.PlayerOnly);
+				}
+				else
+					triggered = false;
+			}
+			else if (mParty.Map == 14) {
+				if (mParty.YAxis == 40 && (mParty.Etc[40] & 1) == 0)
+				{
+					Dialog(new string[] {
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]이동 구슬[/color][color={RGB.White}]을 발견 하였다.[/color]",
+						$"[color={RGB.LightCyan}] [[ 이동 구슬 + 4 ][/color]",
+					});
+
+					if (mParty.Item[9] + 4 < 256)
+						mParty.Item[9] += 4;
+					else
+						mParty.Item[9] = 255;
+
+					mParty.Etc[40] |= 1;
+					triggered = false;
+				}
+				else if (mParty.XAxis == 17 && mParty.YAxis == 13 && (mParty.Etc[40] & (1 << 1)) == 0)
+				{
+					Dialog(new string[] {
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]체력 회복약[/color][color={RGB.White}]을 발견 하였다.[/color]",
+						$"[color={RGB.LightCyan}] [[ 체력 회복약 + 5 ][/color]",
+					});
+
+					if (mParty.Item[0] + 5 < 256)
+						mParty.Item[0] += 5;
+					else
+						mParty.Item[0] = 255;
+
+					mParty.Etc[40] |= 1 << 1;
+					triggered = false;
+				}
+				else if (mParty.XAxis == 25 && mParty.YAxis == 8)
+				{
+					Talk(new string[] {
+						$" 일행은 여기서 어떤 시체를 발견 하였다.  시체는 심하게 부패해 있어서 악취가 진동하였다. 그 시체의 손에는 일기장 처럼 보이는 책 한권이 꽉 쥐어져 있었다.",
+						$" 당신은  그 책을 시체의 손에서 빼내어  읽기 시작했다. 그 책의 중요한 내용을 보면 다음과 같다."
+					});
+
+					mSpecialEvent = SpecialEventType.ReadDiary;
+				}
+				else if (mParty.YAxis == 44)
+					ShowExitMenu();
 				else
 					triggered = false;
 			}
@@ -10688,8 +10937,29 @@ namespace DarkUWP
 			return menuMode;
 		}
 
+		private bool IsDialogFull()
+		{
+			if (DialogText.Blocks == null || DialogText.Blocks.Count == 0)
+				return false;
+
+			var lineHeight = 0d;
+			if (DialogText.Blocks.Count > 0)
+			{
+				var startRect = DialogText.Blocks[0].ContentStart.GetCharacterRect(LogicalDirection.Forward);
+				lineHeight = startRect.Height;
+			}
+
+			var lineCount = lineHeight == 0 ? 0 : (int)Math.Ceiling(DialogText.ActualHeight / lineHeight);
+
+			if (lineCount < DIALOG_MAX_LINES)
+				return false;
+			else
+				return true;
+		}
+
 		private bool AppendText(string str, bool append = false)
 		{
+			var dialogFull = IsDialogFull();
 			return AppendText(DialogText, str, append);
 		}
 
@@ -10911,6 +11181,51 @@ namespace DarkUWP
 				mAfterDialogType = AfterDialogType.None;
 
 			ContinueText.Visibility = Visibility.Visible;
+		}
+
+		private void AskWhom(string dialog, MenuMode menuMode, ChooseMode mode = ChooseMode.All)
+		{
+			AskWhom(new string[] { dialog }, menuMode, mode);
+		}
+
+		private void AskWhom(string[] dialog, MenuMode menuMode, ChooseMode mode = ChooseMode.All)
+		{
+			var extDialog = new string[dialog.Length + 1];
+			for (var i = 0; i < dialog.Length; i++)
+				extDialog[i] = dialog[i];
+
+			extDialog[extDialog.Length - 1] = "[color={RGB.LightGreen}]한명을 고르시오 ---[/color]";
+
+			string[] menuStr;
+
+			if (mode == ChooseMode.All)
+			{
+				menuStr = new string[mPlayerList.Count + (mAssistPlayer != null ? 1 : 0)];
+
+				for (var i = 0; i < mPlayerList.Count; i++)
+					menuStr[i] = mPlayerList[i].Name;
+
+				if (mAssistPlayer != null)
+					menuStr[menuStr.Length - 1] = mAssistPlayer.Name;
+			}
+			else if (mode == ChooseMode.PlayerOnly)
+			{
+				menuStr = new string[mPlayerList.Count];
+
+				for (var i = 0; i < mPlayerList.Count; i++)
+					menuStr[i] = mPlayerList[i].Name;
+			}
+			else
+			{
+				menuStr = new string[mPlayerList.Count - 1];
+
+				for (var i = 0; i < mPlayerList.Count; i++)
+					menuStr[i] = mPlayerList[i].Name;
+			}
+
+			ShowMenu(menuMode, menuStr);
+
+			Ask(extDialog, menuMode, menuStr);
 		}
 
 		private void Ask(string dialog, MenuMode menuMode, string[] menuList) {
@@ -12297,11 +12612,15 @@ namespace DarkUWP
 				}
 				else if (mParty.Map == 2 && tileIdx == 52)
 					tileIdx = 48;
+				//#if DEBUG
+				//else if (tileIdx == 0 || ((mPosition == PositionType.Den || mPosition == PositionType.Keep) && tileIdx == 52))
+				//#else
 				else if (tileIdx == 0)
+				//#endif
 				{
-					//#if DEBUG
-					//					tileIdx = 0;
-					//#else
+//#if DEBUG
+//					tileIdx = 0;
+//#else
 					switch (mParty.Map)
 					{
 						case 1:
@@ -12359,7 +12678,7 @@ namespace DarkUWP
 							tileIdx = 41;
 							break;
 					}
-					//#endif
+//#endif
 				}
 
 				if (mAnimationEvent == AnimationType.LordAhnCall) {
@@ -12833,7 +13152,7 @@ namespace DarkUWP
 			}
 
 			UpdatePlayersStat();
-			if (DetectGameOver())
+			if (!DetectGameOver())
 				return true;
 			else
 				return false;
@@ -13450,7 +13769,8 @@ namespace DarkUWP
 			MeetAhnYoungKi,
 			MeetRockMan,
 			JoinDeathKnight,
-			FightWarriorOfCrux
+			FightWarriorOfCrux,
+			GetArbalest
 		}
 
 		private enum SpinnerType
@@ -13623,7 +13943,14 @@ namespace DarkUWP
 			JoinDeathSoulServant,
 			BattleDeathSoul,
 			MeetWarriorOfCrux,
-			ReadPapyrus
+			ReadPapyrus,
+			ReadDiary,
+			ReadDiary1,
+			ReadDiary2,
+			ReadDiary3,
+			ReadDiary4,
+			ReadDiary5,
+			ReadDiary6
 		}
 
 		private enum BattleEvent {
@@ -13647,6 +13974,12 @@ namespace DarkUWP
 			PressKey,
 			Menu,
 			Animation
+		}
+
+		private enum ChooseMode {
+			All,
+			PlayerOnly,
+			SubPlayerOnly
 		}
 
 		private class HealthTextBlock
