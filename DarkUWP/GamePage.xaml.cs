@@ -940,6 +940,23 @@ namespace DarkUWP
 
 				async Task EndBattle()
 				{
+					void RevivalBerial() {
+						mEncounterEnemyList.Clear();
+						for (var i = 0; i < 4; i++)
+							JoinEnemy(50).Name = "도마뱀 인간";
+
+						DisplayEnemy();
+
+						Talk(new string[] {
+							$"[color={RGB.LightMagenta}] 으윽~~~ 하지만 내가 그리 쉽게 너에게 당할것 같으냐 !!",
+							"",
+							" 베리알이 죽으면서 흘린 피가 도마뱀 인간의 시체로 스며 들어갔고  도마뱀 인간은 더욱 강하게 부활을 했다."
+						});
+
+						mParty.Etc[8] |= 1 << 5;
+						mSpecialEvent = SpecialEventType.BattleRevivalBerial;
+					}
+
 					var battleEvent = mBattleEvent;
 					mBattleEvent = BattleEvent.None;
 
@@ -1087,6 +1104,17 @@ namespace DarkUWP
 						}
 						else if (battleEvent == BattleEvent.WarriorOfCrux)
 							mParty.Etc[41] |= 1 << 3;
+						else if (battleEvent == BattleEvent.CaveOfBerial)
+							mParty.Etc[40] |= 1 << 2;
+						else if (battleEvent == BattleEvent.Gagoyle)
+							mParty.Etc[40] |= 1 << 3;
+						else if (battleEvent == BattleEvent.CaveOfBerialCyclopes)
+							mParty.Etc[40] |= 1 << 4;
+						else if (battleEvent == BattleEvent.Berial)
+						{
+							RevivalBerial();
+							return;
+						}
 
 						mEncounterEnemyList.Clear();
 						mBattleEvent = 0;
@@ -1125,6 +1153,36 @@ namespace DarkUWP
 							mParty.YAxis--;
 						else if (battleEvent == BattleEvent.DeathSoul)
 							mParty.YAxis--;
+						else if (battleEvent == BattleEvent.CaveOfBerial)
+							mParty.YAxis--;
+						else if (battleEvent == BattleEvent.Gagoyle)
+							mParty.YAxis++;
+						else if (battleEvent == BattleEvent.CaveOfBerialCyclopes)
+						{
+							ShowMap();
+							Talk(" 하지만 적은 끝까지 우리를 따라 붙었다.");
+
+							mBattleEvent = BattleEvent.CaveOfBerialCyclopes;
+							mSpecialEvent = SpecialEventType.BackToBattleMode;
+							return;
+						}
+						else if (battleEvent == BattleEvent.Berial)
+						{
+							if (mEncounterEnemyList[4].Dead)
+							{
+								RevivalBerial();
+								return;
+							}
+							else
+							{
+								mParty.XAxis = 24;
+								mParty.YAxis = 43;
+							}	
+						}
+						else if (battleEvent == BattleEvent.RevivalBerial) {
+							mParty.XAxis = 24;
+							mParty.YAxis = 43;
+						}
 
 						mEncounterEnemyList.Clear();
 						ShowMap();
@@ -1868,6 +1926,8 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.HoleInMenace)
 							InvokeAnimation(AnimationType.LandUnderground);
+						else if (specialEvent == SpecialEventType.HoleInMenace2)
+							InvokeAnimation(AnimationType.LandUnderground2);
 						else if (specialEvent == SpecialEventType.CompleteUnderground)
 							InvokeAnimation(AnimationType.ReturnCastleLore);
 						else if (specialEvent == SpecialEventType.CompleteUnderground2)
@@ -2043,6 +2103,61 @@ namespace DarkUWP
 								}
 								mParty.Etc[8] |= 1 << 3;
 							}
+						}
+						else if (specialEvent == SpecialEventType.BattleCaveOfBerial) {
+							StartBattle(false);
+							mBattleEvent = BattleEvent.CaveOfBerial;
+						}
+						else if (specialEvent == SpecialEventType.BattleGagoyle) {
+							for (var i = 0; i < 7; i++)
+								JoinEnemy(41);
+
+							DisplayEnemy();
+							StartBattle(false);
+
+							mBattleEvent = BattleEvent.Gagoyle;
+						}
+						else if (specialEvent == SpecialEventType.BattleCaveOfBerialCyclopes) {
+							StartBattle(false);
+							mBattleEvent = BattleEvent.CaveOfBerialCyclopes;
+						}
+						else if (specialEvent == SpecialEventType.SummonLizardMan) {
+							mEncounterEnemyList.Clear();
+							for (var i = 0; i < 4; i++)
+								JoinEnemy(58);
+							JoinEnemy(71);
+
+							DisplayEnemy();
+
+							Talk(new string[] {
+								"",
+								$"[color={RGB.Yellow}] 오르트 일렘 .. 칼 젠 ..[/color]",
+								"",
+								" 베리알은 소환 마법으로 주위의 도마뱀을 도마뱀 인간으로 소생 시켰다."
+							}, true);
+
+							mSpecialEvent = SpecialEventType.BattleBerial;
+						}
+						else if (specialEvent == SpecialEventType.BattleBerial)
+						{
+							StartBattle(false);
+							mBattleEvent = BattleEvent.Berial;
+						}
+						else if (specialEvent == SpecialEventType.BattleRevivalBerial) {
+							StartBattle(true);
+							mBattleEvent = BattleEvent.RevivalBerial;
+						}
+						else if (specialEvent == SpecialEventType.ChaseLizardMan) {
+							Talk(new string[] {
+								"",
+								$"[color={RGB.Yellow}] 인 녹스 그라브 ..[/color]",
+								"",
+								" 일행은 \"유독 가스\" 마법을  동굴 안을 향해 사용 했다.",
+								"",
+								$"[color={RGB.Yellow}] 바스 포르 그라브 ..[/color]",
+								"",
+								" 그리고 일행은 \"초음파\"를 이용하여  동굴 입구를 함몰 시켰다."
+							}, true);
 						}
 					}
 
@@ -3514,7 +3629,7 @@ namespace DarkUWP
 
 							var canMove = false;
 
-							var moveTile = mMapLayer[newX + mMapWidth * newY];
+							var moveTile = GetTileInfo(newX, newY);
 							switch (mPosition)
 							{
 								case PositionType.Town:
@@ -3543,7 +3658,7 @@ namespace DarkUWP
 								mMagicPlayer.SP -= 25;
 								DisplaySP();
 
-								if (GetTileInfo(newX, newY) == 0 ||
+								if (GetTileInfo(mParty.XAxis + xOffset, mParty.YAxis + yOffset) == 0 ||
 									((mPosition == PositionType.Den || mPosition == PositionType.Keep) && (GetTileInfo(newX, newY) == 52)))
 								{
 									AppendText($"[color={RGB.LightMagenta}]알 수 없는 힘이 당신의 마법을 배척합니다.[/color]");
@@ -3554,6 +3669,9 @@ namespace DarkUWP
 									mParty.YAxis = newY;
 
 									AppendText($"[color={RGB.White}]기화 이동을 마쳤습니다.[/color]");
+
+									if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 0)
+										InvokeSpecialEvent(mParty.XAxis, mParty.YAxis);
 								}
 
 							}
@@ -4888,6 +5006,20 @@ namespace DarkUWP
 											UpdateTileInfo(32, y, 0);
 									}
 								}
+								else if (mParty.Map == 15) {
+									mParty.Map = 3;
+									mParty.XAxis = 35;
+									mParty.YAxis = 16;
+
+									await RefreshGame();
+
+									if ((mParty.Etc[8] & (1 << 5)) > 0)
+									{
+										Talk(" 일행은 베리알을 처치하고  무사히 동굴을 빠져 나왔다.  하지만 거대하게 환생한 도마뱀 인간은 집요하게 일행에게 따라 붙었다.");
+
+										mSpecialEvent = SpecialEventType.ChaseLizardMan;
+									}
+								}
 							}
 							else
 							{
@@ -5390,10 +5522,12 @@ namespace DarkUWP
 												case 12:
 													for (var x = 11; x < 14; x++)
 														UpdateTileInfo(x, 9, 0);
-													for (var x = 10; x < 14; x++)
+													for (var x = 10; x < 15; x++)
 														UpdateTileInfo(x, 10, 0);
-													for (var x = 21; x < 14; x++)
+													for (var x = 11; x < 14; x++)
 														UpdateTileInfo(x, 11, 0);
+													break;
+												case 15:
 													break;
 											}
 										}
@@ -5460,7 +5594,7 @@ namespace DarkUWP
 										}
 										break;
 									case EnterType.CaveOfBerial:
-										if ((mParty.Etc[9] & (1 << 5)) == 0)
+										if ((mParty.Etc[8] & (1 << 5)) == 0)
 										{
 											Talk(" 일행이 동굴 입구에 다가서자  무언가 반짝이는 눈 같은 것이 보였다.");
 											mSpecialEvent = SpecialEventType.BattleCaveOfBerialEntrance;
@@ -7247,6 +7381,17 @@ namespace DarkUWP
 					GetBattleStatus(enemy);
 
 					var player = battleCommand.Player;
+
+					if (player.Weapon - 1 >= 0)
+					{
+						var weaponType = (player.Weapon - 1) / 7;
+						if (weaponType == 3) {
+							if (mParty.Arrow > 0)
+								mParty.Arrow--;
+							else
+								return;
+						}
+					}
 
 
 					if (enemy.Unconscious)
@@ -10391,16 +10536,16 @@ namespace DarkUWP
 				}
 				else if (10 <= mParty.XAxis && mParty.XAxis <= 14 && 9 <= mParty.YAxis && mParty.YAxis <= 11)
 				{
-					Talk(" 일행은 절벽 앞으로 섰고,  저번과 같이 어떤 강한 힘에 의해서 구멍 속으로 빨려 들어갔다.");
-
 					mParty.Map = 3;
 					mParty.XAxis = 13;
 					mParty.YAxis = 23;
 
 					await RefreshGame();
 
-					// 추가 구현 필요
-					//mSpecialEvent = SpecialEventType.ManHoleInMenace2;
+					Talk(" 일행은 절벽 앞으로 섰고,  저번과 같이 어떤 강한 힘에 의해서 구멍 속으로 빨려 들어갔다.");
+					mSpecialEvent = SpecialEventType.HoleInMenace2;
+
+					mFace = -1;
 				}
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
@@ -10617,6 +10762,86 @@ namespace DarkUWP
 					ShowExitMenu();
 				else
 					triggered = false;
+			}
+			else if (mParty.Map == 15) {
+				if (mParty.XAxis == 11 && mParty.YAxis == 14 && (mParty.Etc[40] & (1 << 2)) == 0)
+				{
+					for (var i = 0; i < 8; i++)
+						JoinEnemy(34);
+
+					DisplayEnemy();
+
+					Talk($"[color={RGB.LightMagenta}] 당신이 여기를 지나가겠다고요 ? 그럼 우리들을 먼저 쓰러뜨리시지요.[/color]");
+
+					mSpecialEvent = SpecialEventType.BattleCaveOfBerial;
+				}
+				else if (mParty.XAxis == 43 && mParty.YAxis == 34 && (mParty.Etc[40] & (1 << 3)) == 0)
+				{
+					Talk(" 일행이 앞으로 진행하려 했을때 무언가 큰 물체와 마주치게 되었다.  그들은 눈을 번뜩이며 달려 들었고  일행은 그 물체가  가고일들이라는 알아챘다.");
+
+					mSpecialEvent = SpecialEventType.BattleGagoyle;
+				}
+				else if (mParty.XAxis == 28 && mParty.YAxis == 13 && (mParty.Etc[40] & (1 << 4)) == 0)
+				{
+					for (var i = 0; i < 5; i++)
+						JoinEnemy(36);
+					for (var i = 0; i < 3; i++)
+					{
+						var enemy = JoinEnemy(46);
+						if (i == 2)
+						{
+							enemy.Name = "거대 사이클롭스";
+							enemy.Strength = 60;
+							enemy.Resistance = 80;
+						}
+					}
+
+					DisplayEnemy();
+
+					Talk(new string[] {
+						$"[color={RGB.LightMagenta}] 내가 베리알님을 지키는 마지막 호위대이지[/color]",
+						$"[color={RGB.LightMagenta}] 그 정도의 숫자로 여기까지 돌파해 오다니 조금은 존경할만한 일이군.  나는  지금까지와는 격이 다르지." +
+						"  바로 베리알님의 오른팔과 다름없는 존재이니까. 자 덤벼라 !![/color]"
+					});
+
+					mSpecialEvent = SpecialEventType.BattleCaveOfBerialCyclopes;
+				}
+				else if (mParty.YAxis < 10 && (mParty.Etc[8] & (1 << 5)) == 0)
+				{
+					JoinEnemy(71);
+					DisplayEnemy();
+
+					Talk(new string[] {
+						$"[color={RGB.LightMagenta}] 여기까지 잘도왔군, {mPlayerList[0].Name}.[/color]",
+						$"[color={RGB.LightMagenta}] 너는 아마 나의 마법에 맥없이 쓰러질 것이다. 결국 그게 너의 운명이니까.[/color]"
+					});
+
+					mSpecialEvent = SpecialEventType.SummonLizardMan;
+				}
+				else if ((mParty.XAxis == 11 && mParty.YAxis == 14) || (mParty.XAxis == 43 && mParty.YAxis == 34) || (mParty.XAxis == 28 && mParty.YAxis == 13) || mParty.YAxis < 10)
+					triggered = false;
+				else if (mParty.YAxis == 44)
+					ShowExitMenu();
+				else
+				{
+					var tempPrevX = mParty.XAxis;
+					var tempPrevY = mParty.YAxis;
+
+					if (mParty.XAxis - prevX > 0)
+						mParty.XAxis = mParty.XAxis + 3;
+					else if (mParty.XAxis - prevX < 0)
+						mParty.XAxis = mParty.XAxis - 3;
+
+					if (mParty.YAxis - prevY > 0)
+						mParty.YAxis = mParty.YAxis + 3;
+					else if (mParty.YAxis - prevY < 0)
+						mParty.YAxis = mParty.YAxis - 3;
+
+					if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 0)
+						InvokeSpecialEvent(tempPrevX, tempPrevY);
+					else
+						triggered = false;
+				}
 			}
 
 			return triggered;
@@ -11166,14 +11391,14 @@ namespace DarkUWP
 				ContinueText.Visibility = Visibility.Visible;
 		}
 
-		private void Talk(string dialog)
+		private void Talk(string dialog, bool append = false)
 		{
-			Talk(new string[] { dialog });
+			Talk(new string[] { dialog }, append);
 		}
 
-		private void Talk(string[] dialog)
+		private void Talk(string[] dialog, bool append = false)
 		{
-			AppendText(dialog);
+			AppendText(dialog, append);
 
 			if (mRemainDialog.Count > 0)
 				mAfterDialogType = AfterDialogType.PressKey;
@@ -12111,7 +12336,7 @@ namespace DarkUWP
 					mAnimationEvent == AnimationType.StatueError3 ||
 					mAnimationEvent == AnimationType.StatueError4)
 					Task.Delay(2000).Wait();
-				else if (mAnimationEvent == AnimationType.LandUnderground)
+				else if (mAnimationEvent == AnimationType.LandUnderground || mAnimationEvent == AnimationType.LandUnderground2)
 				{
 					for (var i = 1; i <= 59; i++)
 					{
@@ -12345,6 +12570,15 @@ namespace DarkUWP
 
 				mAnimationEvent = AnimationType.None;
 			}
+			else if (mAnimationEvent == AnimationType.LandUnderground2)
+			{
+				mFace = 4;
+				Dialog(" 일행이 깨어나 보니 저번과는 조금 다른 곳으로 이동 되어졌음을 알 수 있었다.");
+
+				mParty.Etc[8] |= 1 << 4;
+
+				mAnimationEvent = AnimationType.None;
+			}
 			else if (mAnimationEvent == AnimationType.RecallToCastleLore) {
 				mParty.Map = 1;
 				mParty.XAxis = 19;
@@ -12571,6 +12805,7 @@ namespace DarkUWP
 
 			if ((mAnimationEvent == AnimationType.SleepLoreCastle || 
 				mAnimationEvent == AnimationType.LandUnderground ||
+				mAnimationEvent == AnimationType.LandUnderground2 ||
 				mAnimationEvent == AnimationType.RecallToCastleLore ||
 				mAnimationEvent == AnimationType.ReturnCastleLore ||
 				mAnimationEvent == AnimationType.ReturnCastleLore2 ||
@@ -13636,7 +13871,7 @@ namespace DarkUWP
 				else
 				{
 					mXWide = 4;
-					mYWide = 4;
+					mYWide = 5;
 				}
 			}
 			else if (!dark)
@@ -13868,6 +14103,7 @@ namespace DarkUWP
 			StatueError3,
 			StatueError4,
 			LandUnderground,
+			LandUnderground2,
 			RecallToCastleLore,
 			ReturnCastleLore,
 			ReturnCastleLore2
@@ -13937,6 +14173,7 @@ namespace DarkUWP
 			SkipTurn,
 			MeetRegulus,
 			HoleInMenace,
+			HoleInMenace2,
 			CompleteUnderground,
 			CompleteUnderground2,
 			BattleWisp,
@@ -13952,7 +14189,14 @@ namespace DarkUWP
 			ReadDiary3,
 			ReadDiary4,
 			ReadDiary5,
-			ReadDiary6
+			ReadDiary6,
+			BattleCaveOfBerial,
+			BattleGagoyle,
+			BattleCaveOfBerialCyclopes,
+			SummonLizardMan,
+			BattleBerial,
+			BattleRevivalBerial,
+			ChaseLizardMan
 		}
 
 		private enum BattleEvent {
@@ -13968,7 +14212,12 @@ namespace DarkUWP
 			Cyclopes,
 			DeathKnight,
 			DeathSoul,
-			WarriorOfCrux
+			WarriorOfCrux,
+			CaveOfBerial,
+			Gagoyle,
+			CaveOfBerialCyclopes,
+			Berial,
+			RevivalBerial
 		}
 
 		private enum AfterDialogType {
