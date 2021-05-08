@@ -2238,9 +2238,9 @@ namespace DarkUWP
 								" 그럼 나는 이 자들과 전투를 마무리 지어야 겠소. 자 그럼 결계 밖에서 이 자들의 최후를 감상하기 바라오.[/color]"
 							});
 
-							mSpecialEvent = SpecialEventType.BattleMolok;
+							mSpecialEvent = SpecialEventType.RecoverParty;
 						}
-						else if (specialEvent == SpecialEventType.RevealMolok)
+						else if (specialEvent == SpecialEventType.RecoverParty)
 						{
 							foreach (var player in mPlayerList)
 							{
@@ -7367,6 +7367,7 @@ namespace DarkUWP
 				switch (mBattleTurn)
 				{
 					case BattleTurn.Player:
+						mBattlePlayerID = -1;
 						for (var i = 0; i < mPlayerList.Count; i++)
 						{
 							if (mPlayerList[i].IsAvailable)
@@ -9619,9 +9620,6 @@ namespace DarkUWP
 
 								foreach (var player in destPlayerList)
 									CastAttack(castPower, player);
-
-								if (mAssistPlayer != null)
-									CastAttack(castPower, mAssistPlayer);
 							}
 
 							void CureEnemy(BattleEnemyData whomEnemy, int curePoint)
@@ -9816,7 +9814,7 @@ namespace DarkUWP
 								else
 									CastAttackAll(normalList);
 							}
-							else if (enemy.CastLevel == 6)
+							else if (enemy.CastLevel >= 6)
 							{
 								CastHighLevel(normalList);
 							}
@@ -11039,6 +11037,12 @@ namespace DarkUWP
 
 					mParty.YAxis = 8;
 				}
+				else if (mParty.XAxis == 5 && mParty.YAxis == 39) {
+					mParty.XAxis = 8;
+					mParty.YAxis = 39;
+
+					mParty.Etc[40] |= 1 << 5;
+				}
 				else if (mParty.XAxis == 8 && mParty.YAxis == 6) {
 					mParty.XAxis = 5;
 					mParty.YAxis = 6;
@@ -11047,15 +11051,20 @@ namespace DarkUWP
 					UpdateTileInfo(mParty.XAxis, mParty.YAxis, 42);
 
 					var x = 8 + mRand.Next(4);
-					var y = 9 + mRand.Next(4);
+					int y;
 
 					if (mParty.XAxis == x) {
+						y = 5 + mRand.Next(3);
 						if (y >= mParty.YAxis)
 							y++;							
 					}
+					else
+						y = 5 + mRand.Next(4);
+
+					UpdateTileInfo(x, y, 0);
 				}
 				else if (mParty.YAxis == 44) {
-					if ((mParty.Etc[8] & (1 << 6)) == 0 && (mParty.Etc[40] & (1 << 5)) == 0)
+					if ((mParty.Etc[8] & (1 << 6)) == 0 && (mParty.Etc[40] & (1 << 5)) > 0)
 					{
 						mEncounterEnemyList.Clear();
 
@@ -12850,7 +12859,7 @@ namespace DarkUWP
 					$"[color={RGB.Yellow}] 안 바스 쿠아스 ..[/color]",
 					"",
 					" 순식간에 환상은 걷혔고  몰록이 모습을 드러냈다."
-				});
+				}, true);
 
 				mEncounterEnemyList.Clear();
 				JoinEnemy(72);
@@ -14453,6 +14462,7 @@ namespace DarkUWP
 			ChaseLizardMan,
 			SummonIllusion,
 			RevealMolok,
+			RecoverParty,
 			BattleMolok,
 			WinMolok
 		}
