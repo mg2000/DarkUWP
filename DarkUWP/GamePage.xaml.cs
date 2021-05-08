@@ -1263,78 +1263,6 @@ namespace DarkUWP
 					mBattleTurn = BattleTurn.None;
 				}
 
-				void AddAssistAttackCommand() {
-					if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
-					{
-						void AssistAttack(bool attackAll)
-						{
-							mBattleCommandQueue.Enqueue(new BattleCommand()
-							{
-								Player = mAssistPlayer,
-								FriendID = -1,
-								Method = 0,
-								Tool = 0,
-								EnemyID = attackAll ? -1 : 0
-							});
-						}
-
-						switch (mAssistPlayer.ClassType)
-						{
-							case ClassCategory.Sword:
-							case ClassCategory.Unknown:
-							case ClassCategory.Giant:
-							case ClassCategory.Dragon:
-								AssistAttack(false);
-								break;
-							case ClassCategory.Elemental:
-								AssistAttack(mAssistPlayer.Weapon != 29);
-								break;
-							default:
-								AssistAttack(true);
-								break;
-						}
-					}
-				}
-
-				void AddBattleCommand(bool skip = false)
-				{
-					if (!skip)
-					{
-						mBattleCommandQueue.Enqueue(new BattleCommand()
-						{
-							Player = mPlayerList[mBattlePlayerID],
-							FriendID = mBattleFriendID,
-							Method = mBattleCommandID,
-							Tool = mBattleToolID,
-							EnemyID = mEnemyFocusID
-						});
-
-						if (mEnemyFocusID >= 0)
-							mEnemyBlockList[mEnemyFocusID].Background = new SolidColorBrush(Colors.Transparent);
-					}
-
-					do
-					{
-						mBattlePlayerID++;
-					} while (mBattlePlayerID < mPlayerList.Count && !mPlayerList[mBattlePlayerID].IsAvailable);
-
-					if (mBattlePlayerID < mPlayerList.Count)
-					{
-						BattleMode();
-					}
-					else
-					{
-						AddAssistAttackCommand();
-						
-						DialogText.TextHighlighters.Clear();
-						DialogText.Blocks.Clear();
-
-						mBattleTurn = BattleTurn.Player;
-
-						ExecuteBattle();
-					}
-				}
-
 				void ShowCureResult(bool battleCure)
 				{
 					if (battleCure)
@@ -5624,6 +5552,10 @@ namespace DarkUWP
 											mParty.XAxis = 9;
 											mParty.YAxis = 91;
 
+											await RefreshGame();
+
+											mFace = -1;
+
 											Talk("당신이 메너스에 입구에 들어서자 마자 저항할수 없는 강한 힘이 일행을 빨아들이기 시작 했다." +
 											" 순간 당신은 메너스의 입구 자체가 커다란 통로로 변해 있음을 알아 챘다.");
 
@@ -7243,6 +7175,7 @@ namespace DarkUWP
 			{
 				mBattleTurn = BattleTurn.Player;
 
+				mBattlePlayerID = -1;
 				for (var i = 0; i < mPlayerList.Count; i++)
 				{
 					if (mPlayerList[i].IsAvailable)
@@ -9725,7 +9658,7 @@ namespace DarkUWP
 												weakestPlayer = player;
 										}
 
-										if (mAssistPlayer != null && mAssistPlayer.IsAvailable && mAssistPlayer.HP < weakestPlayer.HP)
+										if (mAssistPlayer != null && mAssistPlayer.IsAvailable && (weakestPlayer == null || mAssistPlayer.HP < weakestPlayer.HP))
 											weakestPlayer = mAssistPlayer;
 
 										CastAttackOne(weakestPlayer);
@@ -9890,25 +9823,106 @@ namespace DarkUWP
 			UpdatePlayersStat();
 		}
 
+		private void AddAssistAttackCommand()
+		{
+			if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
+			{
+				void AssistAttack(bool attackAll)
+				{
+					mBattleCommandQueue.Enqueue(new BattleCommand()
+					{
+						Player = mAssistPlayer,
+						FriendID = -1,
+						Method = 0,
+						Tool = 0,
+						EnemyID = attackAll ? -1 : 0
+					});
+				}
+
+				switch (mAssistPlayer.ClassType)
+				{
+					case ClassCategory.Sword:
+					case ClassCategory.Unknown:
+					case ClassCategory.Giant:
+					case ClassCategory.Dragon:
+						AssistAttack(false);
+						break;
+					case ClassCategory.Elemental:
+						AssistAttack(mAssistPlayer.Weapon != 29);
+						break;
+					default:
+						AssistAttack(true);
+						break;
+				}
+			}
+		}
+
+		private void AddBattleCommand(bool skip = false)
+		{
+			if (!skip)
+			{
+				mBattleCommandQueue.Enqueue(new BattleCommand()
+				{
+					Player = mPlayerList[mBattlePlayerID],
+					FriendID = mBattleFriendID,
+					Method = mBattleCommandID,
+					Tool = mBattleToolID,
+					EnemyID = mEnemyFocusID
+				});
+
+				if (mEnemyFocusID >= 0)
+					mEnemyBlockList[mEnemyFocusID].Background = new SolidColorBrush(Colors.Transparent);
+			}
+
+			do
+			{
+				mBattlePlayerID++;
+			} while (mBattlePlayerID < mPlayerList.Count && !mPlayerList[mBattlePlayerID].IsAvailable);
+
+			if (mBattlePlayerID < mPlayerList.Count)
+			{
+				BattleMode();
+			}
+			else
+			{
+				AddAssistAttackCommand();
+
+				DialogText.TextHighlighters.Clear();
+				DialogText.Blocks.Clear();
+
+				mBattleTurn = BattleTurn.Player;
+
+				ExecuteBattle();
+			}
+		}
+
 		private void BattleMode()
 		{
-			var player = mPlayerList[mBattlePlayerID];
-			mBattleFriendID = 0;
-			mBattleToolID = 0;
+			if (mBattlePlayerID == -1)
+			{
+				mBattlePlayerID = mPlayerList.Count;
+				AddBattleCommand(true);
+			}
+			else
+			{
+				var player = mPlayerList[mBattlePlayerID];
+				mBattleFriendID = 0;
+				mBattleToolID = 0;
 
-			AppendText($"{player.Name}의 전투 모드 ===>");
+				AppendText($"{player.Name}의 전투 모드 ===>");
 
-			ShowMenu(MenuMode.BattleCommand, new string[] {
-				$"한 명의 적을 {Common.GetWeaponNameJosa(player.Weapon)}로 공격",
-				"한 명의 적에게 마법 공격",
-				"모든 적에게 마법 공격",
-				"적에게 특수 마법 공격",
-				"일행을 치료",
-				"적에게 초능력 사용",
-				"소환 마법 사용",
-				"약초를 사용",
-				mBattlePlayerID == 0 ? "일행에게 무조건 공격 할 것을 지시" : "도망을 시도함"
-			});
+				ShowMenu(MenuMode.BattleCommand, new string[] {
+					$"한 명의 적을 {Common.GetWeaponNameJosa(player.Weapon)}로 공격",
+					"한 명의 적에게 마법 공격",
+					"모든 적에게 마법 공격",
+					"적에게 특수 마법 공격",
+					"일행을 치료",
+					"적에게 초능력 사용",
+					"소환 마법 사용",
+					"약초를 사용",
+					mBattlePlayerID == 0 ? "일행에게 무조건 공격 할 것을 지시" : "도망을 시도함"
+				});
+			}
 		}
 
 		private void ShowPartyStatus()
@@ -12689,7 +12703,7 @@ namespace DarkUWP
 					InvokeAnimation(AnimationType.SleepLoreCastle2);
 				}
 			}
-			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn)
+			else if (mAnimationEvent == AnimationType.TalkLordAhn || mAnimationEvent == AnimationType.TalkLordAhn2)
 			{
 				Talk(" 한참후 ...");
 
@@ -13072,7 +13086,8 @@ namespace DarkUWP
 				mAnimationEvent == AnimationType.ReturnCastleLore ||
 				mAnimationEvent == AnimationType.ReturnCastleLore2 ||
 				mAnimationEvent == AnimationType.TalkLordAhn ||
-				mAnimationEvent == AnimationType.TalkLordAhn2) && mAnimationFrame <= 117)
+				mAnimationEvent == AnimationType.TalkLordAhn2 ||
+				mAnimationEvent == AnimationType.EnterUnderworld) && mAnimationFrame <= 117)
 				AnimateTransition(mAnimationFrame, playerX, playerY);
 		}
 
