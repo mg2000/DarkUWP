@@ -957,6 +957,17 @@ namespace DarkUWP
 						mSpecialEvent = SpecialEventType.BattleRevivalBerial;
 					}
 
+					void WinAsmodeus()
+					{
+						mParty.Etc[8] |= 1 << 1;
+
+						Dialog(new string[] {
+							$"[color={RGB.LightMagenta}] 하지만 너의 실력으로도  메피스토펠레스님은 이기지 못할 게다. 그분은 불사 불멸의 신적인 존재이니까.[/color]",
+							"",
+							" 아스모데우스는 이 말을 마치고는 쓰러졌다."
+						});
+					}
+
 					var battleEvent = mBattleEvent;
 					mBattleEvent = BattleEvent.None;
 
@@ -1018,6 +1029,15 @@ namespace DarkUWP
 						}
 						else if (battleEvent == BattleEvent.CaveOfAsmodeusEntrance)
 						{
+							mParty.Map = 17;
+							mParty.XAxis = 24;
+							mParty.YAxis = 43;
+
+							await RefreshGame();
+
+							mParty.Etc[42] = 0;
+							mParty.Etc[40] |= 1 << 6;
+
 							Lore slowestPlayer = null;
 							foreach (var player in mPlayerList)
 							{
@@ -1036,8 +1056,8 @@ namespace DarkUWP
 								"",
 								" 가디안 레프트는  죽기 직전에 일행의 뒤에서 거대한 마법 독화살을 쏘았다.",
 								"",
-								$"[color={RGB.LightRed}] 가디안 레프트의 마법 독화살은 일행 중 가장 민첩성이 낮은 {slowestPlayer.Name}에게 명중 했다.",
-								$"[color={RGB.LightRed}] 그리고, {slowestPlayer.NameSubjectJosa} 즉사 했다."
+								$"[color={RGB.LightRed}] 가디안 레프트의 마법 독화살은 일행 중 가장 민첩성이 낮은 {slowestPlayer.Name}에게 명중 했다.[/color]",
+								$"[color={RGB.LightRed}] 그리고, {slowestPlayer.NameSubjectJosa} 즉사 했다.[/color]"
 							});
 
 							slowestPlayer.HP = 0;
@@ -1048,13 +1068,6 @@ namespace DarkUWP
 							slowestPlayer.Dead = 1;
 
 							UpdatePlayersStat();
-
-							mParty.Map = 17;
-							mParty.XAxis = 24;
-							mParty.YAxis = 43;
-
-							mParty.Etc[42] = 0;
-							mParty.Etc[40] |= 1 << 6;
 						}
 						else if (battleEvent == BattleEvent.Wisp)
 							mParty.Etc[41] |= 1;
@@ -1121,7 +1134,8 @@ namespace DarkUWP
 							RevivalBerial();
 							return;
 						}
-						else if (battleEvent == BattleEvent.Illusion) {
+						else if (battleEvent == BattleEvent.Illusion)
+						{
 							Talk($"[color={RGB.LightMagenta}] 하지만 나의 마법은 이 정도로 끝 나는 것이 아니라오." +
 							"  다시 한번 당신의 환상에 빠져 들어 보시오. 하하하하 ~~[/color]");
 
@@ -1129,7 +1143,8 @@ namespace DarkUWP
 
 							return;
 						}
-						else if (battleEvent == BattleEvent.Molok) {
+						else if (battleEvent == BattleEvent.Molok)
+						{
 							mParty.Etc[8] |= 1 << 6;
 
 							Talk(new string[] {
@@ -1140,6 +1155,27 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.WinMolok;
 						}
+						else if (battleEvent == BattleEvent.Dragon)
+						{
+							Dialog(" 용의 동굴에는  동쪽으로 이어지는 통로가 있었다.");
+
+							for (var x = 20; x < 29; x++)
+								UpdateTileInfo(x, 71, 41);
+						}
+						else if (battleEvent == BattleEvent.FlyingDragon)
+						{
+							Dialog(" 용의 동굴에는  동쪽으로 이어지는 통로가 있었다.");
+
+							for (var x = 20; x < 29; x++)
+								UpdateTileInfo(x, 73, 41);
+						}
+						else if (battleEvent == BattleEvent.MachineRobot)
+						{
+							UpdateTileInfo(35, 43, 41);
+							mParty.Etc[41] |= 1 << 4;
+						}
+						else if (battleEvent == BattleEvent.Asmodeus)
+							WinAsmodeus();
 
 						mEncounterEnemyList.Clear();
 						mBattleEvent = 0;
@@ -1202,9 +1238,10 @@ namespace DarkUWP
 							{
 								mParty.XAxis = 24;
 								mParty.YAxis = 43;
-							}	
+							}
 						}
-						else if (battleEvent == BattleEvent.RevivalBerial) {
+						else if (battleEvent == BattleEvent.RevivalBerial)
+						{
 							mParty.XAxis = 24;
 							mParty.YAxis = 43;
 						}
@@ -1217,13 +1254,27 @@ namespace DarkUWP
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
 							return;
 						}
-						else if (battleEvent == BattleEvent.Molok) {
+						else if (battleEvent == BattleEvent.Molok)
+						{
 							ShowMap();
 							Talk(" 하지만 일행은 몰록의 결계에서 벗어날 수 없었다.");
 
 							mBattleEvent = BattleEvent.Illusion;
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
 							return;
+						}
+						else if (battleEvent == BattleEvent.Dragon)
+							mParty.YAxis--;
+						else if (battleEvent == BattleEvent.FlyingDragon)
+							mParty.YAxis--;
+						else if (battleEvent == BattleEvent.MachineRobot)
+							mParty.YAxis++;
+						else if (battleEvent == BattleEvent.Asmodeus)
+						{
+							if (!mEncounterEnemyList[7].Dead)
+								mParty.YAxis++;
+							else
+								WinAsmodeus();
 						}
 
 						mEncounterEnemyList.Clear();
@@ -2203,6 +2254,63 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.WinMolok)
 							await InvokeSpecialEvent(mPrevX, mPrevY);
+						else if (specialEvent == SpecialEventType.BattleDragon) {
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 8; i++)
+								JoinEnemy(53);
+
+							DisplayEnemy();
+
+							StartBattle(false);
+
+							mBattleEvent = BattleEvent.Dragon;
+						}
+						else if (specialEvent == SpecialEventType.BattleFlyingDragon) {
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 5; i++)
+								JoinEnemy(42);
+
+							DisplayEnemy();
+
+							StartBattle(false);
+
+							mBattleEvent = BattleEvent.FlyingDragon;
+						}
+						else if (specialEvent == SpecialEventType.BattleMachineRobot) {
+							StartBattle(false);
+
+							mBattleEvent = BattleEvent.MachineRobot;
+						}
+						else if (specialEvent == SpecialEventType.RevealAsmodeus) {
+							mEncounterEnemyList.Clear();
+
+							JoinEnemy(73);
+							for (var i = 0; i < 2; i++)
+								JoinEnemy(68);
+
+							DisplayEnemy();
+
+							Talk($"[color={RGB.LightMagenta}] 나의 명성은 익히 들어서 잘 알고 있겠지. 나는 세계 최고의 전투 마도사인 아스모데우스님이시다." +
+							"  여기까지 침투해 오다니 굉장한 능력이군. 당신네들이 우리편이었다면 상당히 도움이 되었을 텐데. 하지만 어쩔수 없군.  여기를 당신네들의 무덤으로 만들 수 밖에.");
+
+							mSpecialEvent = SpecialEventType.BattleAsmodeus;
+						}
+						else if (specialEvent == SpecialEventType.BattleAsmodeus) {
+							mEncounterEnemyList.Clear();
+
+							for (var i = 0; i < 5; i++)
+								JoinEnemy(54 + i);
+							for (var i = 0; i < 2; i++)
+								JoinEnemy(68);
+							JoinEnemy(73);
+
+							DisplayEnemy();
+
+							StartBattle(false);
+							mBattleEvent = BattleEvent.Asmodeus;
+						}
 					}
 
 
@@ -2270,6 +2378,7 @@ namespace DarkUWP
 							if (allUnavailable)
 							{
 								mBattleTurn = BattleTurn.Win;
+								mParty.Etc[5] = 0;
 								await EndBattle();
 							}
 							else
@@ -3488,6 +3597,7 @@ namespace DarkUWP
 							DialogText.TextHighlighters.Clear();
 							DialogText.Blocks.Clear();
 
+							mCureResult.Clear();
 							CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
 
 							ShowCureResult(false);
@@ -3499,6 +3609,7 @@ namespace DarkUWP
 							DialogText.TextHighlighters.Clear();
 							DialogText.Blocks.Clear();
 
+							mCureResult.Clear();
 							CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
 
 							ShowCureResult(false);
@@ -5077,7 +5188,21 @@ namespace DarkUWP
 										mParty.YAxis = 26;
 									}
 
-										await RefreshGame();
+									await RefreshGame();
+								}
+								else if (mParty.Map == 17) {
+									if (mParty.YAxis == 5) {
+										mParty.Map = 4;
+										mParty.XAxis = 8;
+										mParty.YAxis = 21;
+									}
+									else {
+										mParty.Map = 4;
+										mParty.XAxis = 13;
+										mParty.YAxis = 43;
+									}
+
+									await RefreshGame();
 								}
 							}
 							else
@@ -9170,6 +9295,7 @@ namespace DarkUWP
 
 				if (enemy == null)
 				{
+					mParty.Etc[5] = 0;
 					mBattleTurn = BattleTurn.Win;
 					ContinueText.Visibility = Visibility.Visible;
 				}
@@ -10505,6 +10631,99 @@ namespace DarkUWP
 					triggered = false;
 				}
 			}
+			else if (mParty.Map == 4)
+			{
+				if ((mParty.XAxis == 12 && mParty.YAxis == 93) || (mParty.XAxis == 12 && mParty.YAxis == 28))
+				{
+					Ask(new string[] {
+						$" 다시 또 만났군, {mPlayerList[0].Name}.",
+						" 당신도 알다시피 나는 이 게임의 제작자인 안영기라네. 혹시 난이도 조절이 잘못 되어서 레벨을 더 키우고 싶다면 나에게 부탁하게." +
+						" 다시 로어성으로 이동 시켜 주겠네."
+						}, MenuMode.MeetAhnYoungKi, new string[] {
+						"정말 그렇습니다",
+						"아니오. 내 힘으로도 가능합니다."
+					});
+				}
+				else if (mParty.XAxis == 30 && mParty.YAxis == 91)
+				{
+					mParty.XAxis = 44;
+					mParty.YAxis = 91;
+
+					Dialog(" 일행은 공간 이동 되어졌다.");
+				}
+				else if (mParty.XAxis == 29 && mParty.YAxis == 71)
+				{
+					mParty.XAxis = 43;
+					mParty.YAxis = 66;
+
+					Dialog(" 일행은 공간 이동 되어졌다.");
+				}
+				else if (mParty.XAxis == 29 && mParty.YAxis == 73)
+				{
+					mParty.XAxis = 9;
+					mParty.YAxis = 61;
+
+					Dialog(" 일행은 공간 이동 되어졌다.");
+				}
+				else if (mParty.XAxis == 30 && mParty.YAxis == 43)
+				{
+					mParty.XAxis = 14;
+					mParty.YAxis = 43;
+
+					Dialog(" 일행은 공간 이동 되어졌다.");
+				}
+				else if (mParty.XAxis == 40 && mParty.YAxis == 55 && GetTileInfo(40, 54) != 41)
+				{
+					Dialog(new string[] {
+						" 일행이 앞에 있는 레버를 잡아 당겼다.",
+						" 순간 굉음이 대륙 전체를 진동하기 시작 했고 당신 앞의 장애물이 지하로 가라 앉아 버렸다."
+					});
+
+					for (var y = 0; y < mMapHeight; y++)
+					{
+						for (var x = 0; x < mMapWidth; x++)
+						{
+							if (GetTileInfo(x, y) == 50)
+								UpdateTileInfo(x, y, 49);
+						}
+					}
+
+					UpdateTileInfo(40, 54, 41);
+				}
+				else if (mParty.XAxis == 19 && mParty.YAxis == 71)
+				{
+					Talk(" 당신은 실수로 용의 굴을 보지 못하고 지나쳤다.  그 굴에는  성질이 사나운 용들이 있었고 곧 시비가 붙어 싸움이 시작 되었다.");
+
+					mSpecialEvent = SpecialEventType.BattleDragon;
+				}
+				else if (mParty.XAxis == 19 && mParty.YAxis == 73)
+				{
+					Talk(" 일행이 막다른 곳으로 접어들자  하늘에서 부터 비룡들이 공격해 오기 시작 했다.");
+
+					mSpecialEvent = SpecialEventType.BattleFlyingDragon;
+				}
+				else if (mParty.XAxis == 19 && mParty.YAxis == 73 && (mParty.Etc[41] & (1 << 4)) == 0)
+				{
+					mEncounterEnemyList.Clear();
+
+					for (var i = 0; i < 6; i++)
+						JoinEnemy(65);
+					JoinEnemy(70);
+
+					DisplayEnemy();
+
+					Talk(new string[] {
+						$"[color={RGB.LightMagenta}] 슈잇~~  슈잇~~  전에도 우리 만난적이 있지, {mPlayerList[0].Name}.[/color]",
+						$"[color={RGB.LightMagenta}] 그때는 네크로만서님을 위해 싸웠었는데 이제는 메피스토펠레스님을 따른다는 것이 조금 달라진 점이지." +
+						" 너는 우리가 완전히 죽었다고 생각했겠지만  보시다시피 우리들은 기계 생명체라서 다시 조립을 하면 살릴 수가 있지." +
+						"  또한 스스로를 더욱 강하게 개조 할수도 있지. 그러면 새로와진 나의 힘을 감상하시지.[/color]"
+					});
+
+					mSpecialEvent = SpecialEventType.BattleMachineRobot;
+				}
+				else if (mParty.XAxis == 35 && mParty.YAxis == 45 && GetTileInfo(35, 43) != 41)
+					UpdateTileInfo(35, 43, 41);
+			}
 			else if (mParty.Map == 6)
 			{
 				if (mParty.XAxis == 18 && (mParty.Etc[29] & 1) == 0)
@@ -10871,7 +11090,8 @@ namespace DarkUWP
 				else
 					triggered = false;
 			}
-			else if (mParty.Map == 13) {
+			else if (mParty.Map == 13)
+			{
 				if (mParty.YAxis <= 5)
 					ShowExitMenu();
 				else if (6 <= mParty.YAxis && mParty.YAxis <= 31)
@@ -10920,7 +11140,8 @@ namespace DarkUWP
 				else
 					triggered = false;
 			}
-			else if (mParty.Map == 14) {
+			else if (mParty.Map == 14)
+			{
 				if (mParty.YAxis == 40 && (mParty.Etc[40] & 1) == 0)
 				{
 					Dialog(new string[] {
@@ -10965,7 +11186,8 @@ namespace DarkUWP
 				else
 					triggered = false;
 			}
-			else if (mParty.Map == 15) {
+			else if (mParty.Map == 15)
+			{
 				if (mParty.XAxis == 11 && mParty.YAxis == 14 && (mParty.Etc[40] & (1 << 2)) == 0)
 				{
 					for (var i = 0; i < 8; i++)
@@ -11040,44 +11262,51 @@ namespace DarkUWP
 						mParty.YAxis = mParty.YAxis - 3;
 
 					if (GetTileInfo(mParty.XAxis, mParty.YAxis) == 0)
-						InvokeSpecialEvent(tempPrevX, tempPrevY);
+						await InvokeSpecialEvent(tempPrevX, tempPrevY);
 					else
 						triggered = false;
 				}
 			}
-			else if (mParty.Map == 16) {
-				if (mParty.YAxis == 13 && (mParty.Etc[8] & (1 << 6)) == 0) {
+			else if (mParty.Map == 16)
+			{
+				if (mParty.YAxis == 13 && (mParty.Etc[8] & (1 << 6)) == 0)
+				{
 					Dialog(" 일행은 앗! 하는 사이에  밀폐된 방안으로 빨려들어 가고 말았다.");
 
 					mParty.YAxis = 8;
 				}
-				else if (mParty.XAxis == 5 && mParty.YAxis == 39) {
+				else if (mParty.XAxis == 5 && mParty.YAxis == 39)
+				{
 					mParty.XAxis = 8;
 					mParty.YAxis = 39;
 
 					mParty.Etc[40] |= 1 << 5;
 				}
-				else if (mParty.XAxis == 8 && mParty.YAxis == 6) {
+				else if (mParty.XAxis == 8 && mParty.YAxis == 6)
+				{
 					mParty.XAxis = 5;
 					mParty.YAxis = 6;
 				}
-				else if (8 <= mParty.XAxis && mParty.XAxis <= 11 && 5 <= mParty.YAxis && mParty.YAxis <= 8) {
+				else if (8 <= mParty.XAxis && mParty.XAxis <= 11 && 5 <= mParty.YAxis && mParty.YAxis <= 8)
+				{
 					UpdateTileInfo(mParty.XAxis, mParty.YAxis, 42);
 
 					var x = 8 + mRand.Next(4);
 					int y;
 
-					if (mParty.XAxis == x) {
+					if (mParty.XAxis == x)
+					{
 						y = 5 + mRand.Next(3);
 						if (y >= mParty.YAxis)
-							y++;							
+							y++;
 					}
 					else
 						y = 5 + mRand.Next(4);
 
 					UpdateTileInfo(x, y, 0);
 				}
-				else if (mParty.YAxis == 44) {
+				else if (mParty.YAxis == 44)
+				{
 					if ((mParty.Etc[8] & (1 << 6)) == 0 && (mParty.Etc[40] & (1 << 5)) > 0)
 					{
 						mEncounterEnemyList.Clear();
@@ -11098,6 +11327,208 @@ namespace DarkUWP
 					else
 						ShowExitMenu();
 				}
+			}
+			else if (mParty.Map == 17) {
+				if (mParty.XAxis == 13 && mParty.YAxis == 8)
+				{
+					if ((mParty.Etc[42] & 1) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1;
+
+						UpdateTileInfo(23, 22, 40);
+						UpdateTileInfo(25, 23, 41);
+						UpdateTileInfo(25, 25, 41);
+						UpdateTileInfo(24, 27, 41);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1;
+
+						UpdateTileInfo(23, 22, 41);
+						UpdateTileInfo(25, 23, 40);
+						UpdateTileInfo(25, 25, 40);
+						UpdateTileInfo(24, 27, 40);
+					}
+				}
+				else if (mParty.XAxis == 13 && mParty.YAxis == 20)
+				{
+					if ((mParty.Etc[42] & (1 << 1)) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1 << 1;
+
+						UpdateTileInfo(24, 21, 41);
+						UpdateTileInfo(25, 22, 40);
+						UpdateTileInfo(26, 25, 41);
+						UpdateTileInfo(25, 26, 40);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1 << 1;
+
+						UpdateTileInfo(24, 21, 40);
+						UpdateTileInfo(25, 22, 41);
+						UpdateTileInfo(26, 25, 40);
+						UpdateTileInfo(25, 26, 41);
+					}
+				}
+				else if (mParty.XAxis == 13 && mParty.YAxis == 32)
+				{
+					if ((mParty.Etc[42] & (1 << 2)) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1 << 2;
+
+						UpdateTileInfo(25, 21, 41);
+						UpdateTileInfo(26, 23, 41);
+						UpdateTileInfo(23, 24, 40);
+						UpdateTileInfo(25, 24, 40);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1 << 2;
+
+						UpdateTileInfo(25, 21, 40);
+						UpdateTileInfo(26, 23, 40);
+						UpdateTileInfo(23, 24, 41);
+						UpdateTileInfo(25, 24, 41);
+					}
+				}
+				else if (mParty.XAxis == 36 && mParty.YAxis == 8)
+				{
+					if ((mParty.Etc[42] & (1 << 3)) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1 << 3;
+
+						UpdateTileInfo(25, 20, 40);
+						UpdateTileInfo(26, 22, 41);
+						UpdateTileInfo(24, 25, 40);
+						UpdateTileInfo(25, 27, 41);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1 << 3;
+
+						UpdateTileInfo(25, 20, 41);
+						UpdateTileInfo(26, 22, 40);
+						UpdateTileInfo(24, 25, 41);
+						UpdateTileInfo(25, 27, 40);
+					}
+				}
+				else if (mParty.XAxis == 36 && mParty.YAxis == 20)
+				{
+					if ((mParty.Etc[42] & (1 << 4)) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1 << 4;
+
+						UpdateTileInfo(24, 20, 40);
+						UpdateTileInfo(24, 23, 41);
+						UpdateTileInfo(24, 24, 40);
+						UpdateTileInfo(24, 26, 41);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1 << 4;
+
+						UpdateTileInfo(24, 20, 41);
+						UpdateTileInfo(24, 23, 40);
+						UpdateTileInfo(24, 24, 41);
+						UpdateTileInfo(24, 26, 40);
+					}
+				}
+				else if (mParty.XAxis == 36 && mParty.YAxis == 32)
+				{
+					if ((mParty.Etc[42] & (1 << 5)) == 0)
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] |= 1 << 5;
+
+						UpdateTileInfo(24, 22, 40);
+						UpdateTileInfo(23, 23, 41);
+						UpdateTileInfo(26, 24, 40);
+						UpdateTileInfo(23, 25, 41);
+					}
+					else
+					{
+						Dialog(new string[] {
+							" 일행은 레버를 좌측으로 밀었다.",
+							" 곧이어 굉음이 중앙에서 울려 나왔다."
+						});
+
+						mParty.Etc[42] ^= 1 << 5;
+
+						UpdateTileInfo(24, 22, 41);
+						UpdateTileInfo(23, 23, 40);
+						UpdateTileInfo(26, 24, 41);
+						UpdateTileInfo(23, 25, 40);
+					}
+				}
+				else if (((mParty.XAxis == 24 && mParty.YAxis == 8) || (mParty.XAxis == 25 && mParty.YAxis == 8)) && (mParty.Etc[8] & (1 << 1)) == 0)
+				{
+					Talk(new string[] {
+						" 일행이 무언가에 홀린듯 이 자리에 섰을때 멀리서 희미한 형체가 여기로 다가옴을 알 수 있었다." +
+						"  그의 모습은 근엄한 전사의 모습이었지만 왼손에는 방패가 아닌  마법의 지팡이가 쥐어져 있었다. 곧이어 그는 우리에게 말을 걸기시작 했다."
+					});
+
+					mSpecialEvent = SpecialEventType.RevealAsmodeus;
+				}
+				else if (mParty.YAxis == 5)
+					ShowExitMenu();
+				else if (mParty.YAxis == 44)
+					ShowExitMenu();
+
 			}
 
 			return triggered;
@@ -14479,7 +14910,12 @@ namespace DarkUWP
 			RevealMolok,
 			RecoverParty,
 			BattleMolok,
-			WinMolok
+			WinMolok,
+			BattleDragon,
+			BattleFlyingDragon,
+			BattleMachineRobot,
+			RevealAsmodeus,
+			BattleAsmodeus
 		}
 
 		private enum BattleEvent {
@@ -14502,7 +14938,11 @@ namespace DarkUWP
 			Berial,
 			RevivalBerial,
 			Illusion,
-			Molok
+			Molok,
+			Dragon,
+			FlyingDragon,
+			MachineRobot,
+			Asmodeus
 		}
 
 		private enum AfterDialogType {
