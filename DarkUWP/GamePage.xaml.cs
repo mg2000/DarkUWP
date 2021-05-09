@@ -5856,9 +5856,9 @@ namespace DarkUWP
 										mParty.Etc[42] = 0;
 										break;
 									case EnterType.FortressOfMephistopheles:
-										mParty.Map = 17;
+										mParty.Map = 18;
 										mParty.XAxis = 24;
-										mParty.YAxis = 6;
+										mParty.YAxis = 43;
 
 										await RefreshGame();
 
