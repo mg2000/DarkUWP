@@ -1176,6 +1176,17 @@ namespace DarkUWP
 						}
 						else if (battleEvent == BattleEvent.Asmodeus)
 							WinAsmodeus();
+						else if (battleEvent == BattleEvent.Prison) {
+							Dialog($"[color={RGB.White}]당신들은 수감소 병사들을 물리쳤다.[/color]");
+
+							mParty.Etc[29] |= 1 << 4;
+
+							UpdateTileInfo(50, 11, 44);
+							UpdateTileInfo(51, 11, 44);
+
+							UpdateTileInfo(49, 10, 44);
+							UpdateTileInfo(52, 10, 44);
+						}
 
 						mEncounterEnemyList.Clear();
 						mBattleEvent = 0;
@@ -2311,6 +2322,47 @@ namespace DarkUWP
 							StartBattle(false);
 							mBattleEvent = BattleEvent.Asmodeus;
 						}
+						else if (specialEvent == SpecialEventType.BattleUseItem)
+						{
+							AddBattleCommand(true);
+						}
+						else if (specialEvent == SpecialEventType.BattlePrison || specialEvent == SpecialEventType.BattlePrison2) {
+							int soldierCount;
+
+							if (specialEvent == SpecialEventType.BattlePrison)
+								soldierCount = 2;
+							else
+								soldierCount = 7;
+
+							mEncounterEnemyList.Clear();
+							for (var i = 0; i < soldierCount; i++) {
+								var enemy = JoinEnemy(25);
+								enemy.Name = $"병사 {i + 1}";
+								enemy.Special = 0;
+								enemy.CastLevel = 0;
+								enemy.ENumber = 1;
+							}
+
+							DisplayEnemy();
+
+							if (mAssistPlayer != null && mAssistPlayer.Name == "미친 조")
+							{
+								Talk(" 우리들 뒤에 있던  미친 조가 전투가 일어나자마자 도망을 가버렸다.");
+								mAssistPlayer = null;
+								DisplayPlayerInfo();
+
+								mSpecialEvent = SpecialEventType.RunawayMadJoe;
+							}
+							else
+							{
+								StartBattle(false);
+								mBattleEvent = BattleEvent.Prison;
+							}
+						}
+						else if (specialEvent == SpecialEventType.RunawayMadJoe) {
+							StartBattle(false);
+							mBattleEvent = BattleEvent.Prison;
+						}
 					}
 
 
@@ -2843,7 +2895,7 @@ namespace DarkUWP
 
 						var itemMenuItemList = new List<string>();
 						for (var i = 0; i < mParty.Item.Length; i++) {
-							if (mParty.Item[i] > 0)
+							if (mParty.Item[i] > 0 && (!battle || (battle && i < 5)))
 							{
 								itemMenuItemList.Add(itemNames[i]);
 								mUsableItemIDList.Add(i);
@@ -3314,8 +3366,13 @@ namespace DarkUWP
 									ShowMenu(applyAllCureMode, cureMagicMenu);
 								}
 								else {
-									Talk(" 강한 치료 마법은 아직 불가능 합니다.");
-									mSpecialEvent = SpecialEventType.BackToBattleMode;
+									if (applyCureMode == MenuMode.ApplyBattleCureSpell || applyAllCureMode == MenuMode.ApplyBattleCureAllSpell)
+									{
+										Talk(" 강한 치료 마법은 아직 불가능 합니다.");
+										mSpecialEvent = SpecialEventType.BackToBattleMode;
+									}
+									else
+										Dialog(" 강한 치료 마법은 아직 불가능 합니다.");
 								}
 							}
 						}
@@ -6022,10 +6079,7 @@ namespace DarkUWP
 							madJoe.UpdatePotentialExperience();
 							UpdateItem(madJoe);
 
-							if (mPlayerList.Count > 6)
-								mPlayerList[5] = madJoe;
-							else
-								mPlayerList.Add(madJoe);
+							mAssistPlayer = madJoe;
 
 							UpdateTileInfo(39, 14, 47);
 
@@ -10744,11 +10798,26 @@ namespace DarkUWP
 				{
 					if ((mParty.Etc[49] & (1 << 4)) > 0 || (mParty.Etc[49] & (1 << 5)) > 0)
 					{
-						if ((mParty.Etc[49] & (1 << 4)) > 0)
+						if ((mParty.Etc[29] & (1 << 4)) > 0)
 						{
-							// 전투 시스템 미구현
+							Talk(new string[] {
+								$" 다시 돌아오다니, {mPlayerList[0].Name}",
+								" 이번에는 기어이 네놈들을 해치우고야 말겠다. 나의 친구들도 이번에 거들것이다."
+							});
+
+							mSpecialEvent = SpecialEventType.BattlePrison2;
+						}
+						else
+						{
+							Talk(" 아니! 당신이 우리들을 배신하고 죄수를 풀어주다니... 그렇다면 우리들은 결투로서 당신들과 승부할수 밖에 없군요.");
+
+							mSpecialEvent = SpecialEventType.BattlePrison;
+
+							mParty.Etc[29] |= 1 << 4;
 						}
 					}
+					else
+						triggered = false;
 				}
 				else if (mParty.XAxis == 85 && mParty.YAxis == 47)
 				{
@@ -14915,7 +14984,10 @@ namespace DarkUWP
 			BattleFlyingDragon,
 			BattleMachineRobot,
 			RevealAsmodeus,
-			BattleAsmodeus
+			BattleAsmodeus,
+			BattlePrison,
+			BattlePrison2,
+			RunawayMadJoe,
 		}
 
 		private enum BattleEvent {
@@ -14942,7 +15014,8 @@ namespace DarkUWP
 			Dragon,
 			FlyingDragon,
 			MachineRobot,
-			Asmodeus
+			Asmodeus,
+			Prison
 		}
 
 		private enum AfterDialogType {

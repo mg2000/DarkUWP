@@ -52,7 +52,7 @@
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<StackPanel Grid.Row="0">
-				<RichTextBlock x:Name="DialogText" FontSize="25" Margin="30, 30, 30, 30" IsTextSelectionEnabled="False"></RichTextBlock>
+				<RichTextBlock x:Name="DialogText" FontSize="25" Margin="30, 0, 30, 30" IsTextSelectionEnabled="False"></RichTextBlock>
 				<RichTextBlock x:Name="SpinnerText" FontSize="25" Margin="30, 0, 30, 0" IsTextSelectionEnabled="False" Visibility="Collapsed"></RichTextBlock>
 				<Grid x:Name="PartyInfoPanel" Margin="30, 30, 30, 0" Visibility="Collapsed">
 					<Grid.RowDefinitions>
