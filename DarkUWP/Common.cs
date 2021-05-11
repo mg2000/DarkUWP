@@ -165,6 +165,13 @@ namespace DarkUWP
 				return name + "으";
 		}
 
+		public static string AddItemJosa(string name) {
+			if (GetJongsungType(name[name.Length - 1]) == 0)
+				return name + "가";
+			else
+				return name + "이";
+		}
+
 		public static bool HasJongsung(char chr) {
 			if (chr < 0xAC00 || chr > 0xD7A3)
 				return false;

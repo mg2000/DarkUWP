@@ -4640,9 +4640,9 @@ namespace DarkUWP
 							var itemCountArr = new string[10];
 							for (var i = 0; i < itemCountArr.Length; i++) {
 								if (mBuyItemID == 0)
-									itemCountArr[i] = $"{mItems[i]} {(i + 1) * 10}개 : 금 {mItemPrices[i].ToString("#,#0")}개";
+									itemCountArr[i] = $"{mItems[mBuyItemID]} {(i + 1) * 10}개 : 금 {mItemPrices[mBuyItemID] * (i + 1):#,#0}개";
 								else
-									itemCountArr[i] = $"{mItems[i]} {i + 1}개 : 금 {mItemPrices[i].ToString("#,#0")}개";
+									itemCountArr[i] = $"{mItems[mBuyItemID]} {i + 1}개 : 금 {mItemPrices[mBuyItemID] * (i + 1):#,#0}개";
 							}
 
 							ShowMenu(MenuMode.SelectItemAmount, itemCountArr);
@@ -4652,6 +4652,7 @@ namespace DarkUWP
 							{
 								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
 								mSpecialEvent = SpecialEventType.CantBuyItem;
+								return;
 							}
 
 							mParty.Gold -= mItemPrices[mBuyItemID] * (mMenuFocusID + 1);
@@ -4680,7 +4681,7 @@ namespace DarkUWP
 							var itemCountArr = new string[10];
 							for (var i = 0; i < itemCountArr.Length; i++)
 							{
-								itemCountArr[i] = $"{mMedicines[i]} {i + 1}개 : 금 {mMedicinePrices[i].ToString("#,#0")}개";
+								itemCountArr[i] = $"{mMedicines[mBuyMedicineID]} {i + 1}개 : 금 {mMedicinePrices[mBuyMedicineID] * (i + 1):#,#0}개";
 							}
 
 							ShowMenu(MenuMode.SelectMedicineAmount, itemCountArr);
@@ -4691,6 +4692,7 @@ namespace DarkUWP
 							{
 								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
 								mSpecialEvent = SpecialEventType.CantBuyMedicine;
+								return;
 							}
 
 							mParty.Gold -= mMedicinePrices[mBuyMedicineID] * (mMenuFocusID + 1);
@@ -4700,7 +4702,7 @@ namespace DarkUWP
 							else
 								mParty.Item[mBuyMedicineID] = 255;
 
-							ShowItemStoreMenu();
+							ShowMedicineStoreMenu();
 						}
 						else if (menuMode == MenuMode.Hospital)
 						{
@@ -6445,8 +6447,25 @@ namespace DarkUWP
 								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.BattleChooseItem || menuMode == MenuMode.ChooseItem) {
-							var itemID = mUsableItemIDList[mMenuFocusID];
+							void ShowRemainItemCount() {
+								string itemName;
+								if (mUseItemID < 5)
+									itemName = mMedicines[mUseItemID];
+								else
+									itemName = mItems[mUseItemID - 4];
+								
 
+								var message = $"{Common.AddItemJosa(itemName)} 이제 {mParty.Item[mUseItemID]}개 남았습니다.";
+								if (menuMode == MenuMode.BattleChooseItem)
+									Talk(message, true);
+								else
+									Dialog(message, true);
+							}
+
+							var itemID = mUsableItemIDList[mMenuFocusID];
+							mUseItemID = itemID;
+
+							mParty.Item[itemID]--;
 
 							if (itemID == 0)
 							{
@@ -6460,6 +6479,8 @@ namespace DarkUWP
 									ShowApplyItemResult(menuMode, $" [color={RGB.White}]{mItemUsePlayer.Name}의 건강이 회복 되었습니다.[/color]");
 
 								DisplayHP();
+								ShowRemainItemCount();
+
 							}
 							else if (itemID == 1)
 							{
@@ -6492,6 +6513,7 @@ namespace DarkUWP
 
 									DisplaySP();
 								}
+								ShowRemainItemCount();
 							}
 							else if (itemID == 2)
 							{
@@ -6504,10 +6526,12 @@ namespace DarkUWP
 								}
 
 								DisplayCondition();
+								ShowRemainItemCount();
 							}
 							else if (itemID == 3 || itemID == 4)
 							{
-								mUseItemID = itemID;
+								Dialog("아이템을 적용받을 대상을 고르시오.");
+
 								if (menuMode == MenuMode.BattleChooseItem)
 									ShowCharacterMenu(MenuMode.BattleUseItemWhom);
 								else
@@ -6531,7 +6555,7 @@ namespace DarkUWP
 									}
 								}
 
-								ability /= (int)Math.Round((double)ability * 5 / livePlayerCount);
+								ability = (int)Math.Round((double)ability * 5 / livePlayerCount);
 
 								var summonPlayer = new Lore();
 								switch (mRand.Next(8))
@@ -6557,7 +6581,7 @@ namespace DarkUWP
 										summonPlayer.AC = 3;
 										break;
 									case 2:
-										summonPlayer.Name = "켄타우루스'";
+										summonPlayer.Name = "켄타우루스";
 										summonPlayer.Endurance = 17 + GetBonusPoint(5);
 										summonPlayer.Resistance = 12 + GetBonusPoint(5);
 										summonPlayer.Accuracy = 18 + GetBonusPoint(5);
@@ -6643,14 +6667,12 @@ namespace DarkUWP
 								summonPlayer.ShieldSkill = 0;
 								summonPlayer.FistSkill = 0;
 
-								if (mPlayerList.Count >= 6)
-									mPlayerList[5] = summonPlayer;
-								else
-									mPlayerList.Add(summonPlayer);
+								mAssistPlayer = summonPlayer;
 
 								DisplayPlayerInfo();
 
 								ShowApplyItemResult(menuMode, $" [color={RGB.White}]{summonPlayer.NameSubjectJosa} 다른 차원으로 부터 소환 되어졌습니다.[/color]");
+								ShowRemainItemCount();
 							}
 							else if (itemID == 6)
 							{
@@ -6662,6 +6684,7 @@ namespace DarkUWP
 								UpdateView();
 
 								ShowApplyItemResult(menuMode, $"[color={RGB.White}] 일행은 대형 횃불을 켰습니다.[/color]");
+								ShowRemainItemCount();
 							}
 							else if (itemID == 7)
 								ShowWizardEye();
@@ -6671,13 +6694,19 @@ namespace DarkUWP
 								mParty.Etc[3] = 255;
 
 								ShowApplyItemResult(menuMode, $"[color={RGB.White}] 일행은 모두 비행 부츠를 신었습니다.[/color]");
+								ShowRemainItemCount();
 							}
 							else if (itemID == 9) {
-								// 공간 이동 구현 필요
+								Teleport(MenuMode.TeleportationDirection);
 							}
 						}
 						else if (menuMode == MenuMode.BattleUseItemWhom || menuMode == MenuMode.UseItemWhom) {
-							var player = mPlayerList[mMenuFocusID];
+							Lore player;
+
+							if (mMenuFocusID < mPlayerList.Count)
+								player = mPlayerList[mMenuFocusID];
+							else
+								player = mAssistPlayer;
 
 							if (mUseItemID == 3)
 							{
