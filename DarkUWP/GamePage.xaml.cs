@@ -929,14 +929,13 @@ namespace DarkUWP
 					});
 				}
 
-				//				async Task ExitCastleLore()
-				//				{
-				//					mParty.XAxis = 19;
-				//					mParty.YAxis = 11;
-				//					mParty.Map = 1;
+				void WinMephistopheles() {
+					mParty.Etc[8] |= 1 << 2;
 
-				//					await RefreshGame();
-				//				}
+					Talk(" 일행이  메피스토펠레스를 물리치고는  모든 마법의 힘을 하나로 뭉쳐 지상으로 공간 이동을 시도 했다.");
+
+					mSpecialEvent = SpecialEventType.ReturnToGround;
+				}
 
 				async Task EndBattle()
 				{
@@ -1176,7 +1175,8 @@ namespace DarkUWP
 						}
 						else if (battleEvent == BattleEvent.Asmodeus)
 							WinAsmodeus();
-						else if (battleEvent == BattleEvent.Prison) {
+						else if (battleEvent == BattleEvent.Prison)
+						{
 							Dialog($"[color={RGB.White}]당신들은 수감소 병사들을 물리쳤다.[/color]");
 
 							mParty.Etc[29] |= 1 << 4;
@@ -1186,6 +1186,11 @@ namespace DarkUWP
 
 							UpdateTileInfo(49, 10, 44);
 							UpdateTileInfo(52, 10, 44);
+						}
+						else if (battleEvent == BattleEvent.LastGuardian)
+							mParty.Etc[41] |= 1 << 5;
+						else if (battleEvent == BattleEvent.Mephistopheles) {
+							WinMephistopheles();
 						}
 
 						mEncounterEnemyList.Clear();
@@ -1286,6 +1291,25 @@ namespace DarkUWP
 								mParty.YAxis++;
 							else
 								WinAsmodeus();
+						}
+						else if (battleEvent == BattleEvent.LastGuardian)
+						{
+							mParty.XAxis = mPrevX;
+							mParty.YAxis = mPrevY;
+						}
+						else if (battleEvent == BattleEvent.Mephistopheles)
+						{
+							if (!mEncounterEnemyList[7].Dead)
+							{
+								Talk(" 하지만 메피스토펠레스는  일행의 도주를 허용하지 않았다.");
+
+								mBattleEvent = BattleEvent.Mephistopheles;
+								mSpecialEvent = SpecialEventType.BackToBattleMode;
+
+								return;
+							}
+							else
+								WinMephistopheles();
 						}
 
 						mEncounterEnemyList.Clear();
@@ -2265,7 +2289,8 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.WinMolok)
 							await InvokeSpecialEvent(mPrevX, mPrevY);
-						else if (specialEvent == SpecialEventType.BattleDragon) {
+						else if (specialEvent == SpecialEventType.BattleDragon)
+						{
 							mEncounterEnemyList.Clear();
 
 							for (var i = 0; i < 8; i++)
@@ -2277,7 +2302,8 @@ namespace DarkUWP
 
 							mBattleEvent = BattleEvent.Dragon;
 						}
-						else if (specialEvent == SpecialEventType.BattleFlyingDragon) {
+						else if (specialEvent == SpecialEventType.BattleFlyingDragon)
+						{
 							mEncounterEnemyList.Clear();
 
 							for (var i = 0; i < 5; i++)
@@ -2289,12 +2315,14 @@ namespace DarkUWP
 
 							mBattleEvent = BattleEvent.FlyingDragon;
 						}
-						else if (specialEvent == SpecialEventType.BattleMachineRobot) {
+						else if (specialEvent == SpecialEventType.BattleMachineRobot)
+						{
 							StartBattle(false);
 
 							mBattleEvent = BattleEvent.MachineRobot;
 						}
-						else if (specialEvent == SpecialEventType.RevealAsmodeus) {
+						else if (specialEvent == SpecialEventType.RevealAsmodeus)
+						{
 							mEncounterEnemyList.Clear();
 
 							JoinEnemy(73);
@@ -2308,7 +2336,8 @@ namespace DarkUWP
 
 							mSpecialEvent = SpecialEventType.BattleAsmodeus;
 						}
-						else if (specialEvent == SpecialEventType.BattleAsmodeus) {
+						else if (specialEvent == SpecialEventType.BattleAsmodeus)
+						{
 							mEncounterEnemyList.Clear();
 
 							for (var i = 0; i < 5; i++)
@@ -2326,7 +2355,8 @@ namespace DarkUWP
 						{
 							AddBattleCommand(true);
 						}
-						else if (specialEvent == SpecialEventType.BattlePrison || specialEvent == SpecialEventType.BattlePrison2) {
+						else if (specialEvent == SpecialEventType.BattlePrison || specialEvent == SpecialEventType.BattlePrison2)
+						{
 							int soldierCount;
 
 							if (specialEvent == SpecialEventType.BattlePrison)
@@ -2335,7 +2365,8 @@ namespace DarkUWP
 								soldierCount = 7;
 
 							mEncounterEnemyList.Clear();
-							for (var i = 0; i < soldierCount; i++) {
+							for (var i = 0; i < soldierCount; i++)
+							{
 								var enemy = JoinEnemy(25);
 								enemy.Name = $"병사 {i + 1}";
 								enemy.Special = 0;
@@ -2359,10 +2390,61 @@ namespace DarkUWP
 								mBattleEvent = BattleEvent.Prison;
 							}
 						}
-						else if (specialEvent == SpecialEventType.RunawayMadJoe) {
+						else if (specialEvent == SpecialEventType.RunawayMadJoe)
+						{
 							StartBattle(false);
 							mBattleEvent = BattleEvent.Prison;
 						}
+						else if (specialEvent == SpecialEventType.BattleLastGuardian)
+						{
+							StartBattle(true);
+							mBattleEvent = BattleEvent.LastGuardian;
+						}
+						else if (specialEvent == SpecialEventType.MeetMephistopheles)
+						{
+							mEncounterEnemyList.Clear();
+
+							JoinEnemy(74);
+							DisplayEnemy();
+
+							Talk(new string[] {
+								$"[color={RGB.LightMagenta}] 당신들이  다크 메이지 실리안 카미너스의 새로운 탄생을 방해하러 온 자들인가 ?" +
+								" 그렇지만 이미 한발 늦었군.  나의 뒷쪽의 생체 배양 튜브 속을 보게나. 저것이 새로 부활하는 실리안 카미너스라네.[/color]",
+								"",
+								" 당신이 그가 가리키는 곳에서 본것은  점액이 흘러 내리고 있는  붉은 고기 덩어리같은 육체였다." +
+								" 머리에는 무수한 전기 봉이 꽂혀 있었고 등에는  영양분을 공급하는 관이 연결 되어 있었다." +
+								" 이따금 깜박이는 검은 눈에서는 어린 소녀의 눈빛이 아닌  증오로 가득찬 짐승의 눈빛을 느낄 수 있었다."
+								,"",
+								$"[color={RGB.LightMagenta}] 잘봤겠지. 이미 그녀는 스스로의 몸안에 봉인되어 있는 힘을 깨닳아 버렸지." +
+								"  내가 이 스위치를 누름과 동시에  로어의 세계로 공간 이동이 되게 되어있다네.[/color]",
+								"",
+								" 그는 그의 손안에 있는 리모콘의 스위치를 눌렀고  순간 실리안 카미너스는 공간 이동을 하여 이곳에서 사라졌다.",
+								"",
+								$"[color={RGB.LightMagenta}] 그리고 당신들은 내가 처리하도록 하지." +
+								"  당신들은 로어 성이 불타는 장면을 못보게 되어 정말 아쉽겠군." +
+								"  아무리  로드 안이라고 해도 실리안 카미너스의 악의 힘에는  당하지 못한다네. 그녀는 불멸의 생명체이니까 말일세.[/color]"
+							});
+
+							mSpecialEvent = SpecialEventType.BattleMephistopheles;
+						}
+						else if (specialEvent == SpecialEventType.BattleMephistopheles)
+						{
+							mEncounterEnemyList.Clear();
+
+							JoinEnemy(57);
+							JoinEnemy(57);
+							JoinEnemy(60);
+							JoinEnemy(68);
+							JoinEnemy(68);
+							JoinEnemy(65);
+							JoinEnemy(70);
+							JoinEnemy(74);
+
+							StartBattle(false);
+							mBattleEvent = BattleEvent.Mephistopheles;
+						}
+						else if (specialEvent == SpecialEventType.ReturnToGround)
+							InvokeAnimation(AnimationType.ReturnToGround);
 					}
 
 
@@ -2969,7 +3051,7 @@ namespace DarkUWP
 					else if (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadB)
 					{
 						// 닫을 수 없는 메뉴
-						if (mMenuMode == MenuMode.BattleStart || mMenuMode == MenuMode.BattleCommand)
+						if (mMenuMode == MenuMode.BattleStart || mMenuMode == MenuMode.BattleCommand || mMenuMode == MenuMode.FinalChoice)
 							return;
 
 						AppendText("");
@@ -5922,8 +6004,7 @@ namespace DarkUWP
 										await RefreshGame();
 
 										mFace = 5;
-										// 메피스토텔레스 애니메이션 구현
-										//InvokeAnimation(AnimationType.EnterFortressOfMephistopheles);
+										InvokeAnimation(AnimationType.EnterFortressOfMephistopheles);
 										break;
 									case EnterType.CabinOfRegulus:
 										if (mParty.Etc[9] >= 16)
@@ -7235,6 +7316,14 @@ namespace DarkUWP
 							}
 							else
 								Dialog($"{player.Name}에게는 이 무기가 맞지 않습니다.");
+						}
+						else if (menuMode == MenuMode.FinalChoice) {
+							if (mMenuFocusID == 0) {
+
+							}
+							else {
+
+							}
 						}
 					}
 					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
@@ -11425,6 +11514,8 @@ namespace DarkUWP
 					else
 						ShowExitMenu();
 				}
+				else
+					triggered = false;
 			}
 			else if (mParty.Map == 17) {
 				if (mParty.XAxis == 13 && mParty.YAxis == 8)
@@ -11626,8 +11717,40 @@ namespace DarkUWP
 					ShowExitMenu();
 				else if (mParty.YAxis == 44)
 					ShowExitMenu();
-
+				else
+					triggered = false;
 			}
+			else if (mParty.Map == 18) {
+				if (17 <= mParty.XAxis && mParty.XAxis <= 32 && 22 <= mParty.YAxis && mParty.YAxis <= 25 && (mParty.Etc[41] & (1 << 5)) == 0) {
+					mEncounterEnemyList.Clear();
+
+					for (var i = 0; i < 4; i++)
+						JoinEnemy(57);
+
+					for (var i = 0; i < 3; i++)
+						JoinEnemy(60);
+
+					var enemy = JoinEnemy(70);
+					enemy.Name = "최후의 가디안";
+					enemy.SpecialCastLevel = 1;
+
+					DisplayEnemy();
+
+					Talk($"[color={RGB.LightMagenta}] 잠깐 거기에 서라.  당신들을 더 이상 안으로 들어 가게 할 수 없다." +
+					"  여기가 바로 메피스토펠레스님의 마지막 방어선이니까. 여러말 하지 않겠다. 바로 결전이다.[/color]");
+
+					mPrevX = prevX;
+					mPrevY = prevY;
+
+					mSpecialEvent = SpecialEventType.BattleLastGuardian;
+				}
+				else if (mParty.YAxis == 14) {
+					Talk(" 당신은 직감적으로 결전의 순간이 다가왔다는 것을 알았다.  벌써 메피스토펠레스는 당신 앞으로 걸어 나왔고, 일행은 전투 태세를 취하였다.");
+
+					mSpecialEvent = SpecialEventType.MeetMephistopheles;
+				}
+			}
+
 
 			return triggered;
 		}
@@ -12146,7 +12269,7 @@ namespace DarkUWP
 
 			var lineCount = lineHeight == 0 ? 0 : (int)Math.Ceiling(DialogText.ActualHeight / lineHeight);
 
-			if (lineCount > DIALOG_MAX_LINES && !noText)
+			if (lineCount > DIALOG_MAX_LINES)
 			{
 				textBlock.Blocks.Remove(paragraph);
 				foreach (var highlighter in highlighters)
@@ -13136,6 +13259,33 @@ namespace DarkUWP
 				else if (mAnimationEvent == AnimationType.RemoveIllusion) {
 					Task.Delay(2000).Wait();
 				}
+				else if (mAnimationEvent == AnimationType.EnterFortressOfMephistopheles) {
+					for (var i = 1; i <= 6; i++)
+					{
+						mAnimationFrame = i;
+
+						if (i < 6)
+							Task.Delay(1000).Wait();
+						else
+							Task.Delay(800).Wait();
+					}
+
+					for (var i = 1; i <= 2; i++) {
+						mParty.YAxis--;
+						Task.Delay(800).Wait();
+					}
+
+					for (var x = 23; x < 27; x++) {
+						UpdateTileInfo(x, 43, 24);
+					}
+
+					for (var y = 44; y < 50; y++) {
+						for (var x = 22; x < 28; x++)
+							UpdateTileInfo(x, y, 29);
+					}
+				}
+				else if (mAnimationEvent == AnimationType.ReturnToGround)
+					AnimateTransition();
 			});
 
 			await animationTask;
@@ -13411,6 +13561,28 @@ namespace DarkUWP
 				mSpecialEvent = SpecialEventType.RevealMolok;
 				mAnimationEvent = AnimationType.None;
 			}
+			else if (mAnimationEvent == AnimationType.ReturnToGround) {
+				mParty.Map = 1;
+				mParty.XAxis = 23;
+				mParty.YAxis = 47;
+
+				await RefreshGame();
+
+				Dialog(" 일행은 로어 대륙으로 공간 이동을 했다.");
+
+				foreach (var player in mPlayerList)
+					player.SP = 0;
+
+				if (mAssistPlayer != null)
+					mAssistPlayer.SP = 0;
+
+				UpdatePlayersStat();
+
+				mParty.Etc[9]++;
+
+				mAnimationEvent = AnimationType.None;
+				mAnimationFrame = 0;
+			}
 			else
 			{
 				mAnimationEvent = AnimationType.None;
@@ -13601,10 +13773,17 @@ namespace DarkUWP
 
 				if (mCharacterTiles != null && mFace >= 0)
 				{
-					mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY), Vector4.One);
-					
-					if (mMenuMode == MenuMode.MeetAhnYoungKi)
-						mCharacterTiles.Draw(sb, 24, mCharacterTiles.SpriteSize * new Vector2(playerX - 1, playerY), Vector4.One);
+					if (mAnimationEvent == AnimationType.EnterFortressOfMephistopheles && mAnimationFrame <= 6)
+					{
+						mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY + (6 - mAnimationFrame)), Vector4.One);
+					}
+					else
+					{
+						mCharacterTiles.Draw(sb, mFace, mCharacterTiles.SpriteSize * new Vector2(playerX, playerY), Vector4.One);
+
+						if (mMenuMode == MenuMode.MeetAhnYoungKi)
+							mCharacterTiles.Draw(sb, 24, mCharacterTiles.SpriteSize * new Vector2(playerX - 1, playerY), Vector4.One);
+					}
 				}
 			}
 
@@ -13616,7 +13795,8 @@ namespace DarkUWP
 				mAnimationEvent == AnimationType.ReturnCastleLore2 ||
 				mAnimationEvent == AnimationType.TalkLordAhn ||
 				mAnimationEvent == AnimationType.TalkLordAhn2 ||
-				mAnimationEvent == AnimationType.EnterUnderworld) && mAnimationFrame <= 117)
+				mAnimationEvent == AnimationType.EnterUnderworld ||
+				mAnimationEvent == AnimationType.ReturnToGround) && mAnimationFrame <= 117)
 				AnimateTransition(mAnimationFrame, playerX, playerY);
 		}
 
@@ -13968,6 +14148,8 @@ namespace DarkUWP
 			DisplayPlayerInfo();
 
 			InitializeMap();
+
+			MapCanvas.Visibility = Visibility.Collapsed;
 
 			mLoading = false;
 
@@ -14913,7 +15095,9 @@ namespace DarkUWP
 			RecallToCastleLore,
 			ReturnCastleLore,
 			ReturnCastleLore2,
-			RemoveIllusion
+			RemoveIllusion,
+			EnterFortressOfMephistopheles,
+			ReturnToGround
 		}
 
 		private enum SpecialEventType
@@ -15017,6 +15201,10 @@ namespace DarkUWP
 			BattlePrison,
 			BattlePrison2,
 			RunawayMadJoe,
+			BattleLastGuardian,
+			MeetMephistopheles,
+			BattleMephistopheles,
+			ReturnToGround
 		}
 
 		private enum BattleEvent {
@@ -15044,7 +15232,9 @@ namespace DarkUWP
 			FlyingDragon,
 			MachineRobot,
 			Asmodeus,
-			Prison
+			Prison,
+			LastGuardian,
+			Mephistopheles
 		}
 
 		private enum AfterDialogType {
