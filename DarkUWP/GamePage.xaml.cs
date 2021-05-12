@@ -3440,7 +3440,7 @@ namespace DarkUWP
 								else
 									availableCount = player.AxeSkill / 10 - 5;
 
-								if (availableCount < 1) {
+								if (availableCount >= 1) {
 									var cureMagicMenu = new string[availableCount];
 									for (var i = 6; i < 6 + availableCount; i++)
 										cureMagicMenu[i - 6] = Common.GetMagicName(3, i);
@@ -8035,7 +8035,7 @@ namespace DarkUWP
 								enemy.Dead = true;
 								PlusExperience(enemy);
 							}
-							else if (impactPoint == 0 || !enemy.Unconscious) {
+							else if (impactPoint == 0 && !enemy.Unconscious) {
 								enemy.Unconscious = true;
 								PlusExperience(enemy);
 							}
