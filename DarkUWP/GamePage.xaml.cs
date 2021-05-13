@@ -14164,7 +14164,7 @@ namespace DarkUWP
 			}
 
 			//ShowMap();
-			//BGMPlayer.Source = musicUri;
+			BGMPlayer.Source = musicUri;
 
 			UpdateView();
 		}
