@@ -1311,6 +1311,14 @@ namespace DarkUWP
 							else
 								WinMephistopheles();
 						}
+						else if (battleEvent == BattleEvent.CyllianCominus) {
+							Talk($"[color={RGB.LightMagenta}] 크크크.. 너희들은 반드시 나의 손에 죽어 줘야 겠다. 크크크..[/color]");
+
+							mBattleEvent = BattleEvent.CyllianCominus;
+							mSpecialEvent = SpecialEventType.BackToBattleMode;
+
+							return;
+						}
 
 						mEncounterEnemyList.Clear();
 						ShowMap();
@@ -1414,6 +1422,18 @@ namespace DarkUWP
 				{
 					mTriggeredDownEvent = false;
 					return;
+				}
+				else if (EndingMessage.Visibility == Visibility.Visible) {
+					EndingMessage.Visibility = Visibility.Collapsed;
+
+					mParty.Map = 6;
+					mParty.XAxis = 90;
+					mParty.YAxis = 79;
+
+					await RefreshGame();
+
+					mParty.Etc[0] = 255;
+					mSpecialEvent = SpecialEventType.CookieEvent;
 				}
 				else if (ContinueText.Visibility == Visibility.Visible)
 				{
@@ -2440,11 +2460,48 @@ namespace DarkUWP
 							JoinEnemy(70);
 							JoinEnemy(74);
 
+							DisplayEnemy();
+
 							StartBattle(false);
 							mBattleEvent = BattleEvent.Mephistopheles;
 						}
 						else if (specialEvent == SpecialEventType.ReturnToGround)
 							InvokeAnimation(AnimationType.ReturnToGround);
+						else if (specialEvent == SpecialEventType.MeetCyllianCominus)
+						{
+							mEncounterEnemyList.Clear();
+
+							JoinEnemy(74).Name = "실리안 카미너스";
+							DisplayEnemy();
+
+							Talk($"[color={RGB.LightMagenta}] 크악~~ 네가 이 곳의 마지막 생존자냐 ? 그렇다면 너도 죽여주지.[/color]");
+							mSpecialEvent = SpecialEventType.ReplicateCominus;
+						}
+						else if (specialEvent == SpecialEventType.ReplicateCominus) {
+							Talk(" 실리안 카미너스는 다시 8 조각으로 자신을 분해해서 자신을 8 명으로 만들었다.");
+
+							mSpecialEvent = SpecialEventType.BattleCominus;
+						}
+						else if (specialEvent == SpecialEventType.BattleCominus) {
+							mEncounterEnemyList.Clear();
+							
+							for (var i = 0; i < 8; i++)
+							{
+								var enemy = JoinEnemy(74);
+								enemy.Name = "실리안 카미너스";
+								enemy.Resistance = 255;
+							}
+							DisplayEnemy();
+
+							StartBattle(false);
+							mBattleEvent = BattleEvent.CyllianCominus;
+						}
+						else if (specialEvent == SpecialEventType.NecromancerMessage) {
+							mAnimationEvent = AnimationType.None;
+							mAnimationFrame = 0;
+
+							EndingMessage.Visibility = Visibility.Visible;
+						}
 					}
 
 
@@ -2478,7 +2535,7 @@ namespace DarkUWP
 								remainDialog.RemoveAt(0);
 						}
 
-						if (mRemainDialog.Count > 0)
+						if (mRemainDialog.Count > 0 || mBattleTurn != BattleTurn.None)
 							ContinueText.Visibility = Visibility.Visible;
 						else
 						{
@@ -3175,13 +3232,13 @@ namespace DarkUWP
 								mBattleToolID = 0;
 								mEnemyFocusID = 0;
 								mBattleCommandQueue.Clear();
-								//mBatteEnemyQueue.Clear();
+								mBatteEnemyQueue.Clear();
 								mBattleTurn = BattleTurn.None;
 
 								mSpecialEvent = SpecialEventType.None;
 								mBattleEvent = BattleEvent.None;
 
-								//ShowMap();
+								ShowMap();
 
 								AppendText(new string[] { $"[color={RGB.LightCyan}]저장했던 게임을 다시 불러옵니다.[/color]" });
 
@@ -5584,6 +5641,9 @@ namespace DarkUWP
 							{
 								if (mBattlePlayerID == 0)
 								{
+									mBattleTurn = BattleTurn.Player;
+									mBattleCommandQueue.Clear();
+
 									foreach (var player in mPlayerList)
 									{
 										if (player.IsAvailable)
@@ -5722,6 +5782,7 @@ namespace DarkUWP
 							DialogText.TextHighlighters.Clear();
 							DialogText.Blocks.Clear();
 
+							mCureResult.Clear();
 							CureSpell(mMagicPlayer, mMagicWhomPlayer, mMenuFocusID, mCureResult);
 
 							ShowCureResult(true);
@@ -5731,6 +5792,7 @@ namespace DarkUWP
 							DialogText.TextHighlighters.Clear();
 							DialogText.Blocks.Clear();
 
+							mCureResult.Clear();
 							CureAllSpell(mMagicPlayer, mMenuFocusID, mCureResult);
 
 							ShowCureResult(true);
@@ -7319,10 +7381,12 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.FinalChoice) {
 							if (mMenuFocusID == 0) {
-
+								InvokeAnimation(AnimationType.MeetNecromancer);
 							}
 							else {
+								Talk(" 일행은 스스로의 능력을 믿기로 하고  실리안 카미너스를 공격하려했다.");
 
+								mSpecialEvent = SpecialEventType.MeetCyllianCominus;
 							}
 						}
 					}
@@ -7878,17 +7942,19 @@ namespace DarkUWP
 						return;
 					}
 
-#if DEBUG
-					var magicPoint = 1;
-#else
-					var magicPoint = (int)Math.Round((double)battleCommand.Player.AttackPoint * battleCommand.Tool * battleCommand.Tool / 10);
+					var magicPoint = (int)Math.Round((double)battleCommand.Player.AttackMagic * battleCommand.Tool * battleCommand.Tool / 10);
 					if (battleCommand.Player.SP < magicPoint)
 					{
 						battleResult.Add($"마법 지수가 부족했다");
 						return;
 					}
-#endif
+
+#if DEBUG
+					battleCommand.Player.SP -= 1;
+#else
 					battleCommand.Player.SP -= magicPoint;
+#endif
+
 					DisplaySP();
 
 					if (mRand.Next(20) >= player.Accuracy)
@@ -9500,10 +9566,10 @@ namespace DarkUWP
 									liveEnemyCount++;
 							}
 
-							if (mPlayerList.Count >= 6 && liveEnemyCount < 7 && (mRand.Next(5) == 0))
+							if (mAssistPlayer != null && liveEnemyCount < 7 && (mRand.Next(5) == 0))
 							{
-								var turnEnemy = TurnMind(mPlayerList[5]);
-								mPlayerList.RemoveAt(5);
+								var turnEnemy = TurnMind(mAssistPlayer);
+								mAssistPlayer = null;
 
 								DisplayPlayerInfo();
 								DisplayEnemy();
@@ -9517,7 +9583,7 @@ namespace DarkUWP
 							void Cast(Lore player) {
 								if (player.Dead == 0)
 								{
-									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.Name}에게 죽음의 공격을 시도했다[/color]");
+									battleResult.Add($"[color={RGB.LightMagenta}]{enemy.NameSubjectJosa} {player.Name}에게 죽음의 공격을 시도했다[/color]");
 
 									if (mRand.Next(60) > player.Agility)
 										battleResult.Add($"죽음의 공격은 실패했다");
@@ -9700,7 +9766,7 @@ namespace DarkUWP
 									normalList.Add(player);
 							}
 
-							if (mAssistPlayer != null && mAssistPlayer.Poison == 0)
+							if (mAssistPlayer != null && mAssistPlayer.IsAvailable)
 								normalList.Add(mAssistPlayer);
 
 							var destPlayer = normalList[mRand.Next(normalList.Count)];
@@ -13286,6 +13352,10 @@ namespace DarkUWP
 				}
 				else if (mAnimationEvent == AnimationType.ReturnToGround)
 					AnimateTransition();
+				else if (mAnimationEvent == AnimationType.MeetNecromancer)
+				{
+					AnimateTransition();
+				}
 			});
 
 			await animationTask;
@@ -13436,7 +13506,6 @@ namespace DarkUWP
 			}
 			else if (mAnimationEvent == AnimationType.GoInsideMenace2)
 			{
-
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 
@@ -13582,6 +13651,12 @@ namespace DarkUWP
 
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
+			}
+			else if (mAnimationEvent == AnimationType.MeetNecromancer) {
+				Talk(" 일행은 자신들이 가지고 있는 모든 힘을 다해서  당신을 네크로만서가 있는 공간으로  차원이탈을 시켰다. 차원 이탈중 당신의 갑옷은 파괴되고 체력은 떨어졌다." +
+				" 그리고 당신의 의식이 돌아 왔을때  이미 네크로만서는 당신 앞에 서 있었다. 그는 말을 시작했다.");
+
+				mSpecialEvent = SpecialEventType.NecromancerMessage;
 			}
 			else
 			{
@@ -13796,7 +13871,8 @@ namespace DarkUWP
 				mAnimationEvent == AnimationType.TalkLordAhn ||
 				mAnimationEvent == AnimationType.TalkLordAhn2 ||
 				mAnimationEvent == AnimationType.EnterUnderworld ||
-				mAnimationEvent == AnimationType.ReturnToGround) && mAnimationFrame <= 117)
+				mAnimationEvent == AnimationType.ReturnToGround ||
+				mAnimationEvent == AnimationType.MeetNecromancer) && mAnimationFrame <= 117)
 				AnimateTransition(mAnimationFrame, playerX, playerY);
 		}
 
@@ -14435,7 +14511,7 @@ namespace DarkUWP
 
 			if (!inserted)
 			{
-				if (mEncounterEnemyList.Count == 7)
+				if (mEncounterEnemyList.Count == 8)
 					mEncounterEnemyList[mEncounterEnemyList.Count - 1] = enemy;
 				else
 					mEncounterEnemyList.Add(enemy);
@@ -15097,7 +15173,8 @@ namespace DarkUWP
 			ReturnCastleLore2,
 			RemoveIllusion,
 			EnterFortressOfMephistopheles,
-			ReturnToGround
+			ReturnToGround,
+			MeetNecromancer
 		}
 
 		private enum SpecialEventType
@@ -15204,7 +15281,12 @@ namespace DarkUWP
 			BattleLastGuardian,
 			MeetMephistopheles,
 			BattleMephistopheles,
-			ReturnToGround
+			ReturnToGround,
+			MeetCyllianCominus,
+			ReplicateCominus,
+			BattleCominus,
+			NecromancerMessage,
+			CookieEvent
 		}
 
 		private enum BattleEvent {
@@ -15234,7 +15316,8 @@ namespace DarkUWP
 			Asmodeus,
 			Prison,
 			LastGuardian,
-			Mephistopheles
+			Mephistopheles,
+			CyllianCominus
 		}
 
 		private enum AfterDialogType {
