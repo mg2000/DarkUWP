@@ -52,8 +52,6 @@ namespace DarkUWP
 		private int mMaxEnemy = 0;
 
 		private bool mTriggeredDownEvent = false;
-		private int mTalkX = 0;
-		private int mTalkY = 0;
 
 		private List<TextBlock> mPlayerNameList = new List<TextBlock>();
 		private List<TextBlock> mPlayerHPList = new List<TextBlock>();
@@ -78,7 +76,6 @@ namespace DarkUWP
 
 		private int mOrderFromPlayerID = -1;
 
-		private bool mWeaponShopEnd = false;
 		private int mBuyWeaponID = -1;
 
 		private Lore mCurePlayer = null;
@@ -114,8 +111,6 @@ namespace DarkUWP
 		private volatile AnimationType mAnimationEvent = AnimationType.None;
 		private int mAnimationFrame = 0;
 
-		private bool mCureBattle = false;
-
 		private Random mRand = new Random();
 
 		private List<EnemyData> mEnemyDataList = null;
@@ -134,21 +129,9 @@ namespace DarkUWP
 		private Dictionary<EnterType, string> mEnterTypeMap = new Dictionary<EnterType, string>();
 		private EnterType mTryEnterType = EnterType.None;
 
-		private Lore mReserveMember = null;
-		private int mMemberX = -1;
-		private int mMemberY = -1;
-		private byte mMemberLeftTile = 0;
-
 		private int mTelescopePeriod = 0;
 		private int mTelescopeXCount = 0;
 		private int mTelescopeYCount = 0;
-
-		// 동굴 질문 번호
-		private int mQuestionID = 0;
-
-		// 블랙 나이트 등장 위치
-		private int xEnemyOffset = 0;
-		private int yEnemyOffset = -1;
 
 		private TypedEventHandler<CoreWindow, KeyEventArgs> gamePageKeyDownEvent = null;
 		private TypedEventHandler<CoreWindow, KeyEventArgs> gamePageKeyUpEvent = null;
@@ -381,18 +364,18 @@ namespace DarkUWP
 							else if (mParty.Map == 7)
 							{
 								AppendText(new string[] {
-									" 당신이 동굴 입구에 들어가려 할때 어떤 글을 보았다.",
+									" 당신이 동굴 입구에 들어가려 할 때 어떤 글을 보았다.",
 									"",
 									"",
 									"",
-									$"[color={RGB.White}]   여기는 한때 피라미드라고 불리우는 악마의 동굴이었지만 지금은 폐쇄되어 아무도 들어갈 수가 없습니다.[/color]"
+									$"[color={RGB.White}]   여기는 한때 피라미드라고 불리는 악마의 동굴이었지만 지금은 폐쇄되어 아무도 들어갈 수가 없습니다.[/color]"
 								});
 							}
 							else if (mParty.Map == 11)
 							{
 								if ((x == 24 && y == 6) || (x == 25 && y == 6))
 								{
-									AppendText(" 당신이 입구에 들어가려 했지만  이미 입구는 함몰 되어 들어 갈 수가 없었다.");
+									AppendText(" 당신이 입구에 들어가려 했지만 이미 입구는 함몰되어 들어 갈 수가 없었다.");
 									if (mPlayerList.Count > 1 && (mParty.Etc[30] & (1 << 7)) == 0)
 									{
 										mSpecialEvent = SpecialEventType.InvestigationCave;
@@ -404,7 +387,7 @@ namespace DarkUWP
 							{
 								if ((x == 24 && y == 27) || (x == 25 && y == 27))
 								{
-									AppendText(" 당신은 이 동굴에 들어 가려고 했지만 동굴의 입구는  어떠한 강한 힘에 의해 무너져 있었고" +
+									AppendText(" 당신은 이 동굴에 들어가려고 했지만 동굴의 입구는 어떠한 강한 힘에 의해 무너져 있었고" +
 									" 일행들의 힘으로는 도저히 들어갈 방도가 없었다. 결국에 일행은 들어가기를 포기했다.");
 
 									UpdateTileInfo(24, 24, 52);
@@ -654,8 +637,8 @@ namespace DarkUWP
 
 					if (swordEnableClass[mTrainPlayer.Class - 1, 0] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  베는 무기  기술치  :\t{mTrainPlayer.SwordSkill}[/color]", true);
-						trainSkillMenuList.Add("  베는  무기  기술치");
+						AppendText($"[color={RGB.LightCyan}]  베는 무기 기술치 :\t{mTrainPlayer.SwordSkill}[/color]", true);
+						trainSkillMenuList.Add("  베는 무기 기술치");
 						mTrainSkillList.Add(new Tuple<int, int>(0, swordEnableClass[mTrainPlayer.Class - 1, 0]));
 					}
 
@@ -663,13 +646,13 @@ namespace DarkUWP
 					{
 						if (mTrainPlayer.Class != 7)
 						{
-							AppendText($"[color={RGB.LightCyan}]  찍는 무기  기술치  :\t{mTrainPlayer.AxeSkill}[/color]", true);
-							trainSkillMenuList.Add("  찍는  무기  기술치");
+							AppendText($"[color={RGB.LightCyan}]  찍는 무기 기술치 :\t{mTrainPlayer.AxeSkill}[/color]", true);
+							trainSkillMenuList.Add("  찍는 무기 기술치");
 						}
 						else
 						{
-							AppendText($"[color={RGB.LightCyan}]  치료 마법  능력치  :\t{mTrainPlayer.AxeSkill}[/color]", true);
-							trainSkillMenuList.Add("  치료  마법  능력치");
+							AppendText($"[color={RGB.LightCyan}]  치료 마법 능력치 :\t{mTrainPlayer.AxeSkill}[/color]", true);
+							trainSkillMenuList.Add("  치료 마법 능력치");
 						}
 
 						mTrainSkillList.Add(new Tuple<int, int>(1, swordEnableClass[mTrainPlayer.Class - 1, 1]));
@@ -684,28 +667,28 @@ namespace DarkUWP
 
 					if (swordEnableClass[mTrainPlayer.Class - 1, 3] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  쏘는 무기  기술치  :\t{mTrainPlayer.BowSkill}[/color]", true);
-						trainSkillMenuList.Add("  쏘는  무기  기술치");
+						AppendText($"[color={RGB.LightCyan}]  쏘는 무기 기술치 :\t{mTrainPlayer.BowSkill}[/color]", true);
+						trainSkillMenuList.Add("  쏘는 무기 기술치");
 						mTrainSkillList.Add(new Tuple<int, int>(3, swordEnableClass[mTrainPlayer.Class - 1, 3]));
 					}
 
 					if (swordEnableClass[mTrainPlayer.Class - 1, 4] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  방패 사용  기술치  :\t{mTrainPlayer.ShieldSkill}[/color]", true);
-						trainSkillMenuList.Add("  방패  사용  능력치");
+						AppendText($"[color={RGB.LightCyan}]  방패 사용 기술치 :\t{mTrainPlayer.ShieldSkill}[/color]", true);
+						trainSkillMenuList.Add("  방패 사용 능력치");
 						mTrainSkillList.Add(new Tuple<int, int>(4, swordEnableClass[mTrainPlayer.Class - 1, 4]));
 					}
 
 					if (swordEnableClass[mTrainPlayer.Class - 1, 5] > 0)
 					{
-						AppendText($"[color={RGB.LightCyan}]  맨손 사용  기술치  :\t{mTrainPlayer.FistSkill}[/color]", true);
-						trainSkillMenuList.Add("  맨손  사용  기술치");
+						AppendText($"[color={RGB.LightCyan}]  맨손 사용 기술치 :\t{mTrainPlayer.FistSkill}[/color]", true);
+						trainSkillMenuList.Add("  맨손 사용 기술치");
 						mTrainSkillList.Add(new Tuple<int, int>(5, swordEnableClass[mTrainPlayer.Class - 1, 5]));
 					}
 
 					AppendText($"[color={RGB.LightGreen}] 여분의 경험치 :\t{mTrainPlayer.Experience.ToString("#,#0")}[/color]", true);
 
-					AppendText($"[color={RGB.LightRed}]당신이 수련 하고 싶은 부분을 고르시오.[/color]", true);
+					AppendText($"[color={RGB.LightRed}]당신이 수련하고 싶은 부분을 고르시오.[/color]", true);
 
 					ShowMenu(MenuMode.ChooseTrainSkill, trainSkillMenuList.ToArray(), defaultMenuID);
 				}
@@ -778,9 +761,9 @@ namespace DarkUWP
 				}
 
 				bool EnoughMoneyToChangeJob() {
-					if (mParty.Gold < 10000)
+					if (mParty.Gold < 10_000)
 					{
-						Talk(" 그러나 일행에게는  직업을 바꿀때 드는 비용인 금 10000 개가 없습니다.");
+						Talk(" 그러나 일행에게는 직업을 바꿀 때 드는 비용인 금 10,000 개가 없습니다.");
 						return false;
 					}
 					else
@@ -932,7 +915,7 @@ namespace DarkUWP
 				void WinMephistopheles() {
 					mParty.Etc[8] |= 1 << 2;
 
-					Talk(" 일행이  메피스토펠레스를 물리치고는  모든 마법의 힘을 하나로 뭉쳐 지상으로 공간 이동을 시도 했다.");
+					Talk(" 일행이 메피스토펠레스를 물리치고는 모든 마법의 힘을 하나로 뭉쳐 지상으로 공간 이동을 시도했다.");
 
 					mSpecialEvent = SpecialEventType.ReturnToGround;
 				}
@@ -947,9 +930,9 @@ namespace DarkUWP
 						DisplayEnemy();
 
 						Talk(new string[] {
-							$"[color={RGB.LightMagenta}] 으윽~~~ 하지만 내가 그리 쉽게 너에게 당할것 같으냐 !!",
+							$"[color={RGB.LightMagenta}] 으윽~~~ 하지만 내가 그리 쉽게 너에게 당할 것 같으냐!!",
 							"",
-							" 베리알이 죽으면서 흘린 피가 도마뱀 인간의 시체로 스며 들어갔고  도마뱀 인간은 더욱 강하게 부활을 했다."
+							" 베리알이 죽으면서 흘린 피가 도마뱀 인간의 시체로 스며 들어갔고 도마뱀 인간은 더욱 강하게 부활을 했다."
 						});
 
 						mParty.Etc[8] |= 1 << 5;
@@ -961,7 +944,7 @@ namespace DarkUWP
 						mParty.Etc[8] |= 1 << 1;
 
 						Dialog(new string[] {
-							$"[color={RGB.LightMagenta}] 하지만 너의 실력으로도  메피스토펠레스님은 이기지 못할 게다. 그분은 불사 불멸의 신적인 존재이니까.[/color]",
+							$"[color={RGB.LightMagenta}] 하지만 너의 실력으로도 메피스토펠레스님은 이기지 못할 게다. 그분은 불사불멸의 신적인 존재이니까.[/color]",
 							"",
 							" 아스모데우스는 이 말을 마치고는 쓰러졌다."
 						});
@@ -1051,12 +1034,12 @@ namespace DarkUWP
 								slowestPlayer = mAssistPlayer;
 
 							AppendText(new string[] {
-								$"[color={RGB.LightMagenta}] 우욱... 하지만 나는 죽더라도 한사람은 지옥으로 보내 주겠다.[/color]",
+								$"[color={RGB.LightMagenta}] 우욱... 하지만 나는 죽더라도 한 사람은 지옥으로 보내 주겠다.[/color]",
 								"",
-								" 가디안 레프트는  죽기 직전에 일행의 뒤에서 거대한 마법 독화살을 쏘았다.",
+								" 가디안 레프트는 죽기 직전에 일행의 뒤에서 거대한 마법 독화살을 쏘았다.",
 								"",
-								$"[color={RGB.LightRed}] 가디안 레프트의 마법 독화살은 일행 중 가장 민첩성이 낮은 {slowestPlayer.Name}에게 명중 했다.[/color]",
-								$"[color={RGB.LightRed}] 그리고, {slowestPlayer.NameSubjectJosa} 즉사 했다.[/color]"
+								$"[color={RGB.LightRed}] 가디안 레프트의 마법 독화살은 일행 중 가장 민첩성이 낮은 {slowestPlayer.Name}에게 명중했다.[/color]",
+								$"[color={RGB.LightRed}] 그리고, {slowestPlayer.NameSubjectJosa} 즉사했다.[/color]"
 							});
 
 							slowestPlayer.HP = 0;
@@ -1079,7 +1062,7 @@ namespace DarkUWP
 
 							DisplayEnemy();
 
-							Talk($"[color={RGB.LightMagenta}] 누가 우리 애들을 건드리느냐 !  이 사이클롭스님의 곤봉 맛을 보아라 !!");
+							Talk($"[color={RGB.LightMagenta}] 누가 우리 애들을 건드리느냐! 이 사이클롭스님의 곤봉 맛을 보아라!!");
 
 							mSpecialEvent = SpecialEventType.BattleCyclopes;
 							return;
@@ -1098,7 +1081,7 @@ namespace DarkUWP
 
 							DisplayEnemy();
 
-							Talk($"[color={RGB.LightMagenta}] 나는 이곳의 대장인 죽음의 기사님이시다. 더 이상의 희생이 나기전에  나의 손에서 끝을 맺어야 겠군. 자 그럼 받아랏 !!!![/color]");
+							Talk($"[color={RGB.LightMagenta}] 나는 이곳의 대장인 죽음의 기사님이시다. 더 이상의 희생이 나기 전에 나의 손에서 끝을 맺어야겠군. 자 그럼 받아랏!!!![/color]");
 
 							mSpecialEvent = SpecialEventType.BattleDeathKnight;
 							return;
@@ -1109,11 +1092,11 @@ namespace DarkUWP
 							Ask(new string[] {
 								" 일행은 죽음의 기사를 물리쳤다. 하지만 죽음의 기사는 완전히 죽지 않고 우리에게 말을 걸었다.",
 								"",
-								$"[color={RGB.LightMagenta}] 으윽~~~ 나는 여지껏 여기서 산적 생활을 해왔지만 당신들 처럼 강한 상대는 보지 못했소." +
-								" 혹시 내가 당신들 일행의 끄트 머리에 따라다니며 한 수 배워도 되겠소 ?[/color]"
+								$"[color={RGB.LightMagenta}] 으윽~~~ 나는 여지껏 여기서 산적 생활을 해왔지만 당신들처럼 강한 상대는 보지 못했소." +
+								" 혹시 내가 당신들 일행의 끄트 머리에 따라다니며 한 수 배워도 되겠소?[/color]"
 							}, MenuMode.JoinDeathKnight, new string[] {
 								"좋소, 당신이 원한다면",
-								"아니되오, 산적을 일행으로 둘 수는 없소"
+								"아니 되오, 산적을 일행으로 둘 수는 없소"
 							});
 						}
 						else if (battleEvent == BattleEvent.DeathSoul)
@@ -1135,8 +1118,8 @@ namespace DarkUWP
 						}
 						else if (battleEvent == BattleEvent.Illusion)
 						{
-							Talk($"[color={RGB.LightMagenta}] 하지만 나의 마법은 이 정도로 끝 나는 것이 아니라오." +
-							"  다시 한번 당신의 환상에 빠져 들어 보시오. 하하하하 ~~[/color]");
+							Talk($"[color={RGB.LightMagenta}] 하지만 나의 마법은 이 정도로 끝나는 것이 아니라오." +
+							" 다시 한번 당신의 환상에 빠져들어 보시오. 하하하하 ~~[/color]");
 
 							mSpecialEvent = SpecialEventType.SummonIllusion;
 
@@ -1147,23 +1130,23 @@ namespace DarkUWP
 							mParty.Etc[8] |= 1 << 6;
 
 							Talk(new string[] {
-								$"[color={RGB.LightMagenta}] 휴~~~  겨우 몰록의 결계에서 벗어났군. 나의 출현이 도움이 되었나 ?  나는 또 다음에 나타나도록 하지. 그때까지 안녕히 ...[/color]",
+								$"[color={RGB.LightMagenta}] 휴~~~ 겨우 몰록의 결계에서 벗어났군. 나의 출현이 도움이 되었나? 나는 또 다음에 나타나도록 하지. 그때까지 안녕히 ...[/color]",
 								"",
-								" 레드 안타레스는 점점 희미해 지더니  이내 사라지고 말았다."
+								" 레드 안타레스는 점점 희미해지더니 이내 사라지고 말았다."
 							});
 
 							mSpecialEvent = SpecialEventType.WinMolok;
 						}
 						else if (battleEvent == BattleEvent.Dragon)
 						{
-							Dialog(" 용의 동굴에는  동쪽으로 이어지는 통로가 있었다.");
+							Dialog(" 용의 동굴에는 동쪽으로 이어지는 통로가 있었다.");
 
 							for (var x = 20; x < 29; x++)
 								UpdateTileInfo(x, 71, 41);
 						}
 						else if (battleEvent == BattleEvent.FlyingDragon)
 						{
-							Dialog(" 용의 동굴에는  동쪽으로 이어지는 통로가 있었다.");
+							Dialog(" 비룡들을 물리치자 조금 전에는 보지 못했던 통로가 있었다.");
 
 							for (var x = 20; x < 29; x++)
 								UpdateTileInfo(x, 73, 41);
@@ -1210,7 +1193,7 @@ namespace DarkUWP
 						if (battleEvent == BattleEvent.MenaceMurder)
 						{
 							ShowMap();
-							Talk(" 하지만 너무 많은 적들에게 포위되어 도망 갈수가 없었다.");
+							Talk(" 하지만 너무 많은 적들에게 포위되어 도망갈 수가 없었다.");
 
 							mBattleEvent = BattleEvent.MenaceMurder;
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
@@ -1237,7 +1220,7 @@ namespace DarkUWP
 						else if (battleEvent == BattleEvent.CaveOfBerialCyclopes)
 						{
 							ShowMap();
-							Talk(" 하지만 적은 끝까지 우리를 따라 붙었다.");
+							Talk(" 하지만 적은 끝까지 우리를 따라붙었다.");
 
 							mBattleEvent = BattleEvent.CaveOfBerialCyclopes;
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
@@ -1301,7 +1284,7 @@ namespace DarkUWP
 						{
 							if (!mEncounterEnemyList[7].Dead)
 							{
-								Talk(" 하지만 메피스토펠레스는  일행의 도주를 허용하지 않았다.");
+								Talk(" 하지만 메피스토펠레스는 일행의 도주를 허용하지 않았다.");
 
 								mBattleEvent = BattleEvent.Mephistopheles;
 								mSpecialEvent = SpecialEventType.BackToBattleMode;
@@ -1312,7 +1295,7 @@ namespace DarkUWP
 								WinMephistopheles();
 						}
 						else if (battleEvent == BattleEvent.CyllianCominus) {
-							Talk($"[color={RGB.LightMagenta}] 크크크.. 너희들은 반드시 나의 손에 죽어 줘야 겠다. 크크크..[/color]");
+							Talk($"[color={RGB.LightMagenta}] 크크크.. 너희들은 반드시 나의 손에 죽어 줘야겠다. 크크크..[/color]");
 
 							mBattleEvent = BattleEvent.CyllianCominus;
 							mSpecialEvent = SpecialEventType.BackToBattleMode;
@@ -1328,19 +1311,19 @@ namespace DarkUWP
 						if (battleEvent == BattleEvent.MenaceMurder)
 						{
 							Talk(new string[] {
-								$"[color={RGB.LightMagenta}] 당신은 악마 사냥꾼에게 기습을 받아서  거의 다 죽게 되었을때  갑자기 낯익은 목소리가 먼곳에서 들려 왔다.[/color]",
+								$"[color={RGB.LightMagenta}] 당신은 악마 사냥꾼에게 기습을 받아서 거의 다 죽게 되었을 때 갑자기 낯익은 목소리가 먼 곳에서 들려 왔다.[/color]",
 								$"[color={RGB.LightMagenta}] {mPlayerList[0].Name}. 나는 레드 안타레스일세. 당신도 실력이 많이 줄었군. 이런 조무래기들에게 당하다니." +
-								"  그럼 약간의 도움을 주도록하지. 잘 보게나.[/color]"
+								" 그럼 약간의 도움을 주도록 하지. 잘 보게나.[/color]"
 							});
 
 							mSpecialEvent = SpecialEventType.HelpRedAntares;
 						}
 						else if (battleEvent == BattleEvent.Illusion) {
 							Dialog(new string[] {
-								" 일행이 환상에 빠져  스스로 파멸하고 있을때 멀리서 귀에 익은 음성이 들려 왔다.",
+								" 일행이 환상에 빠져 스스로 파멸하고 있을 때 멀리서 귀에 익은 음성이 들려왔다.",
 								"",
 								$"[color={RGB.LightGreen}] {mPlayerList[0].Name}. 나는 레드 안타레스일세.[/color]",
-								$"[color={RGB.LightGreen}] 다시 또 만나게 됐군.  상당히 위험한 상황인것 같군. 그럼 내가 환상을 깨어 주도록 하지.[/color]",
+								$"[color={RGB.LightGreen}] 다시 또 만나게 됐군. 상당히 위험한 상황인 것 같군. 그럼 내가 환상을 깨어 주도록 하지.[/color]",
 							});
 
 							InvokeAnimation(AnimationType.RemoveIllusion);
@@ -1430,10 +1413,11 @@ namespace DarkUWP
 					mParty.XAxis = 90;
 					mParty.YAxis = 79;
 
-					await RefreshGame();
-
 					mParty.Etc[0] = 255;
-					mSpecialEvent = SpecialEventType.CookieEvent;
+					await RefreshGame();
+					BGMPlayer.Source = null;
+
+					InvokeAnimation(AnimationType.Cookie);
 				}
 				else if (ContinueText.Visibility == Visibility.Visible)
 				{
@@ -1472,9 +1456,9 @@ namespace DarkUWP
 								$"{mPlayerList[0].Name}에게.",
 								"",
 								"",
-								" 자네라면 여기에 올 거라고 믿고  이 글을 쓴다네. 나는 지금 은신 중이라  내가 있는 곳을 밝힐순 없지만 나는 지금 무사하다네." +
-								"  자네와의 기나 긴 모험을 끝마치고 돌아 오던중 나는 나름대로의 뜻이 있어 로어성에 돌아오지 않았다네." +
-								" 내 자신의 의지였다면 영영 로어성에 돌아오지 않았겠지만  곧 발생할  새로운 위협을 나는 느끼고 있기 때문에  자네에게 이런 쪽지를 보내게 되었네."
+								" 자네라면 여기에 올 거라고 믿고 이 글을 쓴다네. 나는 지금 은신 중이라 내가 있는 곳을 밝힐 순 없지만 나는 지금 무사하다네." +
+								" 자네와의 기나긴 모험을 끝마치고 돌아오던 중 나는 나름대로의 뜻이 있어 로어 성에 돌아오지 않았다네." +
+								" 나 자신의 의지였다면 영영 로어 성에 돌아오지 않았겠지만 곧 발생할 새로운 위협을 나는 느끼고 있기 때문에 자네에게 이런 쪽지를 보내게 되었네."
 							});
 
 							mSpecialEvent = SpecialEventType.ViewGeniusKieLetter2;
@@ -1482,10 +1466,10 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ViewGeniusKieLetter2)
 						{
 							AppendText(new string[] {
-								$" 로어성까지는 소문이 미치지 않았는지는 모르겠지만 로어 대륙의 남동쪽에는 알 수 없는 피라미드가 땅 속으로 부터 솟아 올랐다네." +
-								"  나와 로어 헌터 둘이서 그 곳을 탐험 했었지. 그 곳에는 다시 두개의 동굴이 있었고 그 두곳은 지하 세계와 연결 되어 있었다네." +
-								"  그 곳에 대해서는 지금 이 메모의 여백이 좁아서 말하기 어렵다네." +
-								" 나는 지금 이 곳,저 곳 떠돌아 다니지만  북동쪽 해안의 오두막에 살고 있는 전투승 레굴루스에게 물어 보면  내가 있는 곳을 자세히 알 수 있을 걸세.",
+								$" 로어 성까지는 소문이 미치지 않았는지는 모르겠지만 로어 대륙의 남동쪽에는 알 수 없는 피라미드가 땅속으로부터 솟아올랐다네." +
+								" 나와 로어 헌터 둘이서 그곳을 탐험했었지. 그곳에는 다시 두 개의 동굴이 있었고 그 두 곳은 지하 세계와 연결되어 있었다네." +
+								" 그곳에 대해서는 지금 이 메모의 여백이 좁아서 말하기 어렵다네." +
+								" 나는 지금 이곳, 저곳 떠돌아다니지만 북동쪽 해안의 오두막에 살고 있는 전투승 레굴루스에게 물어보면 내가 있는 곳을 자세히 알 수 있을 걸세.",
 								"",
 								"",
 								"",
@@ -1495,35 +1479,35 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.TalkPrisoner)
 						{
 							AppendText(new string[] {
-								" 하지만 더욱 이상한것은 로드 안 자신도 그에 대한 사실을 인정하면서도  왜 우리에게는 그를 배격하도록만 교육시키는 가를  알고 싶을뿐입니다." +
-							" 로드 안께서는 나를 이해한다고 하셨지만 사회 혼란을 방지하기 위해 나를 이렇게 밖에 할수 없다고 말씀하시더군요." +
+								" 하지만 더욱 이상한 것은 로드 안 자신도 그에 대한 사실을 인정하면서도 왜 우리에게는 그를 배격하도록만 교육하는 가를 알고 싶을 뿐입니다." +
+							" 로드 안께서는 나를 이해한다고 하셨지만 사회 혼란을 방지하기 위해 나를 이렇게 밖에 할 수 없다고 말씀하시더군요." +
 							" 그리고 이것은 선을 대표하는 자기로서는 이 방법 밖에는 없다고 하시더군요.",
-								" 하지만 로드 안의 마음은 사실 이렇지 않다는걸 알수 있었습니다.  에인션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알수가 있었기 때문입니다."
+								" 하지만 로드 안의 마음은 사실 이렇지 않다는 걸 알수 있었습니다. 에인션트 이블의 말로는 사실 서로가 매우 절친한 관계임을 알 수가 있었기 때문입니다."
 							});
 						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn)
 						{
-							Talk(" 또 자네의 힘을 빌릴 때가 온것 같네. 새로운 마력이 온통 이 세계를 휘감고 있다네." +
-							$" 그것을 내가 깨닭았을때는  이미 그 새로운 존재가 민심을 선동하고 있었다네." +
-							"  주민들은 [color={RGB.LightCyan}]다크 메이지[/color]가 있어서 곧 여기를 침공할 거라고 하며 나에게 방어를 요청했다네." +
-							"  하지만 다크 메이지란 존재는 내가 알기로도 존재하지 않으며  나와 연대 관계에 있는 에인션트 이블도 역시 그런 존재를 모르고 있었다네." +
-							"  하지만 주민들은 어떻게 알았는지 그 존재를 말하고 있다네. 그럼 이번에 해야할 임무를 말해 주겠네.");
+							Talk(" 또 자네의 힘을 빌릴 때가 온 것 같네. 새로운 마력이 온통 이 세계를 휘감고 있다네." +
+							$" 그것을 내가 깨달았을 때는 이미 그 새로운 존재가 민심을 선동하고 있었다네." +
+							$" 주민들은 [color={RGB.LightCyan}]다크 메이지[/color]가 있어서 곧 여기를 침공할 거라고 하며 나에게 방어를 요청했다네." +
+							" 하지만 다크 메이지란 존재는 내가 알기로도 존재하지 않으며 나와 연대 관계에 있는 에인션트 이블도 역시 그런 존재를 모르고 있었다네." +
+							" 하지만 주민들은 어떻게 알았는지 그 존재를 말하고 있다네. 그럼 이번에 해야 할 임무를 말해 주겠네.");
 
 							mSpecialEvent = SpecialEventType.MeetLordAhn2;
 						}
 						else if (specialEvent == SpecialEventType.MeetLordAhn2)
 						{
 							AppendText(new string[] {
-								" 자네는 메너스란 동굴을 기억할 걸세. 그곳은 네크로만서가 사라진후 파괴되었고  지금은 다시 원래대로 광산이 되었다네." +
-							"  하지만 언제부턴가 그곳은 잇달은 의문의 살인 때문에  지금은 거의 폐광이 되다시피 한 곳이라네." +
-							" 주민들은 그 살인이  모두 다크 메이지의 짓이라고들 하고있네. 나도 다크 메이지의 존재를 믿고 싶지는 않지만  일이 이렇게 되었으니 어쩔수 없다네.",
-								" 지금 즉시 메너스로 가서  진상을 밝혀 주게.",
-								" 그리고 다크 메이지에 대한 정보도  알아 오도록 하게.  무기는 무기고에서 가져가도록 허락하지. 부탁하네.",
-								$"[color={RGB.LightCyan}] [[ 경험치 + 10000 ] [[ 황금 + 1000 ][/color]"
+								" 자네는 메너스란 동굴을 기억할 걸세. 그곳은 네크로만서가 사라진 후 파괴되었고 지금은 다시 원래대로 광산이 되었다네." +
+							" 하지만 언제부턴가 그곳은 잇단 의문의 살인 때문에 지금은 거의 폐광이 되다시피 한 곳이라네." +
+							" 주민들은 그 살인이 모두 다크 메이지의 짓이라고들 하고 있네. 나도 다크 메이지의 존재를 믿고 싶지는 않지만 일이 이렇게 되었으니 어쩔 수 없다네.",
+								" 지금 즉시 메너스로 가서 진상을 밝혀 주게.",
+								" 그리고 다크 메이지에 대한 정보도 알아 오도록 하게. 무기는 무기고에서 가져가도록 허락하지. 부탁하네.",
+								$"[color={RGB.LightCyan}] [[ 경험치 + 10,000 ] [[ 황금 + 1,000 ][/color]"
 							});
 
-							mPlayerList[0].Experience += 10000;
-							mParty.Gold += 1000;
+							mPlayerList[0].Experience += 10_000;
+							mParty.Gold += 1_000;
 							mParty.Etc[9]++;
 
 							mSpecialEvent = SpecialEventType.None;
@@ -1531,8 +1515,8 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetLordAhn3)
 						{
 							Talk(new string[] {
-								" 그리고 내가 다크 메이지의 기원을 여러 방면으로 알아 보던 중에 이 책을 찾아 내었네.",
-								$" 이 책은 당신도 알다시피  [color={RGB.LightCyan}]알비레오[/color]라고 하는 타임 워커가 이 대륙에 남기고 간 예언서이지." +
+								" 그리고 내가 다크 메이지의 기원을 여러 방면으로 알아보던 중에 이 책을 찾아내었네.",
+								$" 이 책은 자네도 알다시피 [color={RGB.LightCyan}]알비레오[/color]라고 하는 타임 워커가 이 대륙에 남기고 간 예언서이지." +
 								" 중요한 부분만 해석하면 다음과 같네."
 							});
 
@@ -1541,29 +1525,29 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetLordAhn4)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}]첫번째 흉성이 나타나는 날, 평화는 로어의 신과 함께 대지로 추락할 것이며  공간이 어긋나고 대륙이 진동하며  새로운 존재가 나타난다.[/color]",
+								$"[color={RGB.White}]첫 번째 흉성이 나타나는 날, 평화는 로어의 신과 함께 대지로 추락할 것이며 공간이 어긋나고 대륙이 진동하며 새로운 존재가 나타난다.[/color]",
 								"",
-								" 이 글은 저번에 네크로만서가 나타날 때의 그 광경을 묘사한 구절이란것을 금방 알 수 있네.",
+								" 이 글은 저번에 네크로만서가 나타날 때의 그 광경을 묘사한 구절이란 것을 금방 알 수 있네.",
 								"",
-								$"[color={RGB.White}]두번째 흉성이 나타나는 날, 그는 용암의 대륙으로부터 세상을 뒤흔들게 되며 그는 네크로만서라 불리어 진다.[/color]",
+								$"[color={RGB.White}]두 번째 흉성이 나타나는 날, 그는 용암의 대륙으로부터 세상을 뒤흔들게 되며 그는 네크로만서라 불린다.[/color]",
 								"",
-								" 이 글 또한 몇년 전의 일과 일치 하네.",
+								" 이 글 또한 몇 년 전의 일과 일치하네.",
 								"",
-								$"[color={RGB.White}]세번째 흉성이 나타나는 날, 네크로만서를  이기는 자는 아무도 없게 된다.[/color]",
+								$"[color={RGB.White}]세 번째 흉성이 나타나는 날, 네크로만서를 이기는 자는 아무도 없게 된다.[/color]",
 								"",
-								" 하지만 이 글은 사실과 다르다네.  자네가 네크로만서를 물리쳤기 때문에 말일세.",
+								" 하지만 이 글은 사실과 다르다네. 자네가 네크로만서를 물리쳤기 때문에 말일세.",
 								"",
-								$"[color={RGB.White}]네번째 흉성이 나타나는 날, 메너스의 달이 붉게 물들때 어둠의 영혼이 나타나  세계의 종말을 예고한다.[/color]",
+								$"[color={RGB.White}]네 번째 흉성이 나타나는 날, 메너스의 달이 붉게 물들 때 어둠의 영혼이 나타나 세계의 종말을 예고한다.[/color]",
 								"",
-								" 이 글이 가장 중요한 요지라네. '메너스의 달이 붉게 물들때' 란 메너스에서 일어난 지금까지의 살인 사건을 말하는 것이고," +
-								" '영혼' 이란 옛 부터 전승되는 구전에 의하면  영혼의 힘을 이용할 수 있는 사람,  즉 마법사를  지칭하는 말이 된다네." +
-								"  그러므로 '어둠의 영혼'은 바로 어둠의 마법사를 뜻하는 말이 되네." +
-								" 다시 풀이하면 그 뜻은 '메너스에서 살인 사건이 일어날때 다크 메이지가 세계의 종말을 예고 한다'라는 말이 된다네.",
+								" 이 글이 가장 중요한 요지라네. '메너스의 달이 붉게 물들 때' 란 메너스에서 일어난 지금까지의 살인 사건을 말하는 것이고," +
+								" '영혼'이란 예부터 전승되는 구전에 의하면 영혼의 힘을 이용할 수 있는 사람, 즉 마법사를 지칭하는 말이 된다네." +
+								" 그러므로 '어둠의 영혼'은 바로 어둠의 마법사를 뜻하는 말이 되네." +
+								" 다시 풀이하면 그 뜻은 '메너스에서 살인 사건이 일어날 때 다크 메이지가 세계의 종말을 예고한다'라는 말이 된다네.",
 								"",
-								$"[color={RGB.White}]다섯번째 흉성이 나타나는 날, 내가 본 다섯번의 흉성 중에 하나가  나타나지 않았음을 알아낸다.[/color]",
+								$"[color={RGB.White}]다섯 번째 흉성이 나타나는 날, 내가 본 다섯 번의 흉성 중에 하나가 나타나지 않았음을 알아낸다.[/color]",
 								"",
-								" 위에서의 예언을 보면 하나가 틀려 있지.  바로 세번째 흉성이 떨어질 때의 일 말일세.  그것이 틀렸다는 그 말일세." +
-								" 알비레오 그 자신도 자네가 네크로만서를 물리치리라고는 생각하지 못했는데 자네 해 내었기 때문에 이런 말을 적었던것 같네."
+								" 위에서의 예언을 보면 하나가 틀려 있지. 바로 세 번째 흉성이 떨어질 때의 일 말일세. 그것이 틀렸다는 그 말일세." +
+								" 알비레오 그 자신도 자네가 네크로만서를 물리치리라고는 생각하지 못했는데 자네 해 내었기 때문에 이런 말을 적었던 것 같네."
 							});
 
 							mSpecialEvent = SpecialEventType.MeetLordAhn5;
@@ -1571,10 +1555,10 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetLordAhn5)
 						{
 							AppendText(new string[] {
-								" 이 예언에 의하면 반드시 다크 메이지가 세상을  멸망 시키게 된다네.  알비레오 그 자신도 그 것을 알려 주려 했던 것이고." +
-								"  그렇다면 우리는 이번에도 저번의 네크로만서때 처럼 스스로의 운명을 바꾸기 위해  도전 보아야 한다는 결론을 얻을 수 있게 되네.",
-								" 그럼 자네에게 또 하나의 할 일을 주겠네. 자네는 지금 즉시 라스트 디치성에 가도록 하게." +
-								" 그곳에서도  우리와 같은 위기를  느끼고 있을것이고  이 보다 더 많은 정보가 있을 수도 있을 테니 한시 바삐 그 곳으로 가보도록 하게."
+								" 이 예언에 의하면 반드시 다크 메이지가 세상을 멸망 시키게 된다네. 알비레오 그 자신도 그것을 알려 주려 했던 것이고." +
+								" 그렇다면 우리는 이번에도 저번의 네크로만서때 처럼 스스로의 운명을 바꾸기 위해 도전 보아야 한다는 결론을 얻을 수 있게 되네.",
+								" 그럼 자네에게 또 하나의 할 일을 주겠네. 자네는 지금 즉시 라스트디치 성에 가도록 하게." +
+								" 그곳에서도 우리와 같은 위기를 느끼고 있을 것이고 이보다 더 많은 정보가 있을 수도 있을 테니 한시바삐 그곳으로 가보도록 하게."
 							});
 
 							mParty.Etc[9]++;
@@ -1584,12 +1568,12 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 이 석판의 내용을 읽어 보겠네.",
 								$"[color={RGB.White}] 어둠은 달이며 달은 여성이라." +
-								$"  이 세계가 아르테미스를 3 번 범할때 어둠은 깨어나고 다크 메이지는[/color] [color={RGB.Yellow}]실리안 카미너스( Cyllian Cominus )[/color][color={RGB.White}]라고 불리운다." +
+								$" 이 세계가 아르테미스를 3번 범할 때 어둠은 깨어나고 다크 메이지는[/color] [color={RGB.Yellow}]실리안 카미너스(Cyllian Cominus)[/color][color={RGB.White}]라고 불린다." +
 								" 그리고 그녀는 누구도 당해낼 수 없는 마력으로 세계를 종말로 이끄노니....[/color]",
 								"",
-								" 이글의 해석은 다음과 같다네.",
-								" \"어둠의 마법사\"는 여자 마법사를 뜻하며, \"세계가 아르테미스를 범한다\"라는 구절은  지구가 달(아르테미스)을 가리는 현상," +
-								" 즉 월식을 말하는 것이며 그 월식이 3번 일어난 후 \"어둠이 깨어난다\" 즉 실리안 카미너스라는 존재가 생겨난다는 것이네.  그리고는 그녀가 이 세계를 멸망시킨다는 것이네."
+								" 이 글의 해석은 다음과 같다네.",
+								" \"어둠의 마법사\"는 여자 마법사를 뜻하며, \"세계가 아르테미스를 범한다\"라는 구절은 지구가 달(아르테미스)을 가리는 현상," +
+								" 즉 월식을 말하는 것이며 그 월식이 3번 일어난 후 \"어둠이 깨어난다\" 즉 실리안 카미너스라는 존재가 생겨난다는 것이네. 그러고는 그녀가 이 세계를 멸망시킨다는 것이네."
 							});
 
 							mSpecialEvent = SpecialEventType.MeetLordAhn7;
@@ -1597,11 +1581,11 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetLordAhn7)
 						{
 							Talk(new string[] {
-								" 이 글이 정말이라면 알비레오의 예언은 실현되고 반드시 세계는 멸망하게 될 걸세. 하지만 자네는 언제나 운명에 대항에 왔으니 이런 운명적인 것에는 익숙하겠지 ?" +
-								" 네크로만서와 싸울때도 그랬으니까.",
-								$" 그리고 [color={RGB.White}]흉성의 단서[/color]에서 가져온  이 석판은 도저히 나의 힘으로는 해독이 안되는군." +
-								"  이 세계의 운명이 달린 일이니  지금 당장 에인션트 이블과 함께 상의 해봐야 겠네.",
-								" 그럼 내일 아침에 보도록하세."
+								" 이 글이 정말이라면 알비레오의 예언은 실현되고 반드시 세계는 멸망하게 될 걸세. 하지만 자네는 언제나 운명에 대항에 왔으니 이런 운명적인 것에는 익숙하겠지?" +
+								" 네크로만서와 싸울 때도 그랬으니까.",
+								$" 그리고 [color={RGB.White}]흉성의 단서[/color]에서 가져온 이 석판은 도저히 나의 힘으로는 해독이 안되는군." +
+								" 이 세계의 운명이 달린 일이니 지금 당장 에인션트 이블과 함께 상의해봐야겠네.",
+								" 그럼 내일 아침에 보도록 하세."
 							});
 
 							mSpecialEvent = SpecialEventType.SleepLoreCastle;
@@ -1626,12 +1610,12 @@ namespace DarkUWP
 							}
 
 							AppendText(new string[] {
-								" 자네 말을 들어 보니 정말 큰일이군.  이러다간 정말 알비레오의 예언처럼 되어 버리겠는데." +
-								" 자네가 지하 세계에 내려간 후 이 곳에도 많은 변화가 있었네.  갑자기 달의 운행이  빨라졌다네." +
-								" 원래는 월식이 일어날 수 있는 보름달이 29.5일에 한번이었는데. 이제는 훨씬 더 빨라졌다네." +
-								"  달의 운행이 빨라져서 달은 원심력이 증가했고  달을 붙잡아 두기 위해서 지구의 중력장이 증가 했다네." +
-								" 지금은 거의 문제가 안될 정도이지만 이 상황이 점점 악화 된다면 지구는 백색 왜성이나 블랙홀처럼 스스로의 중력에 의해 파괴될 지도 모른다네.",
-								$" 그리고 다음 월식이 일어날 날짜가 계산 되었다네. 날짜는 15일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일로 예정 되어 있다네." +
+								" 자네 말을 들어 보니 정말 큰일이군. 이러다간 정말 알비레오의 예언처럼 되어 버리겠는데." +
+								" 자네가 지하 세계에 내려간 후 이곳에도 많은 변화가 있었네. 갑자기 달의 운행이 빨라졌다네." +
+								" 원래는 월식이 일어날 수 있는 보름달이 29.5일에 한 번이었는데. 이제는 훨씬 더 빨라졌다네." +
+								" 달의 운행이 빨라져서 달은 원심력이 증가했고 달을 붙잡아 두기 위해서 지구의 중력장이 증가했다네." +
+								" 지금은 거의 문제가 안될 정도이지만 이 상황이 점점 악화된다면 지구는 백색 왜성이나 블랙홀처럼 스스로의 중력에 의해 파괴될지도 모른다네.",
+								$" 그리고 다음 월식이 일어날 날짜가 계산되었다네. 날짜는 15일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일로 예정되어 있다네." +
 								" 그때까지 스스로를 단련 시키게. 그때 역시 잘 부탁하네."
 							});
 
@@ -1659,10 +1643,10 @@ namespace DarkUWP
 							}
 
 							AppendText(new string[] {
-								" 음... 자네 말을 들어보니  정말 고생이 많았었군. 그리고 악의 추종자 두명을 처단한 일도 정말 수고했네." +
-								" 하지만 벌써 마지막 세번째 월식 날짜가 임박했네. 사실 걱정은 바로 이것이네." +
-								" 알비레오의 예언에 나오는 다크 메이지 실리안 카미너스가  부활하게 되는 시간은  바로 이번 월식이 일어나는 때라네. 아마 이번이 마지막 파견인것 같군. 그럼 날짜를 알려주지.",
-								$" 마지막 세번째 월식은  바로 5 일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 이라네." +
+								" 음... 자네 말을 들어보니 정말 고생이 많았었군. 그리고 악의 추종자 두 명을 처단한 일도 정말 수고했네." +
+								" 하지만 벌써 마지막 세 번째 월식 날짜가 임박했네. 사실 걱정은 바로 이것이네." +
+								" 알비레오의 예언에 나오는 다크 메이지 실리안 카미너스가 부활하게 되는 시간은 바로 이번 월식이 일어나는 때라네. 아마 이번이 마지막 파견인 것 같군. 그럼 날짜를 알려주지.",
+								$" 마지막 세 번째 월식은 바로 5일 뒤인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일이라네." +
 								" 자네가 만약 성공한다면 다시 로어의 세계는 평화가 올 것이지만 만약 실패한다면 우리가 이렇게 만나는 것도 마지막이 된다네."
 							});
 
@@ -1676,9 +1660,9 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.DestructCastleLore)
 						{
 							Talk(new string[] {
-								" 다크 메이지는 가공할 힘으로 전 대륙에 결계를 형성하기 시작했고 결계속의 물체들은 서서히 형체를 잃어가기 시작했다." +
-								"  이제는 실리안 카미너스를 제어할 수있는 메피스토펠레스마저 사라져 버려서  그녀는 의지의 중심을 잃고 한없이 그녀의 힘을 방출하기 시작했다.",
-								" 이제는 누구도 그녀의 기하 급수적인 힘의 폭주를 막을 수가 없었고 이미 당신의 의식도 흐려져 갔다."
+								" 다크 메이지는 가공할 힘으로 전 대륙에 결계를 형성하기 시작했고 결계 속의 물체들은 서서히 형체를 잃어가기 시작했다." +
+								" 이제는 실리안 카미너스를 제어할 수 있는 메피스토펠레스마저 사라져 버려서 그녀는 의지의 중심을 잃고 한없이 그녀의 힘을 방출하기 시작했다.",
+								" 이제는 누구도 그녀의 기하급수적인 힘의 폭주를 막을 수가 없었고 이미 당신의 의식도 흐려져갔다."
 							});
 
 							mSpecialEvent = SpecialEventType.DestructCastleLore2;
@@ -1690,12 +1674,12 @@ namespace DarkUWP
 								" 그것은 레드 안타레스의 마지막 의지였고 그는 그녀의 결계를 버티며 마지막 말을 한다.",
 								"",
 								$"[color={RGB.LightMagenta}] 다크 메이지의 힘은 영혼인 나조차도 소멸 시킬 힘이 있다는 걸 알았네." +
-								"  지금은 나의 마법력으로 나 혼자 정도를 보호할 수 있는 결계를 구성했지만 곧 나의 힘도 다하게 될 걸세.  나는 마지막으로 한가지의 묘안을 생각해 내었네." +
-								" 자네는 알비레오의 예언을 기억 하겠지.  그중 마지막 예언을 외워보게.  거기에는 대단한 모순이 있네." +
-								" 지금은 그의 세번째 예언인 \"네크로만서에게 이긴자는 아무도 없었다.\"라는 구절이 실행되지 않은 예언이라고 생각되고 있지.  하지만 반대로 생각해보게." +
-								"  자네가 만약 지금이라도 네크로만서에게 패한다면 네번째의 예언이 실현 되지 않는 예언이 된다네." +
-								" 그렇게만 된다면  다크 메이지는 처음부터 없었던 존재가 되어 버리고  로어 대륙은 원래의 모습대로 시간을 진행해 나가게 된다네." +
-								" 나의 결계가 점점 약해져 가는군. 나의 소멸을 헛되게 하지는말게.  그리고 자신보다 로어의 운명을 먼저 생각하도록 하게.... 그..그럼... 다..다음 세상에서......[/color]"
+								" 지금은 나의 마법력으로 나 혼자 정도를 보호할 수 있는 결계를 구성했지만 곧 나의 힘도 다하게 될 걸세. 나는 마지막으로 한 가지의 묘안을 생각해 내었네." +
+								" 자네는 알비레오의 예언을 기억하겠지. 그중 마지막 예언을 외워보게. 거기에는 대단한 모순이 있네." +
+								" 지금은 그의 세 번째 예언인 \"네크로만서에게 이긴 자는 아무도 없었다.\"라는 구절이 실행되지 않은 예언이라고 생각되고 있지. 하지만 반대로 생각해 보게." +
+								" 자네가 만약 지금이라도 네크로만서에게 패한다면 네 번째의 예언이 실현되지 않는 예언이 된다네." +
+								" 그렇게만 된다면 다크 메이지는 처음부터 없었던 존재가 되어 버리고 로어 대륙은 원래의 모습대로 시간을 진행해 나가게 된다네." +
+								" 나의 결계가 점점 약해져 가는군. 나의 소멸을 헛되게 하지는 말게. 그리고 자신보다 로어의 운명을 먼저 생각하도록 하게.... 그.. 그럼... 다.. 다음 세상에서......[/color]"
 							});
 
 							mSpecialEvent = SpecialEventType.DestructCastleLore3;
@@ -1703,7 +1687,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.DestructCastleLore3)
 						{
 							AppendText(new string[] {
-								" 그의 의지는 점점 희미해 지더니 결국 암흑으로 사라지고 말았다.",
+								" 그의 의지는 점점 희미해지더니 결국 암흑으로 사라지고 말았다.",
 								" 당신은 어떻게 하겠는가?"
 							});
 
@@ -1734,7 +1718,7 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.HelpRedAntares)
 						{
-							AppendText(new string[] { $"[color={RGB.White}] 레드 안타레스는 '차원 이탈' 을 모든 적에게 사용했다.[/color]", "" });
+							AppendText(new string[] { $"[color={RGB.White}] 레드 안타레스는 '차원 이탈'을 모든 적에게 사용했다.[/color]", "" });
 
 							foreach (var enemy in mEncounterEnemyList)
 							{
@@ -1753,8 +1737,8 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.HelpRedAntares2)
 						{
-							Talk($"[color={RGB.LightMagenta}] 나는 언제나 당신 주위에서  당신에게 도움을 주도록 하겠네. 그리고 내가 알아낸 바로는 다크 메이지는  존재 한다네." +
-							"  이제 부터가 다크 메이지와의 결전이 시작 되는 걸세. 그럼 다음에 또 보도록 하세.[/color]");
+							Talk($"[color={RGB.LightMagenta}] 나는 언제나 당신 주위에서 당신에게 도움을 주도록 하겠네. 그리고 내가 알아낸 바로는 다크 메이지는 존재한다네." +
+							" 이제부터가 다크 메이지와의 결전이 시작되는 걸세. 그럼 다음에 또 보도록 하세.[/color]");
 
 							foreach (var player in mPlayerList)
 							{
@@ -1859,10 +1843,10 @@ namespace DarkUWP
 							AppendText(new string[] {
 								$" {mPlayerList[1].NameSubjectJosa} 동굴의 입구를 조사하더니 당신에게 말했다",
 								"",
-								$"[color={RGB.Cyan}] 잠깐 여기를 보게. 이 입구에 떨어져 있는 흙은 다른 곳의 흙과는 다르다네. 이 걸 보게나." +
-								"모래가 거의 유리처럼 변해있지 않은가. 이 건 분명히 핵 폭발이  여기에서 일어 났었다는 증거 일세." +
-								"  이 동굴의 입구가 함몰된 이유는 바로 핵 무기나 아니면 거기에 필적하는 초 자연적인  마법에 의해서 인것 같네." +
-								"  그렇다면 이 동굴 안의 세계에 존재하는 인물 중에서 이 정도의 고수준 마법을  사용하는 사람이  있다는 셈이라네.[/color]"
+								$"[color={RGB.Cyan}] 잠깐 여기를 보게. 이 입구에 떨어져 있는 흙은 다른 곳의 흙과는 다르다네. 이걸 보게나." +
+								"모래가 거의 유리처럼 변해있지 않은가. 이 건 분명히 핵폭발이 여기에서 일어났었다는 증거일세." +
+								" 이 동굴의 입구가 함몰된 이유는 바로 핵무기나 아니면 거기에 필적하는 초자연적인 마법에 의해서인 것 같네." +
+								" 그렇다면 이 동굴 안의 세계에 존재하는 인물 중에서 이 정도의 고수준 마법을 사용하는 사람이 있다는 셈이라네.[/color]"
 							});
 
 							mParty.Etc[30] |= 1 << 7;
@@ -1891,13 +1875,13 @@ namespace DarkUWP
 						}
 						else if (specialEvent == SpecialEventType.GetCromaticShield)
 						{
-							AppendText($"[color={RGB.LightGreen}] 유골이 지니고 있던  양날 전투 도끼를  가질 사람을 고르시오.[/color]");
+							AppendText($"[color={RGB.LightGreen}] 유골이 지니고 있던 양날 전투 도끼를 가질 사람을 고르시오.[/color]");
 
 							ShowCharacterMenu(MenuMode.ChooseEquipBattleAxe, false);
 						}
 						else if (specialEvent == SpecialEventType.GetObsidianArmor)
 						{
-							AppendText($"[color={RGB.LightGreen}] 호수에서 떠오른  흑요석 갑옷을 장착할 사람을 고르시오.[/color]");
+							AppendText($"[color={RGB.LightGreen}] 호수에서 떠오른 흑요석 갑옷을 장착할 사람을 고르시오.[/color]");
 
 							ShowCharacterMenu(MenuMode.ChooseEquipObsidianArmor, false);
 						}
@@ -1934,7 +1918,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.AstronomyQuiz)
 						{
 							mPyramidQuizAllRight = true;
-							AppendText(" \"시그너스 X1\" 이란 별은 현대 과학에서 어떤 별로 간주 되고 있겠소 ?");
+							AppendText(" \"시그너스 X1\"이란 별은 현대 과학에서 어떤 별로 간주되고 있겠소?");
 
 							ShowMenu(MenuMode.AstronomyQuiz1, new string[] {
 								"혹성",
@@ -1946,7 +1930,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ComputerQuiz)
 						{
 							mPyramidQuizAllRight = true;
-							AppendText(" \" 다크 메이지 실리안 카미너스 \"라는 이 게임이 지원하는 그래픽 카드는 무엇이겠소 ?");
+							AppendText(" \"다크 메이지 실리안 카미너스\"라는 이 게임이 지원하는 그래픽 카드는 무엇이겠소?");
 
 							ShowMenu(MenuMode.ComputerQuiz1, new string[] {
 								"Hercules",
@@ -1958,7 +1942,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.PhysicsQuiz)
 						{
 							mPyramidQuizAllRight = true;
-							AppendText(" 빛보다 더 빠르게 달릴 수 있는  가상의 입자가 있소. 그 입자의 이름은 무엇이겠소 ?");
+							AppendText(" 빛보다 더 빠르게 달릴 수 있는 가상의 입자가 있소. 그 입자의 이름은 무엇이겠소?");
 
 							ShowMenu(MenuMode.PhysicsQuiz1, new string[] {
 								"플라즈마",
@@ -1970,7 +1954,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.CommonSenseQuiz)
 						{
 							mPyramidQuizAllRight = true;
-							AppendText(" 이 게임의 전작이며 1부 였던 \" 또 다른 지식의 성전 \"의 적의 최고 보스는 누구였소 ?");
+							AppendText(" 이 게임의 전작이며 1부였던 \"또 다른 지식의 성전\"의 적의 최고 보스는 누구였소?");
 
 							ShowMenu(MenuMode.CommonSenseQuiz1, new string[] {
 								"에인션트 이블",
@@ -1983,7 +1967,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MathQuiz)
 						{
 							mPyramidQuizAllRight = true;
-							AppendText(" X = 7, Y = 9, Z * Z = X + Y 라면 Z 의 값은 어떻게 되겠소 ?");
+							AppendText(" X = 7, Y = 9, Z * Z = X + Y 라면 Z의 값은 어떻게 되겠소?");
 
 							ShowMenu(MenuMode.MathQuiz1, new string[] {
 								"<< 3 >>",
@@ -2000,7 +1984,7 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetRegulus)
 						{
 							Dialog(new string[] {
-								" 아참 그리고 내가 이번에는 해독 약초를 많이 캤다네. 자네에게도 몇개 주지. 여행에 도움이 될걸세.",
+								" 아참 그리고 내가 이번에는 해독 약초를 많이 캤다네. 자네에게도 몇 개 주지. 여행에 도움이 될걸세.",
 								"",
 								$"[color={RGB.LightCyan}] 일행은 약간의 해독 약초를 그에게 받았다.[/color]"
 							});
@@ -2054,7 +2038,7 @@ namespace DarkUWP
 
 							DisplayEnemy();
 
-							Talk($"[color={RGB.LightMagenta}] 우리들은 몰록님을 위해서만 싸운다.  당신들과는 사적인 감정은 없지만  이 것도 몰록님의 명령이니 우리도 어쩔 수 없다." +
+							Talk($"[color={RGB.LightMagenta}] 우리들은 몰록님을 위해서만 싸운다. 당신들과는 사적인 감정은 없지만 이것도 몰록님의 명령이니 우리도 어쩔 수 없다." +
 							" 그럼 지옥에서나 우리 보도록 하지.[/color]");
 
 							mSpecialEvent = SpecialEventType.BattleDeathSoul;
@@ -2067,8 +2051,8 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.MeetWarriorOfCrux)
 						{
 							Ask(new string[] {
-								$"[color={RGB.LightMagenta}] 우리들은 서로의 길로 가는 것이 어떨까 ?[/color]",
-								$"[color={RGB.LightMagenta}] 그러면 서로가 편해 지지. 나의 말에 무슨 계략이 있다던가 하는 것은 아니라네. 어떤가 ?[/color]"
+								$"[color={RGB.LightMagenta}] 우리들은 서로의 길로 가는 것이 어떨까?[/color]",
+								$"[color={RGB.LightMagenta}] 그러면 서로가 편해지지. 나의 말에 무슨 계략이 있다던가 하는 것은 아니라네. 어떤가?[/color]"
 							}, MenuMode.FightWarriorOfCrux, new string[] {
 								"그러면 그렇게 하지",
 								"당치 않는 소리, 분명 이건 계략이다"
@@ -2077,10 +2061,10 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadPapyrus)
 						{
 							Dialog(new string[] {
-								$" [color={RGB.LightCyan}]악의 추종자들[/color][color={RGB.White}]이  실리안 카미너스를  데려가 버렸다." +
-								"  만약 이 글을 누가 본다면 그들을 응징해주기를 바란다.  실리안 카미너스는 이 곳 태생의 6 살난 여자 아이며 그녀는 운명적으로 불멸의 힘을 가지고 태어났다." +
-								$"  아직은 그녀의 힘이 강하게 봉인 되어 있어서  걱정이 없지만 만약[/color] [color={RGB.LightCyan}]악의 추종자들[/color][color={RGB.White}]이" +
-								" 봉인 되어 있는 그녀의 숨은 힘을 이끌어 낸다면 그 힘에 의해서 세상은  것잡을수 없는 파국으로 치닫게 되어 멸망이 도래하게 될 것이다." +
+								$" [color={RGB.LightCyan}]악의 추종자들[/color][color={RGB.White}]이 실리안 카미너스를 데려가 버렸다." +
+								" 만약 이 글을 누가 본다면 그들을 응징해 주기를 바란다. 실리안 카미너스는 이곳 태생의 6살 난 여자아이며 그녀는 운명적으로 불멸의 힘을 가지고 태어났다." +
+								$" 아직은 그녀의 힘이 강하게 봉인되어 있어서 걱정이 없지만 만약[/color] [color={RGB.LightCyan}]악의 추종자들[/color][color={RGB.White}]이" +
+								" 봉인되어 있는 그녀의 숨은 힘을 이끌어 낸다면 그 힘에 의해서 세상은 걷잡을 수 없는 파국으로 치닫게 되어 멸망이 도래하게 될 것이다." +
 								" 반드시 그들을 응징해 주기를 바란다. 세상의 평화를 위하여....[/color]"
 							});
 
@@ -2088,7 +2072,7 @@ namespace DarkUWP
 							{
 								Dialog(new string[] {
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 100,000 ][/color]"
 								}, true);
 
 								mParty.Etc[8] |= 1 << 1;
@@ -2100,10 +2084,10 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 10 월 15 일[/color]",
+								$"[color={RGB.White}] 773년 10월 15일[/color]",
 								"",
-								" 지금 내가 하고 있는 일이  정말 옳은 일인지 스스로가 의심이간다." +
-								"  이미 빛의 사원은 이름과는 다른 어둠의 사원으로 변해가고 있고  나가 따르고 있는 메피스토펠레스님은 선을 표방하고만 있을뿐 실지로는  선을 위시한 악을 행하고 있다."
+								" 지금 내가 하고 있는 일이 정말 옳은 일인지 스스로가 의심이 간다." +
+								" 이미 빛의 사원은 이름과는 다른 어둠의 사원으로 변해가고 있고 나가 따르고 있는 메피스토펠레스님은 선을 표방하고만 있을 뿐 실지로는 선을 위시한 악을 행하고 있다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary1;
@@ -2111,11 +2095,11 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary1)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 10 월 18 일[/color]",
+								$"[color={RGB.White}] 773년 10월 18일[/color]",
 								"",
-								" 오늘도 나는 또 한 사람의 재물을 죽였다. 아스모데우스님의 명령을 어길수 없어서  어쩔수 없이 죽였지만  나의 마음은  양심의 가책으로 번민하고 있다." +
-								" 어쩌면 나는 메피스토펠레스님에게  이용만 당하고 있다는 느낌이 드는게 사실이다." +
-								" 하지만 이렇게 해서라도 세계가 좀 더 좋아질 수만 있다면  나는 이용 당해도 좋다는 생각이 든다. 정말 세상은 너무 더러워 졌다."
+								" 오늘도 나는 또 한 사람의 재물을 죽였다. 아스모데우스님의 명령을 어길 수 없어서 어쩔 수 없이 죽였지만 나의 마음은 양심의 가책으로 번민하고 있다." +
+								" 어쩌면 나는 메피스토펠레스님에게 이용만 당하고 있다는 느낌이 드는 게 사실이다." +
+								" 하지만 이렇게 해서라도 세계가 좀 더 좋아질 수만 있다면 나는 이용당해도 좋다는 생각이 든다. 정말 세상은 너무 더러워졌다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary2;
@@ -2123,11 +2107,11 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary2)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 10 월 23 일[/color]",
+								$"[color={RGB.White}] 773년 10월 23일[/color]",
 								"",
-								" 낮에 너무 끔찍한 말을 들었다.  지금도 나의 가슴은 방망이질 하듯이 두근거린다. 메피스토펠레스님과 몰록님과의 대화를  우연히 옅들었다." +
+								" 낮에 너무 끔찍한 말을 들었다. 지금도 나의 가슴은 방망이질하듯이 두근거린다. 메피스토펠레스님과 몰록님과의 대화를 우연히 엿들었다." +
 								" 그들이 궁극적으로 하고자 하는 일은 바로 세계 멸망이었다." +
-								"  그들이 표상하는 종교는 바로 마교 였다.  그들이 나에게  재물을 죽이게 하고는  그 생명력을 받아들여 점점 그들의 마력을 강하게 해왔던 것이었다."
+								" 그들이 표상하는 종교는 바로 마교였다. 그들이 나에게 재물을 죽이게 하고는 그 생명력을 받아들여 점점 그들의 마력을 강하게 해왔던 것이었다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary3;
@@ -2135,10 +2119,10 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary3)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 10 월 25 일[/color]",
+								$"[color={RGB.White}] 773년 10월 25일[/color]",
 								"",
-								" 나는 드디어 빛의 사원을 탈출했다. 그리고는 여기 필멸의 생존이란 동굴에 은신했다.  그들의 보복이 두려웠기 때문이었다." +
-								"  하지만 얼마가지 않아 그들의 마력에 노출 되어 버릴것 같다. 나는 그들의 마력의 강함을 쭉 봐왔으니까 아마 틀림 없을 것이다."
+								" 나는 드디어 빛의 사원을 탈출했다. 그러고는 여기 필멸의 생존이란 동굴에 은신했다. 그들의 보복이 두려웠기 때문이었다." +
+								" 하지만 얼마 가지 않아 그들의 마력에 노출되어 버릴 것 같다. 나는 그들의 마력의 강함을 쭉 봐왔으니까 아마 틀림없을 것이다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary4;
@@ -2146,11 +2130,11 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary4)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 10 월 26 일[/color]",
+								$"[color={RGB.White}] 773년 10월 26일[/color]",
 								"",
-								" 아침에 내가 조금 더 안전 할 수 있는 방법이 문득 떠올라 실행하기로 했다.  동굴의 입구를 늪으로 막고 또 통로를 모두 차단해 버렸다." +
-								"아무리 공간 이동의 달인이라고 하더라도 이렇게 깊은 동굴을 일일이 투시해서 나를 찾아 낸 후 여기까지 공간 이동을 해 올 수는 없으리라고 생각한다." +
-								"  이제는 편안히 잘 수 있을 것이다."
+								" 아침에 내가 조금 더 안전할 수 있는 방법이 문득 떠올라 실행하기로 했다. 동굴의 입구를 늪으로 막고 또 통로를 모두 차단해 버렸다." +
+								"아무리 공간 이동의 달인이라고 하더라도 이렇게 깊은 동굴을 일일이 투시해서 나를 찾아낸 후 여기까지 공간 이동을 해 올 수는 없으리라고 생각한다." +
+								" 이제는 편안히 잘 수 있을 것이다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary5;
@@ -2158,11 +2142,11 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary5)
 						{
 							Talk(new string[] {
-								$"[color={RGB.White}] 773 년 11 월 3 일[/color]",
+								$"[color={RGB.White}] 773년 11월 3일[/color]",
 								"",
-								" 나의 계산은 틀렸다. 오늘 아침에 4명의 어둠의 추종자의 막내격인  베리알이 나를 찾아 내었다." +
-								"  그는 그들을 배신한 나를 하루 종일 괴로워 하며 죽도록 독이 있는 창으로 나를 찔렀다. 지금 고통이 너무 심하다." +
-								" 손도 떨리고 정신도 맑지않다. 이제는 마지막인가 보다."
+								" 나의 계산은 틀렸다. 오늘 아침에 4명의 어둠의 추종자의 막내 격인 베리알이 나를 찾아내었다." +
+								" 그는 그들을 배신한 나를 하루 종일 괴로워하며 죽도록 독이 있는 창으로 나를 찔렀다. 지금 고통이 너무 심하다." +
+								" 손도 떨리고 정신도 맑지 않다. 이제는 마지막인가 보다."
 							});
 
 							mSpecialEvent = SpecialEventType.ReadDiary6;
@@ -2170,25 +2154,25 @@ namespace DarkUWP
 						else if (specialEvent == SpecialEventType.ReadDiary6)
 						{
 							Dialog(new string[] {
-								$"[color={RGB.White}] 773 년 11 월 4 일[/color]",
+								$"[color={RGB.White}] 773년 11월 4일[/color]",
 								"",
-								" 내 생명도 오늘까지 겠지." +
-								"  그래서 내가 죽은 뒤에 누군가가 나를 발견할지도 모르니 그들에 대한 특징을 알려주어  다른 사람들도 주의 할 수 있도록 해야 겠다는 생각이 들었다.",
-								" 4 번째 보스인 베리알은 마법능력을 제외하고 는 보통 인간과 같을 정도의 체력을 가졌다." +
-								" 하지만 마법 능력도  다른 3 명에 비하면 보잘것 없다. 하지만 결코 무시할 수는 없다.",
-								" 3 번째 보스인 몰록은  환상의 마법에 대가이다. 아마 최고의 환상 마법사이다.",
-								" 2 번째 보스인 아스모데우스는 계략의 천재이다.  하지만 마법사이기 보다는 마법을 사용하는 전사쪽에 가깝다.",
-								" 최고 보스인 메피스토펠레스는 기사격의 체력에 대마법사의 마법을 가지고 있다. 특기는 공중 핵융합에 의해 기를 뿜어내어  적을 공격하는 방법이다.",
+								" 내 생명도 오늘 까지겠지." +
+								" 그래서 내가 죽은 뒤에 누군가가 나를 발견할지도 모르니 그들에 대한 특징을 알려주어 다른 사람들도 주의할 수 있도록 해야겠다는 생각이 들었다.",
+								" 4번째 보스인 베리알은 마법 능력을 제외하고는 보통 인간과 같을 정도의 체력을 가졌다." +
+								" 하지만 마법 능력도 다른 3명에 비하면 보잘것없다. 하지만 결코 무시할 수는 없다.",
+								" 3번째 보스인 몰록은 환상의 마법에 대가이다. 아마 최고의 환상 마법사이다.",
+								" 2번째 보스인 아스모데우스는 계략의 천재이다. 하지만 마법사이기보다는 마법을 사용하는 전사 쪽에 가깝다.",
+								" 최고 보스인 메피스토펠레스는 기사 격의 체력에 대마법사의 마법을 가지고 있다. 특기는 공중 핵융합에 의해 기를 뿜어내어 적을 공격하는 방법이다.",
 								"",
 								" 그리고 지금 그들은 또 다른 2개의 대륙에 각각 떨어져서 어둠의 영혼을 부활 시킬 힘을 분산해서 모으고 있다." +
-								"  내가 아는 것은 이게 전부이다. 내가 죽더라도 이 글이 도움이 되었으면 한다. 그리고 ... ..."
+								" 내가 아는 것은 이게 전부이다. 내가 죽더라도 이 글이 도움이 되었으면 한다. 그리고 ... ..."
 							});
 
 							if ((mParty.Etc[8] & (1 << 3)) == 0)
 							{
 								Dialog(new string[] {
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 100,000 ][/color]"
 								}, true);
 
 								foreach (var player in mPlayerList)
@@ -2231,7 +2215,7 @@ namespace DarkUWP
 								"",
 								$"[color={RGB.Yellow}] 오르트 일렘 .. 칼 젠 ..[/color]",
 								"",
-								" 베리알은 소환 마법으로 주위의 도마뱀을 도마뱀 인간으로 소생 시켰다."
+								" 베리알은 소환 마법으로 주위의 도마뱀을 도마뱀 인간으로 소생시켰다."
 							}, true);
 
 							mSpecialEvent = SpecialEventType.BattleBerial;
@@ -2252,11 +2236,11 @@ namespace DarkUWP
 								"",
 								$"[color={RGB.Yellow}] 인 녹스 그라브 ..[/color]",
 								"",
-								" 일행은 \"유독 가스\" 마법을  동굴 안을 향해 사용 했다.",
+								" 일행은 \"유독 가스\" 마법을 동굴 안을 향해 사용했다.",
 								"",
 								$"[color={RGB.Yellow}] 바스 포르 그라브 ..[/color]",
 								"",
-								" 그리고 일행은 \"초음파\"를 이용하여  동굴 입구를 함몰 시켰다."
+								" 그리고 일행은 \"초음파\"를 이용하여 동굴 입구를 함몰시켰다."
 							}, true);
 						}
 						else if (specialEvent == SpecialEventType.SummonIllusion)
@@ -2267,9 +2251,9 @@ namespace DarkUWP
 						{
 							Talk(new string[] {
 								$"[color={RGB.LightMagenta}] 너는 또 누구냐. 나의 환상을 걷어 내다니 대단한 실력이군." +
-								"  하지만 당신의 의지가 여기로 스며들지 못하도록 결계를 맺어야 겠군." +
-								"  당신이 아무리 뛰어나다고 해도  육체가 없는 영혼인 주제에 에너지 장벽을 뚫지는 못하겠지." +
-								" 그럼 나는 이 자들과 전투를 마무리 지어야 겠소. 자 그럼 결계 밖에서 이 자들의 최후를 감상하기 바라오.[/color]"
+								" 하지만 당신의 의지가 여기로 스며들지 못하도록 결계를 맺어야겠군." +
+								" 당신이 아무리 뛰어나다고 해도 육체가 없는 영혼인 주제에 에너지 장벽을 뚫지는 못하겠지." +
+								" 그럼 나는 이 자들과 전투를 마무리 지어야겠소. 자 그럼 결계 밖에서 이 자들의 최후를 감상하기 바라오.[/color]"
 							});
 
 							mSpecialEvent = SpecialEventType.RecoverParty;
@@ -2298,7 +2282,7 @@ namespace DarkUWP
 
 							UpdatePlayersStat();
 
-							Talk(" 몰록이 레드 안타레스에 대한 결계를  만드는 순간 일행은 기회를 틈타서  선공권을 잡게 되었다.");
+							Talk(" 몰록이 레드 안타레스에 대한 결계를 만드는 순간 일행은 기회를 틈타서 선공권을 잡게 되었다.");
 
 							mSpecialEvent = SpecialEventType.BattleMolok;
 						}
@@ -2352,7 +2336,7 @@ namespace DarkUWP
 							DisplayEnemy();
 
 							Talk($"[color={RGB.LightMagenta}] 나의 명성은 익히 들어서 잘 알고 있겠지. 나는 세계 최고의 전투 마도사인 아스모데우스님이시다." +
-							"  여기까지 침투해 오다니 굉장한 능력이군. 당신네들이 우리편이었다면 상당히 도움이 되었을 텐데. 하지만 어쩔수 없군.  여기를 당신네들의 무덤으로 만들 수 밖에.");
+							" 여기까지 침투해 오다니 굉장한 능력이군. 당신네들이 우리 편이었다면 상당히 도움이 되었을 텐데. 하지만 어쩔 수 없군. 여기를 당신네들의 무덤으로 만들 수밖에.");
 
 							mSpecialEvent = SpecialEventType.BattleAsmodeus;
 						}
@@ -2398,7 +2382,7 @@ namespace DarkUWP
 
 							if (mAssistPlayer != null && mAssistPlayer.Name == "미친 조")
 							{
-								Talk(" 우리들 뒤에 있던  미친 조가 전투가 일어나자마자 도망을 가버렸다.");
+								Talk(" 우리들 뒤에 있던 미친 조가 전투가 일어나자마자 도망을 가버렸다.");
 								mAssistPlayer = null;
 								DisplayPlayerInfo();
 
@@ -2428,21 +2412,21 @@ namespace DarkUWP
 							DisplayEnemy();
 
 							Talk(new string[] {
-								$"[color={RGB.LightMagenta}] 당신들이  다크 메이지 실리안 카미너스의 새로운 탄생을 방해하러 온 자들인가 ?" +
-								" 그렇지만 이미 한발 늦었군.  나의 뒷쪽의 생체 배양 튜브 속을 보게나. 저것이 새로 부활하는 실리안 카미너스라네.[/color]",
+								$"[color={RGB.LightMagenta}] 당신들이 다크 메이지 실리안 카미너스의 새로운 탄생을 방해하러 온 자들인가?" +
+								" 그렇지만 이미 한발 늦었군. 나의 뒤쪽의 생체 배양 튜브 속을 보게나. 저것이 새로 부활하는 실리안 카미너스라네.[/color]",
 								"",
-								" 당신이 그가 가리키는 곳에서 본것은  점액이 흘러 내리고 있는  붉은 고기 덩어리같은 육체였다." +
-								" 머리에는 무수한 전기 봉이 꽂혀 있었고 등에는  영양분을 공급하는 관이 연결 되어 있었다." +
-								" 이따금 깜박이는 검은 눈에서는 어린 소녀의 눈빛이 아닌  증오로 가득찬 짐승의 눈빛을 느낄 수 있었다."
+								" 당신이 그가 가리키는 곳에서 본 것은 점액이 흘러내리고 있는 붉은 고기 덩어리 같은 육체였다." +
+								" 머리에는 무수한 전기 봉이 꽂혀 있었고 등에는 영양분을 공급하는 관이 연결되어 있었다." +
+								" 이따금 깜박이는 검은 눈에서는 어린 소녀의 눈빛이 아닌 증오로 가득 찬 짐승의 눈빛을 느낄 수 있었다."
 								,"",
-								$"[color={RGB.LightMagenta}] 잘봤겠지. 이미 그녀는 스스로의 몸안에 봉인되어 있는 힘을 깨닳아 버렸지." +
-								"  내가 이 스위치를 누름과 동시에  로어의 세계로 공간 이동이 되게 되어있다네.[/color]",
+								$"[color={RGB.LightMagenta}] 잘 봤겠지. 이미 그녀는 스스로의 몸 안에 봉인되어 있는 힘을 깨달아 버렸지." +
+								" 내가 이 스위치를 누름과 동시에 로어의 세계로 공간 이동이 되게 되어있다네.[/color]",
 								"",
-								" 그는 그의 손안에 있는 리모콘의 스위치를 눌렀고  순간 실리안 카미너스는 공간 이동을 하여 이곳에서 사라졌다.",
+								" 그는 그의 손안에 있는 리모컨의 스위치를 눌렀고 순간 실리안 카미너스는 공간 이동을 하여 이곳에서 사라졌다.",
 								"",
 								$"[color={RGB.LightMagenta}] 그리고 당신들은 내가 처리하도록 하지." +
-								"  당신들은 로어 성이 불타는 장면을 못보게 되어 정말 아쉽겠군." +
-								"  아무리  로드 안이라고 해도 실리안 카미너스의 악의 힘에는  당하지 못한다네. 그녀는 불멸의 생명체이니까 말일세.[/color]"
+								" 당신들은 로어 성이 불타는 장면을 못 보게 되어 정말 아쉽겠군." +
+								" 아무리 로드 안이라고 해도 실리안 카미너스의 악의 힘에는 당하지 못한다네. 그녀는 불멸의 생명체이니까 말일세.[/color]"
 							});
 
 							mSpecialEvent = SpecialEventType.BattleMephistopheles;
@@ -2474,11 +2458,11 @@ namespace DarkUWP
 							JoinEnemy(74).Name = "실리안 카미너스";
 							DisplayEnemy();
 
-							Talk($"[color={RGB.LightMagenta}] 크악~~ 네가 이 곳의 마지막 생존자냐 ? 그렇다면 너도 죽여주지.[/color]");
+							Talk($"[color={RGB.LightMagenta}] 크악~~ 네가 이곳의 마지막 생존자냐? 그렇다면 너도 죽여주지.[/color]");
 							mSpecialEvent = SpecialEventType.ReplicateCominus;
 						}
 						else if (specialEvent == SpecialEventType.ReplicateCominus) {
-							Talk(" 실리안 카미너스는 다시 8 조각으로 자신을 분해해서 자신을 8 명으로 만들었다.");
+							Talk(" 실리안 카미너스는 다시 8조각으로 자신을 분해해서 자신을 8명으로 만들었다.");
 
 							mSpecialEvent = SpecialEventType.BattleCominus;
 						}
@@ -2500,7 +2484,13 @@ namespace DarkUWP
 							mAnimationEvent = AnimationType.None;
 							mAnimationFrame = 0;
 
+							BGMPlayer.Source = null;
 							EndingMessage.Visibility = Visibility.Visible;
+						}
+						else if (specialEvent == SpecialEventType.CookieEvent) {
+							Window.Current.CoreWindow.KeyDown -= gamePageKeyDownEvent;
+							Window.Current.CoreWindow.KeyUp -= gamePageKeyUpEvent;
+							Frame.Navigate(typeof(MainPage), null);
 						}
 					}
 
@@ -2585,11 +2575,6 @@ namespace DarkUWP
 					else if (mBattleTurn == BattleTurn.RunAway || mBattleTurn == BattleTurn.Win || mBattleTurn == BattleTurn.Lose)
 					{
 						await EndBattle();
-					}
-					else if (mWeaponShopEnd)
-					{
-						//mWeaponShopEnd = false;
-						//GoWeaponShop();
 					}
 				}
 				else if (mMenuMode == MenuMode.None && mSpinnerType == SpinnerType.None && (args.VirtualKey == VirtualKey.Escape || args.VirtualKey == VirtualKey.GamepadMenu))
@@ -2853,7 +2838,7 @@ namespace DarkUWP
 					void ShowTrainMessage() {
 						Talk(new string[] {
 							$"[color={RGB.White}] 여기는 군사 훈련소 입니다.[/color]",
-							$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰것입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 충분한 전투 경험을 쌓았다면, 당신은 더욱 능숙하게 무기를 다룰 것입니다.[/color]",
 						});
 
 						mSpecialEvent = SpecialEventType.TrainSkill;
@@ -2862,7 +2847,7 @@ namespace DarkUWP
 					void ShowTrainMagicMessage() {
 						Talk(new string[] {
 							$"[color={RGB.White}] 여기는 마법 학교 입니다.[/color]",
-							$"[color={RGB.White}] 만약 당신이 충분한 실전 경험을 쌓았다면, 당신은 더욱 능숙하게 마법을 다룰것입니다.[/color]",
+							$"[color={RGB.White}] 만약 당신이 충분한 실전 경험을 쌓았다면, 당신은 더욱 능숙하게 마법을 다룰 것입니다.[/color]",
 						});
 
 						mSpecialEvent = SpecialEventType.TrainMagic;
@@ -3847,7 +3832,7 @@ namespace DarkUWP
 								{
 									mParty.Etc[3] = 255;
 
-									AppendText(new string[] { $"[color={RGB.White}]일행은 공중부상중 입니다.[/color]" });
+									AppendText(new string[] { $"[color={RGB.White}]일행은 공중 부상 중 입니다.[/color]" });
 									mMagicPlayer.SP -= 5;
 									DisplaySP();
 								}
@@ -4158,7 +4143,7 @@ namespace DarkUWP
 							var rangeItems = new List<Tuple<string, int>>();
 							for (var i = 1; i <= 9; i++)
 							{
-								rangeItems.Add(new Tuple<string, int>($"[color={RGB.White}]##[/color] [color={RGB.LightGreen}]{i * 1000}[/color] [color={RGB.White}] 공간 이동력[/color]", i));
+								rangeItems.Add(new Tuple<string, int>($"[color={RGB.White}]##[/color] [color={RGB.LightGreen}]{(i * 1_000):#,#0}[/color] [color={RGB.White}] 공간 이동력[/color]", i));
 							}
 
 							ShowSpinner(SpinnerType.TeleportationRange, rangeItems.ToArray(), 5);
@@ -4219,20 +4204,20 @@ namespace DarkUWP
 										"다시 로드 안에게 갈",
 										"다시 메너스를 조사할",
 										"다시 로어 성으로 돌아갈",
-										"라스트 디치의 성주를 만날",
+										"라스트디치의 성주를 만날",
 										"피라미드 속의 로어 헌터를 찾을",
-										"라스트 디치의 군주에게로 돌아갈",
-										"피라미드 속의 두 동굴에서 두개의 석판을 찾을",
-										"첫번째 월식을 기다릴",
+										"라스트디치의 군주에게로 돌아갈",
+										"피라미드 속의 두 동굴에서 두 개의 석판을 찾을",
+										"첫 번째 월식을 기다릴",
 										"메너스를 통해 지하 세계로 갈",
-										"빛의 지붕을 방문할 것",
-										"빛의 사원에서 악의 추종자들의 메세지를 볼",
-										"필멸의 생존을 탐험할 것",
+										"빛의 지붕을 방문할",
+										"빛의 사원에서 악의 추종자들의 메시지를 볼",
+										"필멸의 생존을 탐험할",
 										"지하 세계 중앙의 통로를 통해 지상으로 갈",
-										"두번째 월식을 기다릴",
+										"두 번째 월식을 기다릴",
 										"베리알의 동굴에서 결전을 벌일",
 										"몰록의 동굴에서 결전을 벌일",
-										"마지막 세번째 월식을 기다릴",
+										"마지막 세 번째 월식을 기다릴",
 										"아스모데우스의 동굴에서 결전을 벌일",
 										"메피스토펠레스와 대결을 벌일"
 									};
@@ -4332,7 +4317,7 @@ namespace DarkUWP
 
 									AppendText(new string[] { $" 당신은 당신의 미래를 예언한다 ...", "" });
 									if (0 < predict && predict >= predictStr.Length)
-										AppendText(new string[] { $"[color={RGB.LightGreen}] #[/color] [color={RGB.White}]당신은 어떤 힘에 의해 예언을 방해 받고 있다[/color]" }, true);
+										AppendText(new string[] { $"[color={RGB.LightGreen}] #[/color] [color={RGB.White}]당신은 어떤 힘에 의해 예언을 방해받고 있다[/color]" }, true);
 									else
 										AppendText(new string[] { $"[color={RGB.LightGreen}] #[/color] [color={RGB.White}]당신은 {predictStr[predict]} 것이다[/color]" }, true);
 
@@ -4475,7 +4460,7 @@ namespace DarkUWP
 						{
 							if (mMenuFocusID == 0)
 							{
-								AppendText(new string[] { $"[color={RGB.LightRed}]한번에 출현하는 적들의 최대치를 기입하십시오[/color]" });
+								AppendText(new string[] { $"[color={RGB.LightRed}]한 번에 출현하는 적들의 최대치를 기입하십시오[/color]" });
 
 								var maxEnemyStr = new string[5];
 								for (var i = 0; i < maxEnemyStr.Length; i++)
@@ -4485,7 +4470,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 1)
 							{
-								AppendText(new string[] { $"[color={RGB.LightRed}]현재의 일원의 전투 순서를 정렬 하십시오.[/color]",
+								AppendText(new string[] { $"[color={RGB.LightRed}]현재의 일원의 전투 순서를 정렬하십시오.[/color]",
 												"[color=e0ffff]순서를 바꿀 일원[/color]" });
 
 								ShowCharacterMenu(MenuMode.OrderFromCharacter, false);
@@ -4498,7 +4483,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 3)
 							{
-								AppendText($"[color={RGB.LightRed}]일행에서 제외 시키고 싶은 사람을 고르십시오.[/color]");
+								AppendText($"[color={RGB.LightRed}]일행에서 제외하고 싶은 사람을 고르십시오.[/color]");
 
 								ShowCharacterMenu(MenuMode.DelistCharacter);
 							}
@@ -4512,7 +4497,7 @@ namespace DarkUWP
 							}
 							else if (mMenuFocusID == 6)
 							{
-								AppendText(new string[] { $"[color={RGB.LightGreen}]정말로 끝내겠습니까 ?[/color]" });
+								AppendText(new string[] { $"[color={RGB.LightGreen}]정말로 끝내겠습니까?[/color]" });
 
 								ShowMenu(MenuMode.ConfirmExit, new string[] {
 									"<< 아니오 >>",
@@ -4524,7 +4509,7 @@ namespace DarkUWP
 						{
 							mMaxEnemy = mMenuFocusID + 3;
 
-							AppendText($"[color={RGB.LightRed}]한번에 출현하는 적들의 최대치를 기입하십시오[/color]");
+							AppendText($"[color={RGB.LightRed}]일행들의 지금 성격은 어떻습니까?[/color]");
 
 							ShowMenu(MenuMode.SetEncounterType, new string[]
 							{
@@ -4620,15 +4605,15 @@ namespace DarkUWP
 							switch (weaponType) {
 								case 0:
 									mUnequipPlayer.Weapon = 0;
-									AppendText($"{mUnequipPlayer.Name}의 무기는 해제 되었습니다.");
+									AppendText($"{mUnequipPlayer.Name}의 무기는 해제되었습니다.");
 									break;
 								case 1:
 									mUnequipPlayer.Shield = 0;
-									AppendText($"{mUnequipPlayer.Name}의 방패는 해제 되었습니다.");
+									AppendText($"{mUnequipPlayer.Name}의 방패는 해제되었습니다.");
 									break;
 								case 2:
 									mUnequipPlayer.Armor = 0;
-									AppendText($"{mUnequipPlayer.Name}의 갑옷은 해제 되었습니다.");
+									AppendText($"{mUnequipPlayer.Name}의 갑옷은 해제되었습니다.");
 									break;
 							}
 
@@ -4766,13 +4751,13 @@ namespace DarkUWP
 								mSpecialEvent = SpecialEventType.CantBuyExp;
 							}
 							else {
-								AppendText($"[color={RGB.White}]  일행은 {mMenuFocusID + 1}시간동안 훈련을 받게 되었다.[/color]");
+								AppendText($"[color={RGB.White}] 일행은 {mMenuFocusID + 1}시간동안 훈련을 받게 되었다.[/color]");
 								mTrainTime = mMenuFocusID + 1;
 								InvokeAnimation(AnimationType.BuyExp);
 							}
 						}
 						else if (menuMode == MenuMode.SelectItem) {
-							AppendText($"[color={RGB.White}] 갯수를 지정 하십시오.[/color]");
+							AppendText($"[color={RGB.White}] 개수를 지정하십시오.[/color]");
 
 							mBuyItemID = mMenuFocusID;
 
@@ -4789,7 +4774,7 @@ namespace DarkUWP
 						else if (menuMode == MenuMode.SelectItemAmount) {
 							if (mParty.Gold < mItemPrices[mBuyItemID] * (mMenuFocusID + 1))
 							{
-								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
+								Talk(" 당신에게는 이것을 살 돈이 없습니다.");
 								mSpecialEvent = SpecialEventType.CantBuyItem;
 								return;
 							}
@@ -4813,7 +4798,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.SelectMedicine)
 						{
-							AppendText($"[color={RGB.White}] 갯수를 지정 하십시오.[/color]");
+							AppendText($"[color={RGB.White}] 개수를 지정 하십시오.[/color]");
 
 							mBuyMedicineID = mMenuFocusID;
 
@@ -4829,7 +4814,7 @@ namespace DarkUWP
 						{
 							if (mParty.Gold < mMedicinePrices[mBuyMedicineID] * (mMenuFocusID + 1))
 							{
-								Talk(" 당신에게는 이 것을 살 돈이 없습니다.");
+								Talk(" 당신에게는 이것을 살 돈이 없습니다.");
 								mSpecialEvent = SpecialEventType.CantBuyMedicine;
 								return;
 							}
@@ -5369,7 +5354,7 @@ namespace DarkUWP
 
 									if ((mParty.Etc[8] & (1 << 5)) > 0)
 									{
-										Talk(" 일행은 베리알을 처치하고  무사히 동굴을 빠져 나왔다.  하지만 거대하게 환생한 도마뱀 인간은 집요하게 일행에게 따라 붙었다.");
+										Talk(" 일행은 베리알을 처치하고 무사히 동굴을 빠져나왔다. 하지만 거대하게 환생한 도마뱀 인간은 집요하게 일행에게 따라붙었다.");
 
 										mSpecialEvent = SpecialEventType.ChaseLizardMan;
 									}
@@ -5462,7 +5447,7 @@ namespace DarkUWP
 
 							AppendText(new string[] {
 								$"[color={RGB.LightRed}]당신이 바뀌고 싶은 계급을 고르시오.[/color]",
-								$"[color={RGB.White}]비용 : 금 10000 개[/color]"
+								$"[color={RGB.White}]비용 : 금 10,000 개[/color]"
 							});
 
 							ShowMenu(MenuMode.ChooseSwordJob, mChangableClassList.ToArray());
@@ -5531,7 +5516,7 @@ namespace DarkUWP
 
 							AppendText(new string[] {
 								$"[color={RGB.LightRed}]당신이 바뀌고 싶은 계급을 고르시오.[/color]",
-								$"[color={RGB.White}]비용 : 금 10000 개[/color]"
+								$"[color={RGB.White}]비용 : 금 10,000 개[/color]"
 							});
 
 							ShowMenu(MenuMode.ChooseMagicJob, mChangableClassList.ToArray());
@@ -5817,7 +5802,7 @@ namespace DarkUWP
 										{
 											Talk(new string[] {
 												" 당신이 서둘러 로어 성에 다다랐지만 이미 로어 성은 폐허가 되어 버렸다.",
-												" 당신은 아찔한 감을 느끼며  알비레오의 예언에 굴복함을 느꼈다." +
+												" 당신은 아찔한 감을 느끼며 알비레오의 예언에 굴복함을 느꼈다." +
 												$" 이제는 다시 돌이킬 수가 없는 일이 일어나 버렸다. 우리는 [color={RGB.LightCyan}]다크 메이지 실리안 카미너스[/color]에게 완패한 것이었다."
 											});
 
@@ -5848,16 +5833,16 @@ namespace DarkUWP
 
 											if (mParty.Etc[9] == 4)
 											{
-												AppendText(" 당신이 로어 성에 들어오자  주민들의 열렬한 환영을 받았다." +
-												"  하지만 주민들은 당신이 메너스에서 레드 안타레스가 악마 사냥꾼에게 거의 패배했던 당신을 도와준 사실을  알 턱이 없었다." +
-												" 메너스의 살인 원인을 제거 하는데 당신이 한 일은 사실 아무것도 없다는 점에 당신은 씁쓸한 웃음을 지을 수 밖에 없었다.");
+												AppendText(" 당신이 로어 성에 들어오자 주민들의 열렬한 환영을 받았다." +
+												" 하지만 주민들은 당신이 메너스에서 레드 안타레스가 악마 사냥꾼에게 거의 패배했던 당신을 도와준 사실을 알 턱이 없었다." +
+												" 메너스의 살인 원인을 제거하는데 당신이 한 일은 사실 아무것도 없다는 점에 당신은 씁쓸한 웃음을 지을 수밖에 없었다.");
 											}
 										}
 
 										break;
 									case EnterType.CastleLastDitch:
 										if (mParty.Etc[9] >= 16)
-											AppendText(" 라스트 디치성은 용암의 대지로 변했다.");
+											AppendText(" 라스트디치 성은 용암의 대지로 변했다.");
 										else {
 											mParty.Map = 7;
 											mParty.XAxis = 37;
@@ -5874,7 +5859,7 @@ namespace DarkUWP
 										break;
 									case EnterType.Menace:
 										if (mParty.Etc[9] >= 16)
-											AppendText(" 메너스는  형체도 알아 볼 수 없을 정도로 무너져 버렸다.");
+											AppendText(" 메너스는 형체도 알아볼 수 없을 정도로 무너져 버렸다.");
 										else if (mParty.Etc[9] == 15) {
 											mParty.Map = 4;
 											mParty.XAxis = 9;
@@ -5884,8 +5869,8 @@ namespace DarkUWP
 
 											mFace = -1;
 
-											Talk("당신이 메너스에 입구에 들어서자 마자 저항할수 없는 강한 힘이 일행을 빨아들이기 시작 했다." +
-											" 순간 당신은 메너스의 입구 자체가 커다란 통로로 변해 있음을 알아 챘다.");
+											Talk("당신이 메너스에 입구에 들어서자마자 저항할 수 없는 강한 힘이 일행을 빨아들이기 시작했다." +
+											" 순간 당신은 메너스의 입구 자체가 커다란 통로로 변해 있음을 알아챘다.");
 
 											mSpecialEvent = SpecialEventType.EnterUnderworld;
 										}
@@ -5931,7 +5916,7 @@ namespace DarkUWP
 										break;
 									case EnterType.UnknownPyramid:
 										if (mParty.Etc[9] >= 16)
-											AppendText(" 그러나, 피라미드는 파괴 되었다.");
+											AppendText(" 그러나, 피라미드는 파괴되었다.");
 										else {
 											mParty.Map = 2;
 											mParty.XAxis = 98;
@@ -5993,7 +5978,7 @@ namespace DarkUWP
 									case EnterType.CaveOfBerial:
 										if ((mParty.Etc[8] & (1 << 5)) == 0)
 										{
-											Talk(" 일행이 동굴 입구에 다가서자  무언가 반짝이는 눈 같은 것이 보였다.");
+											Talk(" 일행이 동굴 입구에 다가서자 무언가 반짝이는 눈 같은 것이 보였다.");
 											mSpecialEvent = SpecialEventType.BattleCaveOfBerialEntrance;
 										}
 										else
@@ -6010,19 +5995,19 @@ namespace DarkUWP
 										mParty.XAxis = 12;
 										mParty.YAxis = 71;
 
-										AppendText(" 일행은 다른 곳으로 이동 되었다.");
+										AppendText(" 일행은 다른 곳으로 이동되었다.");
 										break;
 									case EnterType.TeleportationGate2:
 										mParty.XAxis = 41;
 										mParty.YAxis = 76;
 
-										AppendText(" 일행은 다른 곳으로 이동 되었다.");
+										AppendText(" 일행은 다른 곳으로 이동되었다.");
 										break;
 									case EnterType.TeleportationGate3:
 										mParty.XAxis = 12;
 										mParty.YAxis = 71;
 
-										AppendText(" 일행은 다른 곳으로 이동 되었다.");
+										AppendText(" 일행은 다른 곳으로 이동되었다.");
 										break;
 									case EnterType.CaveOfAsmodeus1:
 										if (mParty.YAxis == 43 && (mParty.Etc[40] & (1 << 6)) == 0) {
@@ -6032,9 +6017,9 @@ namespace DarkUWP
 											DisplayEnemy();
 
 											Talk(new string[] {
-												$"[color={RGB.LightMagenta}] 너희들이 이 동굴에 들어 가겠다고?[/color]",
-												$"[color={RGB.LightMagenta}] 우리들은  아스모데우님의 경호를  맡고 있는 가디안 라이트와 가디안 레프트라고 한다." +
-												"  소개는 이쯤에서 끝내도록하고 바로 대결을 하도록하지."
+												$"[color={RGB.LightMagenta}] 너희들이 이 동굴에 들어가겠다고?[/color]",
+												$"[color={RGB.LightMagenta}] 우리들은 아스모데우님의 경호를 맡고 있는 가디안 라이트와 가디안 레프트라고 한다." +
+												" 소개는 이쯤에서 끝내도록하고 바로 대결을 하도록하지."
 											});
 
 											mSpecialEvent = SpecialEventType.BattleCaveOfAsmodeusEntrance;
@@ -6282,7 +6267,7 @@ namespace DarkUWP
 								AppendText(" 고맙소. 그리고 병사들에게 들키지 않게 여기를 나가야 된다는 것 정도는 알고 있겠지요.");
 							}
 							else {
-								AppendText(" 벌써 사람이 모두 채워져 있군요.  다음 기회를 기다리지요.");
+								AppendText(" 벌써 사람이 모두 채워져 있군요. 다음 기회를 기다리지요.");
 							}
 						}
 						else if (menuMode == MenuMode.JoinHercules)
@@ -6814,7 +6799,7 @@ namespace DarkUWP
 
 								DisplayPlayerInfo();
 
-								ShowApplyItemResult(menuMode, $" [color={RGB.White}]{summonPlayer.NameSubjectJosa} 다른 차원으로 부터 소환 되어졌습니다.[/color]");
+								ShowApplyItemResult(menuMode, $" [color={RGB.White}]{summonPlayer.NameSubjectJosa} 다른 차원으로부터 소환됐습니다.[/color]");
 								ShowRemainItemCount();
 							}
 							else if (itemID == 6)
@@ -6868,7 +6853,7 @@ namespace DarkUWP
 									ShowApplyItemResult(menuMode, $"[color={RGB.White}] {player.NameSubjectJosa} 의식을 차렸습니다.[/color]");
 								}
 								else
-									ShowApplyItemResult(menuMode, $" {player.NameSubjectJosa} 이미 죽은 상태 입니다.");
+									ShowApplyItemResult(menuMode, $" {player.NameSubjectJosa} 이미 죽은 상태입니다.");
 							}
 							else if (mUseItemID == 4) {
 								if (player.Dead == 0) {
@@ -6876,7 +6861,7 @@ namespace DarkUWP
 									return;
 								}
 
-								if (player.Dead < 10000) {
+								if (player.Dead < 10_000) {
 									player.Dead = 0;
 									if (player.Unconscious >= player.Endurance * player.Level)
 										player.Unconscious = player.Endurance * player.Level - 1;
@@ -6932,7 +6917,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 2)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 현재 알려진 항성중에서 가장 밝은 항성은 무엇이라고 알려져 있소 ?");
+							AppendText(" 현재 알려진 항성 중에서 가장 밝은 항성은 무엇이라고 알려져 있소?");
 
 							ShowMenu(MenuMode.AstronomyQuiz2, new string[] {
 								"폴라리스 ( 북극성 )",
@@ -6946,7 +6931,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 1)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 금빛과 푸른빛의 이중성으로 알려진 아름다운 별의 이름은 무엇이겠소 ?");
+							AppendText(" 금빛과 푸른빛의 이중성으로 알려진 아름다운 별의 이름은 무엇이겠소?");
 
 							ShowMenu(MenuMode.AstronomyQuiz3, new string[] {
 								"시리우스",
@@ -6960,7 +6945,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 2)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 다음중 오리온 자리의 별이 아니것을 골라 보도록 하시오.");
+							AppendText(" 다음 중 오리온자리의 별이 아닌 것을 골라보도록 하시오.");
 
 							ShowMenu(MenuMode.AstronomyQuiz4, new string[] {
 								"베텔규스",
@@ -6976,10 +6961,10 @@ namespace DarkUWP
 							if (mPyramidQuizAllRight)
 							{
 								Dialog(new string[] {
-									$"[color={RGB.White}] 당신은 정말 열심히 \" 또 다른 지식의 성전 \"을 했나 보군요. 내가 낸 모든 문제는 바로 거기에서 나오는 문제들이었다오.[/color]",
-									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									$"[color={RGB.White}] 당신은 정말 열심히 \"또 다른 지식의 성전\"을 했나 보군요. 내가 낸 모든 문제는 바로 거기에서 나오는 문제들이었다오.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과했소.[/color]",
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ][/color]"
 								});
 
 								foreach (var player in mPlayerList)
@@ -6996,7 +6981,7 @@ namespace DarkUWP
 							if (player.Mentality >= 30)
 								AppendText($"{player.NameSubjectJosa} 지금 최고의 정신력 수치입니다.");
 							else if (mParty.Gold < abilityUpPrice[player.Mentality])
-								AppendText($"일행은 {abilityUpPrice[player.Mentality].ToString("#,#0")}개의 황금이 필요합니다.");
+								AppendText($"일행은 {abilityUpPrice[player.Mentality]:#,#0}개의 황금이 필요합니다.");
 							else {
 								player.Mentality++;
 								mParty.Gold -= abilityUpPrice[player.Mentality];
@@ -7009,7 +6994,7 @@ namespace DarkUWP
 							if (player.Endurance >= 30)
 								AppendText($"{player.NameSubjectJosa} 지금 최고의 인내력 수치입니다.");
 							else if (mParty.Gold < abilityUpPrice[player.Endurance])
-								AppendText($"일행은 {abilityUpPrice[player.Endurance].ToString("#,#0")}개의 황금이 필요합니다.");
+								AppendText($"일행은 {abilityUpPrice[player.Endurance]:#,#0}개의 황금이 필요합니다.");
 							else
 							{
 								player.Endurance++;
@@ -7023,7 +7008,7 @@ namespace DarkUWP
 							if (player.Strength >= 30)
 								AppendText($"{player.NameSubjectJosa} 지금 최고의 체력 수치입니다.");
 							else if (mParty.Gold < abilityUpPrice[player.Strength])
-								AppendText($"일행은 {abilityUpPrice[player.Strength].ToString("#,#0")}개의 황금이 필요합니다.");
+								AppendText($"일행은 {abilityUpPrice[player.Strength]:#,#0}개의 황금이 필요합니다.");
 							else
 							{
 								player.Strength++;
@@ -7037,7 +7022,7 @@ namespace DarkUWP
 							if (player.Agility >= 20)
 								AppendText($"{player.NameSubjectJosa} 지금 최고의 민첩성 수치입니다.");
 							else if (mParty.Gold < abilityUpPrice[player.Agility])
-								AppendText($"일행은 {abilityUpPrice[player.Agility].ToString("#,#0")}개의 황금이 필요합니다.");
+								AppendText($"일행은 {abilityUpPrice[player.Agility]:#,#0}개의 황금이 필요합니다.");
 							else
 							{
 								player.Agility++;
@@ -7051,7 +7036,7 @@ namespace DarkUWP
 							if (player.Accuracy >= 20)
 								AppendText($"{player.NameSubjectJosa} 지금 최고의 정확성 수치입니다.");
 							else if (mParty.Gold < abilityUpPrice[player.Accuracy])
-								AppendText($"일행은 {abilityUpPrice[player.Accuracy].ToString("#,#0")}개의 황금이 필요합니다.");
+								AppendText($"일행은 {abilityUpPrice[player.Accuracy]:#,#0}개의 황금이 필요합니다.");
 							else
 							{
 								player.Accuracy++;
@@ -7064,7 +7049,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 3)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 다음은 여러 OS 간의 명령어라오. 이중에서 성질이 다른 하나를 찾아보도록 하시오.");
+							AppendText(" 다음은 여러 OS간의 명령어라오. 이 중에서 성질이 다른 하나를 찾아보도록 하시오.");
 
 							ShowMenu(MenuMode.ComputerQuiz2, new string[] {
 								"Pro - Dos : \"prefix\"",
@@ -7078,7 +7063,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 0)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 그럼 이 게임을 만들때 쓰인 언어 중에서 주가되는 언어는 무엇이었겠소 ?");
+							AppendText(" 그럼 이 게임을 만들 때 쓰인 언어 중에서 주가 되는 언어는 무엇이었겠소?");
 
 							ShowMenu(MenuMode.ComputerQuiz3, new string[] {
 								"FORTRAN",
@@ -7092,7 +7077,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 2)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 다음은 여러 컴퓨터 언어의 출력 함수라오. 그중 결과가 틀린 것은 무엇이겠소 ?");
+							AppendText(" 다음은 여러 컴퓨터 언어의 출력 함수라오. 그중 결과가 다른 것은 무엇이겠소?");
 
 							ShowMenu(MenuMode.ComputerQuiz4, new string[] {
 								"FORTRAN : WRITE(*,*) \'Dark.exe\'",
@@ -7109,10 +7094,10 @@ namespace DarkUWP
 							if (mPyramidQuizAllRight)
 							{
 								AppendText(new string[] {
-									$"[color={RGB.White}] 당신은 정말  열심히 컴퓨터를 공부했나 보군요.[/color]",
-									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									$"[color={RGB.White}] 당신은 정말 열심히 컴퓨터를 공부했나 보군요.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과했소.[/color]",
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ][/color]"
 								});
 
 								foreach (var player in mPlayerList)
@@ -7128,7 +7113,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 2)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 다음중 뉴튼의 세가지 법칙에 속하지 않는 것은 어느 것이겠소 ?");
+							AppendText(" 다음 중 뉴턴의 세 가지 법칙에 속하지 않는 것은 어느 것이겠소?");
 
 							ShowMenu(MenuMode.PhysicsQuiz2, new string[] {
 								"만유 인력의 법칙",
@@ -7142,7 +7127,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 3)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 다음 공식중 틀린것을 한번 골라내 보도록 하시오.");
+							AppendText(" 다음 공식 중 틀린 것을 한번 골라내 보도록 하시오.");
 
 							ShowMenu(MenuMode.PhysicsQuiz3, new string[] {
 								"F = ma",
@@ -7159,10 +7144,10 @@ namespace DarkUWP
 							if (mPyramidQuizAllRight)
 							{
 								AppendText(new string[] {
-									$"[color={RGB.White}] 당신은 물리학에도  역시 상당한 지식을 가지고 있군요.[/color]",
-									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									$"[color={RGB.White}] 당신은 물리학에도 역시 상당한 지식을 가지고 있군요.[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과했소.[/color]",
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ][/color]"
 								});
 
 								foreach (var player in mPlayerList)
@@ -7178,7 +7163,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 3)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 전작에서  드래곤이 있던 동굴에서  수도하던 최고의 초능력자는 누구였소 ?");
+							AppendText(" 전작에서 드래곤이 있던 동굴에서 수도하던 최고의 초능력자는 누구였소?");
 
 							ShowMenu(MenuMode.CommonSenseQuiz2, new string[] {
 								"레드 안타레스",
@@ -7193,7 +7178,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 1)
 								mPyramidQuizAllRight = false;
 
-							AppendText(" 전작에서 당신이 모험을 했던 대륙은 모두 몇개로 이루어져 있었소 ?'");
+							AppendText(" 전작에서 당신이 모험을 했던 대륙은 모두 몇 개로 이루어져 있었소?");
 
 							ShowMenu(MenuMode.CommonSenseQuiz3, new string[] {
 								"3 개",
@@ -7211,10 +7196,10 @@ namespace DarkUWP
 							if (mPyramidQuizAllRight)
 							{
 								AppendText(new string[] {
-									$"[color={RGB.White}] 당신은 \" 또 다른 지식의 성전 \"을 정말 열심히 한것 같군요.[/color]",
+									$"[color={RGB.White}] 당신은 \"또 다른 지식의 성전\"을 정말 열심히 한것 같군요.[/color]",
 									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ][/color]"
 								});
 
 								foreach (var player in mPlayerList)
@@ -7230,7 +7215,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 1)
 								mPyramidQuizAllRight = false;
 
-							Ask(" X + Y = 7, X - Y = 1 에서 X 와 Y 를 알아내서 X * Y 의 답을 말해 주시오.", MenuMode.MathQuiz2, new string[] {
+							Ask(" X + Y = 7, X - Y = 1에서 X와 Y를 알아내서 X * Y의 답을 말해 주시오.", MenuMode.MathQuiz2, new string[] {
 								"<<  0 >>",
 								"<<  7 >>",
 								"<< 10 >>",
@@ -7243,7 +7228,7 @@ namespace DarkUWP
 							if (mMenuFocusID != 3)
 								mPyramidQuizAllRight = false;
 
-							Ask(" 당신은 아마 로어 헌터를 만났을 것이오.  그가 있었던 좌표의 ( X - Y ) 는 어떻게 되오 ?", MenuMode.MathQuiz3, new string[] {
+							Ask(" 당신은 아마 로어 헌터를 만났을 것이오. 그가 있었던 좌표의 (X - Y)는 어떻게 되오?", MenuMode.MathQuiz3, new string[] {
 								"<< 153 >>",
 								"<< 168 >>",
 								"<< 171 >>",
@@ -7259,10 +7244,10 @@ namespace DarkUWP
 							if (mPyramidQuizAllRight)
 							{
 								Dialog(new string[] {
-									$"[color={RGB.White}] 당신은 수학 실력 또한 대단 하군요,[/color]",
-									$"[color={RGB.White}] 당신은 이 시험을 통과 했소.[/color]",
+									$"[color={RGB.White}] 당신은 수학 실력 또한 대단하군요,[/color]",
+									$"[color={RGB.White}] 당신은 이 시험을 통과했소.[/color]",
 									"",
-									$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ][/color]"
+									$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ][/color]"
 								});
 
 								foreach (var player in mPlayerList)
@@ -7384,7 +7369,7 @@ namespace DarkUWP
 								InvokeAnimation(AnimationType.MeetNecromancer);
 							}
 							else {
-								Talk(" 일행은 스스로의 능력을 믿기로 하고  실리안 카미너스를 공격하려했다.");
+								Talk(" 일행은 스스로의 능력을 믿기로 하고 실리안 카미너스를 공격하려 했다.");
 
 								mSpecialEvent = SpecialEventType.MeetCyllianCominus;
 							}
@@ -8083,7 +8068,7 @@ namespace DarkUWP
 						if (mRand.Next(2) == 0)
 							battleResult.Add("갑자기 땅속의 우라늄이 핵분열을 일으켜 고온의 열기가 적의 주위를 감싸기 시작한다");
 						else
-							battleResult.Add("공기중의 수소가 돌연히 핵융합을 일으켜 질량 결손의 에너지를 적들에게 방출하기 시작한다");
+							battleResult.Add("공기 중의 수소가 돌연히 핵융합을 일으켜 질량 결손의 에너지를 적들에게 방출하기 시작한다");
 
 						foreach (var enemy in mEncounterEnemyList) {
 							if (enemy.Dead || (enemy.Unconscious && !mParty.Cruel))
@@ -8244,7 +8229,7 @@ namespace DarkUWP
 
 						GetBattleStatus(enemy);
 
-						battleResult.Add($"{battleCommand.Player.GenderPronoun}는 염력으로 적의 영혼을 분리 시키려 한다");
+						battleResult.Add($"{battleCommand.Player.GenderPronoun}는 염력으로 적의 영혼을 분리시키려 한다");
 
 						if (player.ESPMagic < 100)
 						{
@@ -9650,7 +9635,7 @@ namespace DarkUWP
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 중독 되었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 중독 되었다!![/color]");
 
 								if (destPlayer.Poison == 0)
 									destPlayer.Poison = 1;
@@ -9683,7 +9668,7 @@ namespace DarkUWP
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 의식불명이 되었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 의식불명이 되었다!![/color]");
 
 								if (destPlayer.Unconscious == 0)
 								{
@@ -9721,7 +9706,7 @@ namespace DarkUWP
 									return;
 								}
 
-								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 죽었다 !![/color]");
+								battleResult.Add($"[color={RGB.Red}]{destPlayer.NameSubjectJosa} 죽었다!![/color]");
 
 								if (destPlayer.Dead == 0)
 								{
@@ -9801,7 +9786,7 @@ namespace DarkUWP
 							battleResult.Add($"[color={RGB.Magenta}]{destPlayer.NameSubjectJosa}[/color] [color={RGB.LightMagenta}]{attackPoint.ToString("#,#0")}[/color][color={RGB.Magenta}]만큼의 피해를 입었다[/color]");
 						}
 
-						if (mRand.Next(enemy.Accuracy[0] * 1000) > mRand.Next(enemy.Accuracy[1] * 1000) && enemy.Strength > 0 || enemy.CastLevel == 0)
+						if (mRand.Next(enemy.Accuracy[0] * 1_000) > mRand.Next(enemy.Accuracy[1] * 1_000) && enemy.Strength > 0 || enemy.CastLevel == 0)
 						{
 							EnemyAttack();
 						}
@@ -10346,7 +10331,7 @@ namespace DarkUWP
 		{
 			mTryEnterType = enterType;
 
-			AppendText(new string[] { $"{mEnterTypeMap[enterType]}에 들어가기를 원합니까 ?" });
+			AppendText(new string[] { $"{mEnterTypeMap[enterType]}에 들어가기를 원합니까?" });
 
 			ShowMenu(MenuMode.AskEnter, new string[] {
 				"예, 그렇습니다.",
@@ -10426,7 +10411,7 @@ namespace DarkUWP
 							break;
 					}
 
-					AppendText($" 당신은 나의 문제를 모두 맞추었소.  그 보답으로,  당신이 황금을 나에게 바친다면 당신들중의 한사람의 {abilityName}을 한 단계 올려 주겠소.");
+					AppendText($" 당신은 나의 문제를 모두 맞추었소. 그 보답으로, 당신이 황금을 나에게 바친다면 당신들 중의 한 사람의 {abilityName}을 한 단계 올려주겠소.");
 
 					ShowCharacterMenu(menuMode, false);
 				}
@@ -10508,14 +10493,14 @@ namespace DarkUWP
 				else if (mParty.XAxis == 192 && mParty.YAxis == 118 && (mParty.Etc[48] & (1 << 7)) == 0)
 				{
 					Talk(" 일행이 밑을 보자 거기에는 뼈만 남은 기사가 쓰러져 있었다." +
-					" 그의 무기와 갑옷은 형편 없이 깨어져 있었지만  그의 크로매틱 방패는  아직 사용할 수 있었다. 일행은 그 방패를 가지기로 하였다.");
+					" 그의 무기와 갑옷은 형편 없이 깨어져 있었지만 그의 크로매틱 방패는 아직 사용할 수 있었다. 일행은 그 방패를 가지기로 하였다.");
 
 					mSpecialEvent = SpecialEventType.GetCromaticShield;
 				}
 				else if (mParty.XAxis == 62 && mParty.YAxis == 67 && (mParty.Etc[44] & 1) == 0)
 				{
 					Talk(" 일행이 밑을 보자 거기에는 뼈만 남은 기사가 쓰러져 있었다." +
-					" 그의 방패와 갑옷은 형편 없이 깨어져 있었지만  그의 양날 전투 도끼는 아직 사용할 수 있었다. 일행은 그 무기를 가지기로 하였다.");
+					" 그의 방패와 갑옷은 형편 없이 깨어져 있었지만 그의 양날 전투 도끼는 아직 사용할 수 있었다. 일행은 그 무기를 가지기로 하였다.");
 
 					mSpecialEvent = SpecialEventType.GetBattleAxe;
 				}
@@ -10523,8 +10508,8 @@ namespace DarkUWP
 				{
 					if ((mParty.Etc[44] & (1 << 3)) > 0)
 					{
-						Talk($" 일행이 물위에 다다르자  물속에서 검은 광채를 내며  전설의 [color={RGB.LightCyan}]흑요석 갑옷[/color]이 떠올랐다." +
-						"  이 갑옷은  현재의 기술로 만들 수 있는 플래티움 재질의 갑옷보다 두배의 방어력을 지닌다고 한다.");
+						Talk($" 일행이 물 위에 다다르자 물속에서 검은 광채를 내며 전설의 [color={RGB.LightCyan}]흑요석 갑옷[/color]이 떠올랐다." +
+						" 이 갑옷은 현재의 기술로 만들 수 있는 플래티움 재질의 갑옷보다 두 배의 방어력을 지닌다고 한다.");
 
 						mSpecialEvent = SpecialEventType.GetObsidianArmor;
 					}
@@ -10541,19 +10526,19 @@ namespace DarkUWP
 
 					DisplayEnemy();
 
-					Talk($"[color={RGB.LightMagenta}] 잠깐, 우리들은 전설의 갑옷을 지키는 파수꾼들이다. 당신들은 더 이상 들어 갈수 없다. 자 각오해라.[/color]");
+					Talk($"[color={RGB.LightMagenta}] 잠깐, 우리들은 전설의 갑옷을 지키는 파수꾼들이다. 당신들은 더 이상 들어갈 수 없다. 자 각오해라.[/color]");
 
 					mSpecialEvent = SpecialEventType.BattleGuardOfObsidianArmor;
 				}
 				else if (mParty.XAxis == 148 && mParty.YAxis == 50 && (mParty.Etc[44] & (1 << 4)) == 0)
 				{
-					Talk(" 일행이 앞으로 진행하려 했지만  점액 생물이 일행을 포위했다.");
+					Talk(" 일행이 앞으로 진행하려 했지만 점액 생물이 일행을 포위했다.");
 
 					mSpecialEvent = SpecialEventType.BattleSlaim;
 				}
 				else if (mParty.XAxis == 148 && mParty.YAxis == 65 && (mParty.Etc[44] & (1 << 5)) == 0)
 				{
-					Talk(" 일행이 동굴 앞에 섰을때 동굴의 입구를 지키는 괴물들이 일행의 앞을 가로 막았다.");
+					Talk(" 일행이 동굴 앞에 섰을 때 동굴의 입구를 지키는 괴물들이 일행의 앞을 가로막았다.");
 
 					mSpecialEvent = SpecialEventType.BattleCaveEntrance;
 				}
@@ -10561,7 +10546,7 @@ namespace DarkUWP
 				{
 					if (!(mParty.XAxis == 103 && mParty.YAxis == 9) && !(GetTileInfo(mParty.XAxis, mParty.YAxis) != mMapLayer[mParty.XAxis + mParty.YAxis * mMapWidth]))
 					{
-						AppendText(" 일행이 물위로 가려고 하자 갑자기 물은 용암으로 바뀌고 말았다.");
+						AppendText(" 일행이 물 위로 가려고 하자 갑자기 물은 용암으로 바뀌고 말았다.");
 
 						for (var y = 60; y < 119; y++)
 						{
@@ -10577,14 +10562,14 @@ namespace DarkUWP
 				else if (mParty.XAxis == 183 && mParty.YAxis == 30 && mParty.Etc[10] == 1)
 				{
 					AppendText(new string[] {
-						$" 아니 ! {mPlayerList[0].Name} 자네가 여기 웬일인가 ?",
-						" 정말 오래간 만이네.",
+						$" 아니! {mPlayerList[0].Name} 자네가 여기 웬일인가?",
+						" 정말 오래간만이네.",
 						"",
-						$"[color={RGB.Cyan}] 나도 역시 반갑네. 나는 지금 라스트 디치 성주님에게 당신의 신변을 알아오라고 부탁을 받았다네. 자네가 살아 있어서 정말 다행이네.[/color]",
+						$"[color={RGB.Cyan}] 나도 역시 반갑네. 나는 지금 라스트디치 성주님에게 당신의 신변을 알아오라고 부탁을 받았다네. 자네가 살아 있어서 정말 다행이네.[/color]",
 						"",
-						" 그런가 ?  성주님이 나를 그렇게 생각해 주시다니 정말 고맙군.  그런 그렇고 이 안에 있는 두개의 동굴 속에는  이미 지하 세계와의 통로가  단절 되어 버렸다네." +
-						"  나와 지니어스 기가 그 곳을 탈출 하자마자  지하 세계의 마법사에 의해 입구가 봉쇄된 것 같네.  그래도 한번 탐험에 보는 것도 좋은 경험일테고." +
-						" 지금은 그것보다는  나의 안부를 성주님께 알리는게 더 중요 하겠군. 그럼 먼저 가보도록 하게."
+						" 그런가? 성주님이 나를 그렇게 생각해 주시다니 정말 고맙군. 그런 그렇고 이 안에 있는 두 개의 동굴 속에는 이미 지하 세계와의 통로가 단절되어 버렸다네." +
+						" 나와 지니어스 기가 그곳을 탈출하자마자 지하 세계의 마법사에 의해 입구가 봉쇄된 것 같네. 그래도 한번 탐험에 보는 것도 좋은 경험일 테고." +
+						" 지금은 그것보다는 나의 안부를 성주님께 알리는 게 더 중요하겠군. 그럼 먼저 가보도록 하게."
 					});
 
 					mParty.Etc[10]++;
@@ -10598,8 +10583,8 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 천문학을 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 4 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적 중 천문학을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 4가지 질문을 모두 통과하면 이 시험을 통과한 것으로 간주하겠소.[/color]",
 							});
 
 							mSpecialEvent = SpecialEventType.AstronomyQuiz;
@@ -10617,8 +10602,8 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 컴퓨터를 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 4 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적 중 컴퓨터를 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 4가지 질문을 모두 통과하면 이 시험을 통과한 것으로 간주하겠소.[/color]",
 							});
 
 							mSpecialEvent = SpecialEventType.ComputerQuiz;
@@ -10636,8 +10621,8 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 물리학을 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적 중 물리학을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3가지 질문을 모두 통과하면 이 시험을 통과한 것으로 간주하겠소.[/color]",
 							});
 
 							mSpecialEvent = SpecialEventType.PhysicsQuiz;
@@ -10655,8 +10640,8 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 \" 또 다른 지식의 성전 \"에 대한 상식을 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적중 \"또 다른 지식의 성전\"에 대한 상식을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3가지 질문을 모두 통과하면 이 시험을 통과한 것으로 간주하겠소.[/color]",
 							});
 
 							mSpecialEvent = SpecialEventType.CommonSenseQuiz;
@@ -10674,8 +10659,8 @@ namespace DarkUWP
 							AppendText(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 당신이 겪어 나간 운명에 관한 이해를 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 !@QfhR%{{`as& ^Z>;/~ ^^Q+\\! 쨟hs<e#냠[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적 중 당신이 겪어 나간 운명에 관한 이해를 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3가지 질문을 모두 통과하면 이 !@QfhR%{{`as& ^Z>;/~ ^^Q+\\! 쨟hs<e#냠[/color]",
 							});
 
 							InvokeAnimation(AnimationType.StatueError);
@@ -10691,8 +10676,8 @@ namespace DarkUWP
 							Talk(new string[] {
 								" 당신 앞의 석상이 입을 열었다.",
 								"",
-								$"[color={RGB.White}] 나는 고대의 유적중 수학에 대한 지식을 담당하고 있소.[/color]",
-								$"[color={RGB.White}]만약 나의 3 가지 질문을 모두 통과하면 이 시험을 통과한것으로 간주하겠소.[/color]",
+								$"[color={RGB.White}] 나는 고대의 유적 중 수학에 대한 지식을 담당하고 있소.[/color]",
+								$"[color={RGB.White}]만약 나의 3가지 질문을 모두 통과하면 이 시험을 통과한 것으로 간주하겠소.[/color]",
 							});
 
 							mSpecialEvent = SpecialEventType.MathQuiz;
@@ -10756,8 +10741,8 @@ namespace DarkUWP
 				}
 				else if ((mParty.XAxis == 68 && mParty.YAxis == 37) || (mParty.XAxis == 15 && mParty.YAxis == 9) || (mParty.XAxis == 71 && mParty.YAxis == 6))
 				{
-					Ask(" 여어 오래간 만이군.  나는 이 게임의 제작자인 안영기라네. 저번에도 많이 만났었지." +
-					" 혹시 당신이 이 곳에서 더 이상 게임 진행이 안된다면 지금 나에게 도움을 청하게. 어떤가 ?",
+					Ask(" 여어 오래간만이군. 나는 이 게임의 제작자인 안영기라네. 저번에도 많이 만났었지." +
+					" 혹시 당신이 이곳에서 더 이상 게임 진행이 안된다면 지금 나에게 도움을 청하게. 어떤가?",
 					MenuMode.MeetAhnYoungKi, new string[] {
 						"정말 그렇습니다",
 						"아니오. 내 힘으로도 가능합니다."
@@ -10766,8 +10751,8 @@ namespace DarkUWP
 				else if (mParty.XAxis == 50 && mParty.YAxis == 50 && (mParty.Etc[8] & 0x0F) == 0x0F)
 				{
 					Talk(new string[] {
-						" 당신은 이 곳에서 할 일을 모두 끝냈다.",
-						" 일행은 마법의 힘을 합쳐 다시 지상으로 공간이동을 시작 했다.",
+						" 당신은 이곳에서 할 일을 모두 끝냈다.",
+						" 일행은 마법의 힘을 합쳐 다시 지상으로 공간 이동을 시작했다.",
 						"",
 						$"[color={RGB.Yellow}] 렐 그라브 .. 바스 포르 ..[/color]"
 					});
@@ -10776,21 +10761,21 @@ namespace DarkUWP
 				}
 				else if (mParty.XAxis == 22 && mParty.YAxis == 34 && (mParty.Etc[8] & (1 << 5)) > 0)
 				{
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동 되었다.");
 
 					mParty.XAxis = 15;
 					mParty.YAxis = 94;
 				}
 				else if (mParty.XAxis == 7 && mParty.YAxis == 73 && (mParty.Etc[8] & (1 << 5)) > 0)
 				{
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동 되었다.");
 
 					mParty.XAxis = 70;
 					mParty.YAxis = 7;
 				}
 				else if (mParty.XAxis == 72 && mParty.YAxis == 9 && (mParty.Etc[41] & 1) == 0)
 				{
-					Talk(" 일행은 무언가  희미한 불빛이 떠다니는 것을 보았고 그것이 도깨비 불이라는 것을 알아차리고 선제 공격을 시작했다.");
+					Talk(" 일행은 무언가 희미한 불빛이 떠다니는 것을 보았고 그것이 도깨비불이라는 것을 알아차리고 선제공격을 시작했다.");
 
 					mSpecialEvent = SpecialEventType.BattleWisp;
 				}
@@ -10804,10 +10789,10 @@ namespace DarkUWP
 					DisplayEnemy();
 
 					Ask(new string[] {
-						" 일행이 길을 지나려 하자 갑자기 바위 인간들이 길을 가로 막았다.",
+						" 일행이 길을 지나려 하자 갑자기 바위 인간들이 길을 가로막았다.",
 						"",
-						$"[color={RGB.LightMagenta}] 잠깐 !! 이 길을 그냥 지나가려 하느냐." +
-						" 목숨이 아깝다면 있는 돈 모두를 내어 놓아라 그러면 목숨만은 살려 주겠다.[/color]"
+						$"[color={RGB.LightMagenta}] 잠깐!! 이 길을 그냥 지나가려 하느냐." +
+						" 목숨이 아깝다면 있는 돈 모두를 내어 놓아라 그러면 목숨만은 살려주겠다.[/color]"
 					}, MenuMode.MeetRockMan, new string[] {
 						"그들과 전투를 벌인다",
 						"그들에게 모든 돈을 준다"
@@ -10822,7 +10807,7 @@ namespace DarkUWP
 
 					DisplayEnemy();
 
-					Talk($"[color={RGB.LightMagenta}] 나는 몰록님의 특명을 받고  너희들을 제거하기 위해 나온 죽음의 신,  즉 사신이다.  나의 친구들을 부르도록 하지. 그럼.");
+					Talk($"[color={RGB.LightMagenta}] 나는 몰록님의 특명을 받고 너희들을 제거하기 위해 나온 죽음의 신, 즉 사신이다. 나의 친구들을 부르도록 하지. 그럼.[/color]");
 
 					mSpecialEvent = SpecialEventType.JoinDeathSoulServant;
 				}
@@ -10836,18 +10821,18 @@ namespace DarkUWP
 
 					Talk(new string[] {
 						$"[color={RGB.LightMagenta}] 놀라운 돌파력이군, {mPlayerList[0].Name}.[/color]",
-						$"[color={RGB.LightMagenta}] 나는 과거에  네가  네크로만서를 물리쳤을때 부터 쭉 봐왔었네." +
-						" 사실 정말 존경했었는데 지금은 서로 적이 되었군. 아참! 나의 소개를 안했군." +
-						$"나는[/color] [color={RGB.LightCyan}]남십자성의 전사[/color][color={RGB.LightMagenta}] 라고 하네." +
-						" 원래는 로어 특공대의 부대장이었는데 지금은 나의 야망을 위해 몰록의 부하로 있지. 지금은 몰록의 심복이 되어 그로 부터 환상 마법을 배우고 있다네." +
-						"  바른대로 말하면 몰록을 이용하여 나를 더 강하게 만들고 있네.  몇달 전에 로어 특공대의 대장이었던 로어 헌터가  이 곳으로 왔더군." +
-						" 나는 그에게 들키지 않으려고 피해 다녀야 했네. 하지만 나는 느낄 수 있었지. 이제 그는 나의 상대가 안 된다는 것을  기를 통해 알 수가 있었다네." +
-						"  그는 대장이라는 이유만으로 나의 야망을 짓누르려고 했네. 그는 충실한 로드 안의 심복이었지만 나는 그런 사람이 아니었네." +
-						" 나는 로드 안이 지시하는 네크로만서 타도를 별로  달갑지 않게 받아 들였네." +
-						"  그래서 결국 로어 특공대 내에서 반기를 들게 되었고  나는 나를 따르는 소수의 사람들을 이끌고 신세계를 찾아 나의 야망을 펼치려 했지." +
-						" 그리고 마지막으로 내가 다다른 곳은 바로 여기 지하 세계라네. 당신의 일행에는 다행히도 로어 헌터가 없군. 즉, 내가 꼭 당신들과 싸워야 한다는 이유가 없는 셈이되지." +
-						" 내가 서로의 기를 측정해보니 당신들이 약간 우세하군. 하지만 나도 역시 나의 일행들이 더 있으니 막상 막하겠군. 여기서 우리 협상 하나 하도록하지. 우리들 서로는 지상 세계의 사람이네." +
-						"  나도 이렇게 동족끼리 싸우는 것은 원치 않네. 사실 나는 더 이상 몰록에게 배울 것이 없다네. 몰록과 정면으로 대결하면 나의 승리가 확실할 정도라네." +
+						$"[color={RGB.LightMagenta}] 나는 과거에 네가 네크로만서를 물리쳤을 때 부터 쭉 봐왔었네." +
+						" 사실 정말 존경했었는데 지금은 서로 적이 되었군. 아 참! 나의 소개를 안 했군." +
+						$"나는[/color] [color={RGB.LightCyan}]남십자성의 전사[/color][color={RGB.LightMagenta}]라고 하네." +
+						" 원래는 로어 특공대의 부대장이었는데 지금은 나의 야망을 위해 몰록의 부하로 있지. 지금은 몰록의 심복이 되어 그로부터 환상 마법을 배우고 있다네." +
+						" 바른대로 말하면 몰록을 이용하여 나를 더 강하게 만들고 있네. 몇 달 전에 로어 특공대의 대장이었던 로어 헌터가 이곳으로 왔더군." +
+						" 나는 그에게 들키지 않으려고 피해 다녀야 했네. 하지만 나는 느낄 수 있었지. 이제 그는 나의 상대가 안 된다는 것을 기를 통해 알 수가 있었다네." +
+						" 그는 대장이라는 이유만으로 나의 야망을 짓누르려고 했네. 그는 충실한 로드 안의 심복이었지만 나는 그런 사람이 아니었네." +
+						" 나는 로드 안이 지시하는 네크로만서 타도를 별로 달갑지 않게 받아들였네." +
+						" 그래서 결국 로어 특공대 내에서 반기를 들게 되었고 나는 나를 따르는 소수의 사람들을 이끌고 신세계를 찾아 나의 야망을 펼치려 했지." +
+						" 그리고 마지막으로 내가 다다른 곳은 바로 여기 지하 세계라네. 당신의 일행에는 다행히도 로어 헌터가 없군. 즉, 내가 꼭 당신들과 싸워야 한다는 이유가 없는 셈이 되지." +
+						" 내가 서로의 기를 측정해보니 당신들이 약간 우세하군. 하지만 나도 역시 나의 일행들이 더 있으니 막상막하겠군. 여기서 우리 협상 하나 하도록 하지. 우리들 서로는 지상 세계의 사람이네." +
+						" 나도 이렇게 동족끼리 싸우는 것은 원치 않네. 사실 나는 더 이상 몰록에게 배울 것이 없다네. 몰록과 정면으로 대결하면 나의 승리가 확실할 정도라네." +
 						" 나는 몰록의 명령으로 여기 있지만 더 이상 그에게 명령을 받을 이유가 없다네.[/color]"
 					});
 
@@ -10856,8 +10841,8 @@ namespace DarkUWP
 				else if (mParty.XAxis == 13 && mParty.YAxis == 23 && (mParty.Etc[8] & 0x70) == 0x70)
 				{
 					Talk(new string[] {
-						" 당신은 이 곳에서 할 일을 모두 끝냈다.",
-						" 일행은 마법의 힘을 합쳐 다시 지상으로 공간이동을 시작 했다.",
+						" 당신은 이곳에서 할 일을 모두 끝냈다.",
+						" 일행은 마법의 힘을 합쳐 다시 지상으로 공간 이동을 시작했다.",
 						"",
 						$"[color={RGB.Yellow}] 렐 그라브 .. 바스 포르 ..[/color]"
 					});
@@ -10875,8 +10860,8 @@ namespace DarkUWP
 				{
 					Ask(new string[] {
 						$" 다시 또 만났군, {mPlayerList[0].Name}.",
-						" 당신도 알다시피 나는 이 게임의 제작자인 안영기라네. 혹시 난이도 조절이 잘못 되어서 레벨을 더 키우고 싶다면 나에게 부탁하게." +
-						" 다시 로어성으로 이동 시켜 주겠네."
+						" 당신도 알다시피 나는 이 게임의 제작자인 안영기라네. 혹시 난이도 조절이 잘못되어서 레벨을 더 키우고 싶다면 나에게 부탁하게." +
+						" 다시 로어 성으로 이동시켜 주겠네."
 						}, MenuMode.MeetAhnYoungKi, new string[] {
 						"정말 그렇습니다",
 						"아니오. 내 힘으로도 가능합니다."
@@ -10887,34 +10872,34 @@ namespace DarkUWP
 					mParty.XAxis = 44;
 					mParty.YAxis = 91;
 
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동되었다.");
 				}
 				else if (mParty.XAxis == 29 && mParty.YAxis == 71)
 				{
 					mParty.XAxis = 43;
 					mParty.YAxis = 66;
 
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동되었다.");
 				}
 				else if (mParty.XAxis == 29 && mParty.YAxis == 73)
 				{
 					mParty.XAxis = 9;
 					mParty.YAxis = 61;
 
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동되었다.");
 				}
 				else if (mParty.XAxis == 30 && mParty.YAxis == 43)
 				{
 					mParty.XAxis = 14;
 					mParty.YAxis = 43;
 
-					Dialog(" 일행은 공간 이동 되어졌다.");
+					Dialog(" 일행은 공간 이동되었다.");
 				}
 				else if (mParty.XAxis == 40 && mParty.YAxis == 55 && GetTileInfo(40, 54) != 41)
 				{
 					Dialog(new string[] {
-						" 일행이 앞에 있는 레버를 잡아 당겼다.",
-						" 순간 굉음이 대륙 전체를 진동하기 시작 했고 당신 앞의 장애물이 지하로 가라 앉아 버렸다."
+						" 일행이 앞에 있는 레버를 잡아당겼다.",
+						" 순간 굉음이 대륙 전체를 진동하기 시작했고 당신 앞의 장애물이 지하로 가라앉아 버렸다."
 					});
 
 					for (var y = 0; y < mMapHeight; y++)
@@ -10930,13 +10915,13 @@ namespace DarkUWP
 				}
 				else if (mParty.XAxis == 19 && mParty.YAxis == 71)
 				{
-					Talk(" 당신은 실수로 용의 굴을 보지 못하고 지나쳤다.  그 굴에는  성질이 사나운 용들이 있었고 곧 시비가 붙어 싸움이 시작 되었다.");
+					Talk(" 당신은 실수로 용의 굴을 보지 못하고 지나쳤다. 그 굴에는 성질이 사나운 용들이 있었고 곧 시비가 붙어 싸움이 시작되었다.");
 
 					mSpecialEvent = SpecialEventType.BattleDragon;
 				}
 				else if (mParty.XAxis == 19 && mParty.YAxis == 73)
 				{
-					Talk(" 일행이 막다른 곳으로 접어들자  하늘에서 부터 비룡들이 공격해 오기 시작 했다.");
+					Talk(" 일행이 막다른 곳으로 접어들자 하늘에서부터 비룡들이 공격해 오기 시작했다.");
 
 					mSpecialEvent = SpecialEventType.BattleFlyingDragon;
 				}
@@ -10951,10 +10936,10 @@ namespace DarkUWP
 					DisplayEnemy();
 
 					Talk(new string[] {
-						$"[color={RGB.LightMagenta}] 슈잇~~  슈잇~~  전에도 우리 만난적이 있지, {mPlayerList[0].Name}.[/color]",
+						$"[color={RGB.LightMagenta}] 슈잇~~ 슈잇~~ 전에도 우리 만난 적이 있지, {mPlayerList[0].Name}.[/color]",
 						$"[color={RGB.LightMagenta}] 그때는 네크로만서님을 위해 싸웠었는데 이제는 메피스토펠레스님을 따른다는 것이 조금 달라진 점이지." +
-						" 너는 우리가 완전히 죽었다고 생각했겠지만  보시다시피 우리들은 기계 생명체라서 다시 조립을 하면 살릴 수가 있지." +
-						"  또한 스스로를 더욱 강하게 개조 할수도 있지. 그러면 새로와진 나의 힘을 감상하시지.[/color]"
+						" 너는 우리가 완전히 죽었다고 생각했겠지만 보시다시피 우리들은 기계 생명체라서 다시 조립을 하면 살릴 수가 있지." +
+						" 또한 스스로를 더욱 강하게 개조할 수도 있지. 그러면 새로워진 나의 힘을 감상하시지.[/color]"
 					});
 
 					mSpecialEvent = SpecialEventType.BattleMachineRobot;
@@ -10986,14 +10971,14 @@ namespace DarkUWP
 						{
 							Talk(new string[] {
 								$" 다시 돌아오다니, {mPlayerList[0].Name}",
-								" 이번에는 기어이 네놈들을 해치우고야 말겠다. 나의 친구들도 이번에 거들것이다."
+								" 이번에는 기어이 네놈들을 해치우고야 말겠다. 나의 친구들도 이번에 거들 것이다."
 							});
 
 							mSpecialEvent = SpecialEventType.BattlePrison2;
 						}
 						else
 						{
-							Talk(" 아니! 당신이 우리들을 배신하고 죄수를 풀어주다니... 그렇다면 우리들은 결투로서 당신들과 승부할수 밖에 없군요.");
+							Talk(" 아니! 당신이 우리들을 배신하고 죄수를 풀어주다니... 그렇다면 우리들은 결투로서 당신들과 승부할 수밖에 없군요.");
 
 							mSpecialEvent = SpecialEventType.BattlePrison;
 
@@ -11005,14 +10990,14 @@ namespace DarkUWP
 				}
 				else if (mParty.XAxis == 85 && mParty.YAxis == 47)
 				{
-					AppendText(" 당신은 열쇠를 발견 했다.");
+					AppendText(" 당신은 열쇠를 발견했다.");
 					UpdateTileInfo(86, 47, 44);
 				}
 				else if (mParty.XAxis == 89 && mParty.YAxis == 37 && (mParty.Etc[30] & 1) == 0)
 					FindGold(30, 1, 2_000);
 				else if (mParty.XAxis == 89 && mParty.YAxis == 40 && (mParty.Etc[30] & (1 << 1)) == 0)
 				{
-					AppendText(" 당신은 100 개의 식량을 발견했다.");
+					AppendText(" 당신은 100개의 식량을 발견했다.");
 					if (mParty.Food + 100 < 256)
 						mParty.Food += 100;
 					else
@@ -11045,7 +11030,7 @@ namespace DarkUWP
 			else if (mParty.Map == 7)
 			{
 				if (mParty.XAxis == 49)
-					AppendText(" 여기는  두번째의 대륙으로 이동하는  게이트입니다. 하지만 당신은 그 곳에서 하여야할 임무가 없습니다. 다시 돌아가 주십시오.");
+					AppendText(" 여기는 두 번째의 대륙으로 이동하는 게이트입니다. 하지만 당신은 그곳에서 하여야 할 임무가 없습니다. 다시 돌아가 주십시오.");
 				else if (mParty.XAxis == 29 || mParty.XAxis == 31)
 				{
 					UpdateTileInfo(30, mParty.YAxis, 45);
@@ -11114,7 +11099,7 @@ namespace DarkUWP
 				else if (mParty.XAxis == 10 && mParty.YAxis == 42 && (mParty.Etc[39] & (1 << 4)) == 0)
 				{
 					Dialog(new string[] {
-						$"[color={RGB.White}] 일행은 상자 속에서[/color] [color={RGB.LightCyan}]소환 문서[/color]을 발견하였다.",
+						$"[color={RGB.White}] 일행은 상자 속에서[/color] [color={RGB.LightCyan}]소환 문서[/color]를 발견하였다.",
 						"",
 						$"[color={RGB.LightCyan}] [[ 소환 문서 + 2 ][/color]"
 					});
@@ -11155,10 +11140,10 @@ namespace DarkUWP
 					}
 
 					Dialog(new string[] {
-						" 당신은 상자를 뒤지던 중  그 위에 놓여 있는 쪽지를 발견 했다.  그 것은 레굴루스가 쓴 것임을 알 수가 있었다.",
+						" 당신은 상자를 뒤지던 중 그 위에 놓여 있는 쪽지를 발견했다. 그것은 레굴루스가 쓴 것임을 알 수가 있었다.",
 						"",
 						$"[color={RGB.White}] 저는 지금 약초를 찾으러 다른 대륙에 가있습니다." +
-						$"  제가 돌아오기로 되어 있는 날은 {mParty.Etc[33] / 30 + 1}월 {mParty.Etc[33] % 30 + 1}일이므로 그때 찾아 오십시오."
+						$" 제가 돌아오기로 되어 있는 날은 {mParty.Etc[33] / 30 + 1}월 {mParty.Etc[33] % 30 + 1}일이므로 그때 찾아오십시오."
 					});
 				}
 				else if (mParty.XAxis < 7 || mParty.XAxis > 43 || mParty.YAxis < 8 || mParty.YAxis > 42)
@@ -11183,11 +11168,11 @@ namespace DarkUWP
 					else if (mParty.Etc[9] == 3)
 					{
 						Talk(new string[] {
-							" 당신이 메너스에 들어오자 마자  어떤 사람의 시체가 놓여져 있었다." +
-							" 그 시체는 형체를 알아볼 수 없을 정도로 피 투성이가 되어있었고 그의 등에는  커다란 독 화살이 예리하게 관통해 있었다.",
-							" 동굴 입구에서는 때마침  초승달이 비치고 있었고 그 달빛은 그 시체에서 흘러서 나와 고인피에 비쳐서 붉게 물들여 졌다.",
-							" 순간 당신은 알비레오의 예언의 구절이 떠 올랐다. 그것은 바로 이런 것이었다.",
-							$"[color={RGB.LightCyan}] \" 메너스의 달이 붉게 물들때  어둠의 영혼이 나타나 세계의 종말을 예고한다. \"[/color]"
+							" 당신이 메너스에 들어오자마자 어떤 사람의 시체가 놓여 있었다." +
+							" 그 시체는 형체를 알아볼 수 없을 정도로 피투성이가 되어있었고 그의 등에는 커다란 독화살이 예리하게 관통해 있었다.",
+							" 동굴 입구에서는 때마침 초승달이 비치고 있었고 그 달빛은 그 시체에서 흘러서 나와 고인 피에 비쳐서 붉게 물들여졌다.",
+							" 순간 당신은 알비레오의 예언의 구절이 떠올랐다. 그것은 바로 이런 것이었다.",
+							$"[color={RGB.LightCyan}] \"메너스의 달이 붉게 물들 때 어둠의 영혼이 나타나 세계의 종말을 예고한다.\"[/color]"
 						});
 
 						mSpecialEvent = SpecialEventType.SeeDeadBody;
@@ -11203,7 +11188,7 @@ namespace DarkUWP
 
 					await RefreshGame();
 
-					Talk(" 일행이 절벽에 서자마자  위압적인 힘이 일행을 끌어 당기기 시작했고 결국 일행은 그 힘을 버티지 못하고  의문의 구멍 속으로 빠져 들고 말았다.");
+					Talk(" 일행이 절벽에 서자마자 위압적인 힘이 일행을 끌어당기기 시작했고 결국 일행은 그 힘을 버티지 못하고 의문의 구멍 속으로 빠져들고 말았다.");
 					mSpecialEvent = SpecialEventType.HoleInMenace;
 
 					mFace = -1;
@@ -11216,7 +11201,7 @@ namespace DarkUWP
 
 					await RefreshGame();
 
-					Talk(" 일행은 절벽 앞으로 섰고,  저번과 같이 어떤 강한 힘에 의해서 구멍 속으로 빨려 들어갔다.");
+					Talk(" 일행은 절벽 앞으로 섰고, 저번과 같이 어떤 강한 힘에 의해서 구멍 속으로 빨려 들어갔다.");
 					mSpecialEvent = SpecialEventType.HoleInMenace2;
 
 					mFace = -1;
@@ -11230,7 +11215,7 @@ namespace DarkUWP
 			{
 				if (mParty.YAxis == 25 && (mParty.Etc[30] & (1 << 5)) == 0)
 				{
-					Dialog(" 당신은 이 곳에 놓여 있는  어떤 석판을 발견했다.  하지만 알 수 없는 고대어로 쓰여져 있어서 도저히 읽을 수 없었다.  하지만  일행은 그것을 가져 가기로 했다.");
+					Dialog(" 당신은 이곳에 놓여 있는 어떤 석판을 발견했다. 하지만 알 수 없는 고대어로 쓰여 있어서 도저히 읽을 수 없었다. 하지만 일행은 그것을 가져가기로 했다.");
 					mParty.Etc[30] |= 1 << 5;
 				}
 				else if (mParty.YAxis == 30 && (mParty.Etc[30] & (1 << 5)) > 0 && (mParty.Etc[30] & (1 << 6)) == 0)
@@ -11238,11 +11223,11 @@ namespace DarkUWP
 					if (mPlayerList.Count > 3 && mPlayerList[2].IsAvailable)
 					{
 						Dialog(new string[] {
-							$" {mPlayerList[2].NameSubjectJosa}  한동안 생각하더니 말을 꺼냈다.",
+							$" {mPlayerList[2].NameSubjectJosa} 한동안 생각하더니 말을 꺼냈다.",
 							"",
-							$"[color={RGB.Cyan}] 잠깐,  그 고대어를 예전에 보았던 곳을 방금 생각 해냈다네." +
-							" 내가 1 년전에 로드 안님의 일을 도와주고 있었을때  로드 안께서 이런 글이 적혀 있는 고서를  읽곤 했었다네." +
-							"  분명히 이것을 로드 안님께 가져가면  분명히 해독이 될걸세.[/color]"
+							$"[color={RGB.Cyan}] 잠깐, 그 고대어를 예전에 보았던 곳을 방금 생각 해냈다네." +
+							" 내가 1년 전에 로드 안님의 일을 도와주고 있었을 때 로드 안께서 이런 글이 적혀 있는 고서를 읽곤 했었다네." +
+							" 분명히 이것을 로드 안님께 가져가면 분명히 해독이 될걸세.[/color]"
 						});
 					}
 
@@ -11269,7 +11254,7 @@ namespace DarkUWP
 
 					if ((mParty.Etc[34] & lever) == 0)
 					{
-						Dialog($"[color={RGB.White}] 당신은 그 곳의 레버를 당겼다.[/color]");
+						Dialog($"[color={RGB.White}] 당신은 그곳의 레버를 당겼다.[/color]");
 
 						mParty.Etc[34] |= lever;
 						if ((mParty.Etc[34] & 0x0F) == 0x0F)
@@ -11311,8 +11296,8 @@ namespace DarkUWP
 
 					if (lastPerson == mPlayerList[0])
 					{
-						Dialog(" 당신은 무심코 발 아래에서 반짝이는  도자기의 조각을 보았다. 그것을 자세히 조사해 보니 어떤 석판의 조각이었다." +
-						"  거기에는 알 수없는 고대어가 잔뜩 쓰여 있었다. 당장은 읽을 수가 없었지만 가져가기로 했다.");
+						Dialog(" 당신은 무심코 발아래에서 반짝이는 도자기의 조각을 보았다. 그것을 자세히 조사해 보니 어떤 석판의 조각이었다." +
+						" 거기에는 알 수 없는 고대어가 잔뜩 쓰여 있었다. 당장은 읽을 수가 없었지만 가져가기로 했다.");
 					}
 					else
 					{
@@ -11323,8 +11308,8 @@ namespace DarkUWP
 							"",
 							$" {lastPerson.GenderPronoun}가 말했다.",
 							"",
-							$"[color={RGB.Cyan}] 방금 내가 뒤 따라 오다가 땅 속에 반쯤 묻힌 석판을 발견 했다네.  이것 보게나." +
-							" 어떤 글자가 쓰여 있군.  고대어인 것 같은데 어쨌든 가져 가도록 하지."
+							$"[color={RGB.Cyan}] 방금 내가 뒤따라오다가 땅속에 반쯤 묻힌 석판을 발견했다네. 이것 보게나." +
+							" 어떤 글자가 쓰여 있군. 고대어인 것 같은데 어쨌든 가져가도록 하지.[/color]"
 						});
 					}
 
@@ -11338,7 +11323,7 @@ namespace DarkUWP
 				{
 					mParty.XAxis = prevX;
 					mParty.YAxis = prevY;
-					Dialog(" 일행은 낭떠러지로 떨어 질뻔 했다.");
+					Dialog(" 일행은 낭떠러지로 떨어질 뻔했다.");
 				}
 				else
 					triggered = false;
@@ -11355,20 +11340,20 @@ namespace DarkUWP
 				}
 				else if (mParty.YAxis == 33 && (mParty.Etc[39] & (1 << 6)) == 0)
 				{
-					Dialog($" 일행이 사원안으로 들어 왔을때는 이미 [color={RGB.LightCyan}]어둠의 추종자들[/color]이라고 불리우는 사람들은  사라진 후였다.");
+					Dialog($" 일행이 사원 안으로 들어왔을때는 이미 [color={RGB.LightCyan}]어둠의 추종자들[/color]이라고 불리는 사람들은 사라진 후였다.");
 					mParty.Etc[39] |= 1 << 6;
 				}
 				else if (mParty.YAxis == 42)
 				{
 					Dialog(new string[] {
-						$" 그곳에는  소위 어둠의 추종자들이 우리 일행에게 보내는 메세지가 있었다.",
+						$" 그곳에는 소위 어둠의 추종자들이 우리 일행에게 보내는 메시지가 있었다.",
 						"",
-						$"[color={RGB.LightMagenta}] 당신들이  우리 어둠의 추종자들을 쫓고 있다는 것을 알고있다." +
-						" 하지만 그 정도의 실력으로는  우리에게 대항하지 조차 못한다는 것을 알것이다.  우리들은 너희들의 움직임을  낱낱히 파악하고 있다." +
-						"  이미 실리안 카미너스는 우리들이 안전한 곳으로 옮겨 놓았지. 하지만 너희들은 우리에게 적극 협조해야만 할 것이다." +
-						" 우리들은 신에 의해 선택 되어진 사람들이고  이 세상은 너무나 더렵혀져 있지. 이 세상을 다시 깨끗하게 하기 위해서는  매우 거대한 힘이 필요하겠지." +
-						" 그래서 우리가 선택한 것은 바로 실리안 카미너스라는 악의 집합체인 것이다.  우리들은 새로운 세상을 위해서는 악의 힘이라도 사양하지 않는다." +
-						"  당신도 우리의 뜻을 알았다면  이제 포기하고  우리들의 의지를 따르기를 바라는 바이다.[/color]"
+						$"[color={RGB.LightMagenta}] 당신들이 우리 어둠의 추종자들을 쫓고 있다는 것을 알고 있다." +
+						" 하지만 그 정도의 실력으로는 우리에게 대항하지조차 못한다는 것을 알 것이다. 우리들은 너희들의 움직임을 낱낱이 파악하고 있다." +
+						" 이미 실리안 카미너스는 우리들이 안전한 곳으로 옮겨 놓았지. 하지만 너희들은 우리에게 적극 협조해야만 할 것이다." +
+						" 우리들은 신에 의해 선택된 사람들이고 이 세상은 너무나 더럽혀져 있지. 이 세상을 다시 깨끗하게 하기 위해서는 매우 거대한 힘이 필요하겠지." +
+						" 그래서 우리가 선택한 것은 바로 실리안 카미너스라는 악의 집합체인 것이다. 우리들은 새로운 세상을 위해서는 악의 힘이라도 사양하지 않는다." +
+						" 당신도 우리의 뜻을 알았다면 이제 포기하고 우리들의 의지를 따르기를 바라는 바이다.[/color]"
 					});
 
 					UpdateTileInfo(10, 38, 52);
@@ -11377,7 +11362,7 @@ namespace DarkUWP
 					{
 						Dialog(new string[] {
 							"",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ][/color]"
+							$"[color={RGB.LightCyan}] [[ 경험치 + 100,000 ][/color]"
 						}, true);
 
 						foreach (var player in mPlayerList)
@@ -11388,7 +11373,7 @@ namespace DarkUWP
 				}
 				else if (mParty.XAxis == 10 && mParty.YAxis == 38 && (mParty.Etc[39] & (1 << 5)) == 0)
 				{
-					AskWhom(" 일행은  여기서 대궁 아르발레스트를 발견 하였다. 아르발레스트를 가질 사람을 고르시오.", MenuMode.GetArbalest, ChooseMode.PlayerOnly);
+					AskWhom(" 일행은 여기서 대궁 아르발레스트를 발견하였다. 아르발레스트를 가질 사람을 고르시오.", MenuMode.GetArbalest, ChooseMode.PlayerOnly);
 				}
 				else
 					triggered = false;
@@ -11398,7 +11383,7 @@ namespace DarkUWP
 				if (mParty.YAxis == 40 && (mParty.Etc[40] & 1) == 0)
 				{
 					Dialog(new string[] {
-						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]이동 구슬[/color][color={RGB.White}]을 발견 하였다.[/color]",
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]이동 구슬[/color][color={RGB.White}]을 발견하였다.[/color]",
 						$"[color={RGB.LightCyan}] [[ 이동 구슬 + 4 ][/color]",
 					});
 
@@ -11413,7 +11398,7 @@ namespace DarkUWP
 				else if (mParty.XAxis == 17 && mParty.YAxis == 13 && (mParty.Etc[40] & (1 << 1)) == 0)
 				{
 					Dialog(new string[] {
-						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]체력 회복약[/color][color={RGB.White}]을 발견 하였다.[/color]",
+						$"[color={RGB.White}] 일행은 여기서[/color] [color={RGB.LightCyan}]체력 회복약[/color][color={RGB.White}]을 발견하였다.[/color]",
 						$"[color={RGB.LightCyan}] [[ 체력 회복약 + 5 ][/color]",
 					});
 
@@ -11428,8 +11413,8 @@ namespace DarkUWP
 				else if (mParty.XAxis == 25 && mParty.YAxis == 8)
 				{
 					Talk(new string[] {
-						$" 일행은 여기서 어떤 시체를 발견 하였다.  시체는 심하게 부패해 있어서 악취가 진동하였다. 그 시체의 손에는 일기장 처럼 보이는 책 한권이 꽉 쥐어져 있었다.",
-						$" 당신은  그 책을 시체의 손에서 빼내어  읽기 시작했다. 그 책의 중요한 내용을 보면 다음과 같다."
+						$" 일행은 여기서 어떤 시체를 발견하였다. 시체는 심하게 부패해 있어서 악취가 진동하였다. 그 시체의 손에는 일기장처럼 보이는 책 한 권이 꽉 쥐어져 있었다.",
+						$" 당신은 그 책을 시체의 손에서 빼내어 읽기 시작했다. 그 책의 중요한 내용을 보면 다음과 같다."
 					});
 
 					mSpecialEvent = SpecialEventType.ReadDiary;
@@ -11448,13 +11433,13 @@ namespace DarkUWP
 
 					DisplayEnemy();
 
-					Talk($"[color={RGB.LightMagenta}] 당신이 여기를 지나가겠다고요 ? 그럼 우리들을 먼저 쓰러뜨리시지요.[/color]");
+					Talk($"[color={RGB.LightMagenta}] 당신이 여기를 지나가겠다고요? 그럼 우리들을 먼저 쓰러뜨리시지요.[/color]");
 
 					mSpecialEvent = SpecialEventType.BattleCaveOfBerial;
 				}
 				else if (mParty.XAxis == 43 && mParty.YAxis == 34 && (mParty.Etc[40] & (1 << 3)) == 0)
 				{
-					Talk(" 일행이 앞으로 진행하려 했을때 무언가 큰 물체와 마주치게 되었다.  그들은 눈을 번뜩이며 달려 들었고  일행은 그 물체가  가고일들이라는 알아챘다.");
+					Talk(" 일행이 앞으로 진행하려 했을 때 무언가 큰 물체와 마주치게 되었다. 그들은 눈을 번뜩이며 달려 들었고 일행은 그 물체가 가고일들이라는 알아챘다.");
 
 					mSpecialEvent = SpecialEventType.BattleGagoyle;
 				}
@@ -11477,8 +11462,8 @@ namespace DarkUWP
 
 					Talk(new string[] {
 						$"[color={RGB.LightMagenta}] 내가 베리알님을 지키는 마지막 호위대이지[/color]",
-						$"[color={RGB.LightMagenta}] 그 정도의 숫자로 여기까지 돌파해 오다니 조금은 존경할만한 일이군.  나는  지금까지와는 격이 다르지." +
-						"  바로 베리알님의 오른팔과 다름없는 존재이니까. 자 덤벼라 !![/color]"
+						$"[color={RGB.LightMagenta}] 그 정도의 숫자로 여기까지 돌파해 오다니 조금은 존경할만한 일이군. 나는 지금까지 와는 격이 다르지." +
+						" 바로 베리알님의 오른팔과 다름없는 존재이니까. 자 덤벼라!![/color]"
 					});
 
 					mSpecialEvent = SpecialEventType.BattleCaveOfBerialCyclopes;
@@ -11524,7 +11509,7 @@ namespace DarkUWP
 			{
 				if (mParty.YAxis == 13 && (mParty.Etc[8] & (1 << 6)) == 0)
 				{
-					Dialog(" 일행은 앗! 하는 사이에  밀폐된 방안으로 빨려들어 가고 말았다.");
+					Dialog(" 일행은 앗! 하는 사이에 밀폐된 방안으로 빨려 들어가고 말았다.");
 
 					mParty.YAxis = 8;
 				}
@@ -11568,12 +11553,12 @@ namespace DarkUWP
 
 						DisplayEnemy();
 
-						Talk($"[color={RGB.LightMagenta}] 당신들이  나의 손아귀에서 빠져 나가려고 하지만 그건 큰 착각이오." +
-						"  당신들이 이 동굴을 헤메고 있을때 나는 이미 당신들의 약점과 단점을 발견했소." +
-						"  즉, 그 말은 나의 환상 마법의  먹이가 되었다는 것이오." +
-						" 나는 비록 다른 마법에는 별로 재능이 없지만  환상 마법만은  최고를 고수하고 있다오." +
+						Talk($"[color={RGB.LightMagenta}] 당신들이 나의 손아귀에서 빠져나가려고 하지만 그건 큰 착각이오." +
+						" 당신들이 이 동굴을 헤메고 있을 때 나는 이미 당신들의 약점과 단점을 발견했소." +
+						" 즉, 그 말은 나의 환상 마법의 먹이가 되었다는 것이오." +
+						" 나는 비록 다른 마법에는 별로 재능이 없지만 환상 마법만은 최고를 고수하고 있다오." +
 						" 그럼 당신은 당신의 환상과 싸우게 되고 결국에는 스스로에 지쳐 스러지게 되지요." +
-						"  그리고는  나의 마법에 의해 잿 더미가 될 운명 밖에 되지 안겠지요. 자, 그러면 시작 하겠소.[/color]");
+						" 그러고는 나의 마법에 의해 잿 더미가 될 운명 밖에 되지 않겠지요. 자, 그러면 시작하겠소.[/color]");
 
 						mSpecialEvent = SpecialEventType.SummonIllusion;
 					}
@@ -11773,8 +11758,8 @@ namespace DarkUWP
 				else if (((mParty.XAxis == 24 && mParty.YAxis == 8) || (mParty.XAxis == 25 && mParty.YAxis == 8)) && (mParty.Etc[8] & (1 << 1)) == 0)
 				{
 					Talk(new string[] {
-						" 일행이 무언가에 홀린듯 이 자리에 섰을때 멀리서 희미한 형체가 여기로 다가옴을 알 수 있었다." +
-						"  그의 모습은 근엄한 전사의 모습이었지만 왼손에는 방패가 아닌  마법의 지팡이가 쥐어져 있었다. 곧이어 그는 우리에게 말을 걸기시작 했다."
+						" 일행이 무언가에 홀린 듯 이 자리에 섰을 때 멀리서 희미한 형체가 여기로 다가옴을 알 수 있었다." +
+						" 그의 모습은 근엄한 전사의 모습이었지만 왼손에는 방패가 아닌 마법의 지팡이가 쥐어져 있었다. 곧이어 그는 우리에게 말을 걸기 시작했다."
 					});
 
 					mSpecialEvent = SpecialEventType.RevealAsmodeus;
@@ -11802,8 +11787,8 @@ namespace DarkUWP
 
 					DisplayEnemy();
 
-					Talk($"[color={RGB.LightMagenta}] 잠깐 거기에 서라.  당신들을 더 이상 안으로 들어 가게 할 수 없다." +
-					"  여기가 바로 메피스토펠레스님의 마지막 방어선이니까. 여러말 하지 않겠다. 바로 결전이다.[/color]");
+					Talk($"[color={RGB.LightMagenta}] 잠깐 거기에 서라. 당신들을 더 이상 안으로 들어 가게 할 수 없다." +
+					" 여기가 바로 메피스토펠레스님의 마지막 방어선이니까. 여러 말하지 않겠다. 바로 결전이다.[/color]");
 
 					mPrevX = prevX;
 					mPrevY = prevY;
@@ -11811,7 +11796,7 @@ namespace DarkUWP
 					mSpecialEvent = SpecialEventType.BattleLastGuardian;
 				}
 				else if (mParty.YAxis == 14) {
-					Talk(" 당신은 직감적으로 결전의 순간이 다가왔다는 것을 알았다.  벌써 메피스토펠레스는 당신 앞으로 걸어 나왔고, 일행은 전투 태세를 취하였다.");
+					Talk(" 당신은 직감적으로 결전의 순간이 다가왔다는 것을 알았다. 벌써 메피스토펠레스는 당신 앞으로 걸어 나왔고, 일행은 전투태세를 취하였다.");
 
 					mSpecialEvent = SpecialEventType.MeetMephistopheles;
 				}
@@ -12393,7 +12378,7 @@ namespace DarkUWP
 			for (var i = 0; i < dialog.Length; i++)
 				extDialog[i] = dialog[i];
 
-			extDialog[extDialog.Length - 1] = "[color={RGB.LightGreen}]한명을 고르시오 ---[/color]";
+			extDialog[extDialog.Length - 1] = $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]";
 
 			string[] menuStr;
 
@@ -12450,7 +12435,7 @@ namespace DarkUWP
 		{
 			void ShowClassTrainingMenu()
 			{
-				AppendText("어떤 일을 원하십니까 ?");
+				AppendText("어떤 일을 원하십니까?");
 
 				ShowMenu(MenuMode.TrainingCenter, new string[] {
 					"전투사 계열의 기술을 습득",
@@ -12471,7 +12456,7 @@ namespace DarkUWP
 			{
 				AppendText(new string[] {
 					$"[color={RGB.White}]여기는 식료품점 입니다.[/color]",
-					$"[color={RGB.White}]몇개를 원하십니까 ?[/color]",
+					$"[color={RGB.White}]몇개를 원하십니까?[/color]",
 				});
 
 				ShowMenu(MenuMode.ChooseFoodAmount, new string[] {
@@ -12496,22 +12481,22 @@ namespace DarkUWP
 				else if (moveX == 23 && moveY == 49)
 				{
 					if (mParty.Etc[9] == 0)
-						AppendText("어서 로드 안 님에게 가보도록 하게.");
+						AppendText("어서 로드 안님에게 가보도록 하게.");
 					else
 					{
 						AppendText(new string[] {
 							$" 이번에도 큰일을 맞게 됐군, {mPlayerList[0].Name}.",
-							" 이번에도 분명 당신은 해낼 수 있으리라고 믿네.  과거의 영웅은  이제 잊혀져 가지만 다시 일어서는 날이 바로 지금인것 같네." +
-							" 이번 일만 성공하면  다시 그때의 영광을 찾을수 있을 걸세. 자네의 성공을 빌어 주겠네."
+							" 이번에도 분명 당신은 해낼 수 있으리라고 믿네. 과거의 영웅은 이제 잊혀가지만 다시 일어서는 날이 바로 지금인 것 같네." +
+							" 이번 일만 성공하면 다시 그때의 영광을 찾을 수 있을 걸세. 자네의 성공을 빌어 주겠네."
 						});
 					}
 				}
 				else if (moveX == 23 && moveY == 53)
-					AppendText(" 로드 안 님이 당신을 부르셨다면서요. 시대의 영웅이었던  당신처럼 되기 위해  저도 열심히 수련을 하고 있습니다.");
+					AppendText(" 로드 안님이 당신을 부르셨다면서요. 시대의 영웅이었던 당신처럼 되기 위해 저도 열심히 수련을 하고 있습니다.");
 				else if (moveX == 18 && moveY == 52)
 					AppendText($" 이 세계의 창시자는 [color={RGB.LightGreen}]안 영기[/color]님 이시며, 그는 위대한 프로그래머 입니다.");
 				else if (moveX == 12 && moveY == 54)
-					AppendText($" 지금 어떤 예언서가 발견되어  주민들의 관심을 끌고 있더군요.");
+					AppendText($" 지금 어떤 예언서가 발견되어 주민들의 관심을 끌고 있더군요.");
 				else if ((moveX == 12 && moveY == 26) || (moveX == 17 && moveY == 26))
 				{
 					string message;
@@ -12528,24 +12513,24 @@ namespace DarkUWP
 				else if (moveX == 20 && moveY == 35)
 					AppendText($" 으~~~ 취한다.");
 				else if (moveX == 17 && moveY == 37)
-					AppendText($" 예언서 ?  뭐가 예언서야 ! 그런걸 믿다니 우리가 무슨 어린애 인가.");
+					AppendText($" 예언서? 뭐가 예언서야! 그런 걸 믿다니 우리가 무슨 어린애인가.");
 				else if (moveX == 14 && moveY == 34)
-					AppendText($" 큰일났군. 벌써 내 친구도 두명이나 메너스에서 희생되었는데...");
+					AppendText($" 큰일 났군. 벌써 내 친구도 두 명이나 메너스에서 희생되었는데...");
 				else if (moveX == 12 && moveY == 31)
 				{
-					AppendText($" 타임 워커인 알비레오를 전에 한번 본적이 있지.  그는 예언서 하나만 남겨 놓고는 다시 시간 속으로 여행을 떠났다네." +
+					AppendText($" 타임 워커인 알비레오를 전에 한번 본 적이 있지. 그는 예언서 하나만 남겨 놓고는 다시 시간 속으로 여행을 떠났다네." +
 					" 아무도 그가 어느 시대의 사람인지 아니면 이 차원의 사람인지도 모른다네." +
-					"  나도 그가 예언서를 전해주기 위해 로어 대륙에 왔을때 잠시 본 적이 있었는데 정말 대단한 분이셨지. 아마도 고대의 마법사 레드 안타레스에 필적하는 실력이더군");
+					" 나도 그가 예언서를 전해주기 위해 로어 대륙에 왔을 때 잠시 본 적이 있었는데 정말 대단한 분이셨지. 아마도 고대의 마법사 레드 안타레스에 필적하는 실력이더군");
 				}
 				else if (moveX == 17 && moveY == 32)
-					AppendText($" 흑흑흑~~~ 저의 오빠가 메너스에서 죽었어요. 하지만 아무도 원인 조차 알 수 없다고 하더군요.");
+					AppendText($" 흑흑흑~~~ 저의 오빠가 메너스에서 죽었어요. 하지만 아무도 원인조차 알 수 없다고 하더군요.");
 				else if (moveX == 9 && moveY == 29)
-					AppendText($" 당신께서  또 새로운 모험을 하신다고 들었는데  옛날의 동료들은 모두 흩어져 있어서 다시 모으셔야 되겠군요.");
+					AppendText($" 당신께서 또 새로운 모험을 하신다고 들었는데 옛날의 동료들은 모두 흩어져 있어서 다시 모으셔야 되겠군요.");
 				else if (moveX == 71 && moveY == 77)
 				{
 					AppendText(new string[] {
 						$" 과거의 영웅이었던 {mPlayerList[0].Name}님.",
-						" 오늘도 역시  베라트릭스님의 무덤에  오셨군요. 아참 !  전에 어떤 전사분께서 베라트릭스님의 무덤에 들리고는  거기에 메모를 남겨 두었더군요." +
+						" 오늘도 역시 베라트릭스님의 무덤에 오셨군요. 아 참! 전에 어떤 전사분께서 베라트릭스님의 무덤에 들리고는 거기에 메모를 남겨 두었더군요." +
 						" 이름은 지니어스 기라고 하던데, 옛날에 들어본 이름 같기도 하고..."
 					});
 				}
@@ -12556,13 +12541,13 @@ namespace DarkUWP
 						"",
 						"",
 						$"[color={RGB.LightCyan}]          여기는 베라트릭스의 묘[/color]",
-						$"[color={RGB.White}]     772 년 11 월 27 일 여기에 잠들다.[/color]",
+						$"[color={RGB.White}]     772년 11월 27일 여기에 잠들다.[/color]",
 						"",
 						"",
 						"",
 						"",
 						"",
-						" 자세히 살펴 보니  묘비 밑에 어떤 쪽지가 있었다."
+						" 자세히 살펴보니 묘비 밑에 어떤 쪽지가 있었다."
 					});
 
 					mSpecialEvent = SpecialEventType.ViewGeniusKieLetter;
@@ -12572,25 +12557,25 @@ namespace DarkUWP
 				else if (moveX == 52 && moveY == 10)
 				{
 					AppendText(new string[] {
-						" 여기는 로드 안의 체제에 대해서  깊은 반감을 가지고 있는 자들을 수용하고 있습니다.",
-						" 아마 그들은 죽기전에는 이곳을 나올수 없을겁니다."
+						" 여기는 로드 안의 체제에 대해서 깊은 반감을 가지고 있는 자들을 수용하고 있습니다.",
+						" 아마 그들은 죽기 전에는 이곳을 나올 수 없을 겁니다."
 					});
 				}
 				else if (moveX == 40 && moveY == 9)
 				{
-					Talk(" 나는 이곳의 기사로서  이 세계의 모든 대륙을 탐험하고 돌아왔었습니다." +
-					" 내가 마지막 대륙을 돌았을때  나는 새로운 존재를 발견했습니다." +
+					Talk(" 나는 이곳의 기사로서 이 세계의 모든 대륙을 탐험하고 돌아왔었습니다." +
+					" 내가 마지막 대륙을 돌았을 때 나는 새로운 존재를 발견했습니다." +
 					" 그는 바로 예전까지도 로드 안과 대립하던 에인션트 이블이라는 존재였습니다." +
-					" 지금 우리의 성에서는 철저하게 배격하도록 어릴때부터 가르침 받아온 그 에인션트 이블이었습니다." +
-					"  하지만 그곳에서 본 그는 우리가 알고있는 그와는 전혀 다른 인간미를 가진  말 그대로  신과같은 존재였습니다." +
-					"  내가 그의 신앙 아래 있는 어느 도시를 돌면서 내가 느낀것은 정말 로드 안에게서는 찾아볼수가 없는 그런 자애와 따뜻한 정이었습니다." +
-					"  그리고 여태껏 내가 알고 있는 그에 대한 지식이  정말 잘못되었다는 것과  이런 사실을 다른 사람에게도 알려주고 싶다는 이유로  그의 사상을 퍼뜨리다 이렇게 잡히게 된것입니다.");
+					" 지금 우리의 성에서는 철저하게 배격하도록 어릴 때부터 가르침 받아온 그 에인션트 이블이었습니다." +
+					" 하지만 그곳에서 본 그는 우리가 알고 있는 그와는 전혀 다른 인간미를 가진 말 그대로 신과 같은 존재였습니다." +
+					" 내가 그의 신앙 아래 있는 어느 도시를 돌면서 내가 느낀 것은 정말 로드 안에게서는 찾아볼 수가 없는 그런 자애와 따뜻한 정이었습니다." +
+					" 그리고 여태껏 내가 알고 있는 그에 대한 지식이 정말 잘못되었다는 것과 이런 사실을 다른 사람에게도 알려주고 싶다는 이유로 그의 사상을 퍼뜨리다 이렇게 잡히게 된 것입니다.");
 
 					mSpecialEvent = SpecialEventType.TalkPrisoner;
 				}
 				else if (moveX == 39 && moveY == 14)
 				{
-					AppendText(" 히히히... 위대한 용사님. 낄낄낄.. 내가 당신들의 일행에 끼이면 안될까요 ? 우히히히..");
+					AppendText(" 히히히... 위대한 용사님. 낄낄낄.. 내가 당신들의 일행에 끼이면 안 될까요? 우히히히..");
 
 					ShowMenu(MenuMode.JoinMadJoe, new string[] {
 						"그렇다면 당신을 받아들이지요",
@@ -12600,36 +12585,36 @@ namespace DarkUWP
 				else if (moveX == 62 && moveY == 9 && (mParty.Etc[49] & (1 << 5)) == 0)
 				{
 					AppendText(new string[] {
-						" 내가 몇년 전에 황금 방패를 숨겨 놓았던  메너스에 새로운 일들이 생겼다는게 사실이오 ?",
-						" 내가 저번에는 용기가 없어서 당신과 함께 동행하자는 말을 못했지만 이번에는 한번 부탁하겠소.",
-						" 나는 비록 도둑질을 해서 여기에 들어왔지만 암살자로서의 임무도 잘 해낼거요."
+						" 내가 몇 년 전에 황금 방패를 숨겨 놓았던 메너스에 새로운 일 들이 생겼다는 게 사실이오?",
+						" 내가 저번에는 용기가 없어서 당신과 동행하자는 말을 못했지만 이번에는 한번 부탁하겠소.",
+						" 나는 비록 도둑질을 해서 여기에 들어왔지만 암살자로서의 임무도 잘 해낼 거요."
 					});
 
 					ShowMenu(MenuMode.JoinMercury, new string[] {
 						"승락하겠소, 그럼 잘 부탁하오",
-						"죄수를 탈출 시키면 나 역시 힘들게 되오"
+						"죄수를 탈출시키면 나 역시 힘들게 되오"
 					});
 				}
 				else if (moveX == 59 && moveY == 14)
-					AppendText(" 당신들에게 경고해 두겠는데 건너편 방에 있는 조는 오랜 수감생활 끝에  미쳐 버리고 말았소.  그의 말에 속아서 당신네 일행에 참가시키는 그런 실수는 하지마시오.");
+					AppendText(" 당신들에게 경고해 두겠는데 건너편 방에 있는 조는 오랜 수감생활 끝에 미쳐 버리고 말았소. 그의 말에 속아서 당신네 일행에 참가시키는 그런 실수는 하지 마시오.");
 				else if ((moveX == 41 && moveY == 77) || (moveX == 41 && moveY == 79))
 				{
 					if ((mParty.Etc[29] & (1 << 3)) == 0)
-						AppendText(" 로드 안 님의 명령에 의해서  당신들에게 한가지의 무기를 드리겠습니다.  들어가셔서 무기를 선택해 주십시오.");
+						AppendText(" 로드 안 님의 명령에 의해서 당신들에게 한 가지의 무기를 드리겠습니다. 들어가셔서 무기를 선택해 주십시오.");
 					else
-						AppendText(" 여기서 가져가신 무기를 잘 사용하셔서 임무를 수행하는데 잘 활용 하십시오.");
+						AppendText(" 여기서 가져가신 무기를 잘 사용하셔서 임무를 수행하는 데 잘 활용하십시오.");
 				}
 				else if (moveX == 78 && moveY == 46)
-					AppendText(" 우리 은행은 철저하게 보안 되고 있습니다.");
+					AppendText(" 우리 은행 보안은 철저합니다.");
 				else if (moveX == 78 && moveY == 48)
-					AppendText(" 손님께서는 예금 창구의 안쪽으로는 들어가시면 안됩니다. 그 때의 일은 책임 질 수 없습니다.");
+					AppendText(" 손님께서는 예금 창구의 안쪽으로는 들어가시면 안 됩니다. 그때의 일은 책임질 수 없습니다.");
 				else if (moveX == 84 && moveY == 47)
 					AppendText(" 지금은 민심이 어수선해서 은행의 입출금을 금지하고 있습니다. 양해하여 주십시오.");
 				else if (moveX == 89 && moveY == 46)
 				{
 					Talk(new string[] {
-						" 누구냐 !  앗 은행 강도다.",
-						" 경비병 !  경비병 !"
+						" 누구냐! 앗 은행 강도다.",
+						" 경비병! 경비병!"
 					});
 
 					mSpecialEvent = SpecialEventType.BattleBankGuard;
@@ -12638,35 +12623,35 @@ namespace DarkUWP
 				{
 					AppendText(new string[] {
 						$" 오, {mPlayerList[0].Name}!",
-						" 자네는 날 기억하겠지. 나는 헤라클레스일세. 자네와 네크로만서를 물리치던 때가  생각나는군." +
-						" 그래, 이번에도 중대한 일이 발생했다고들 하던데 그게 사실인가 ?  사실이라면 이번에도 나를 모험에 참가 시켜주게."
+						" 자네는 날 기억하겠지. 나는 헤라클레스일세. 자네와 네크로만서를 물리치던 때가 생각나는군." +
+						" 그래, 이번에도 중대한 일이 발생했다고들 하던데 그게 사실인가? 사실이라면 이번에도 나를 모험에 참가시켜주게."
 					});
 
 					ShowMenu(MenuMode.JoinHercules, new string[] {
 						"나 역시 자네의 도움이 필요했다네",
-						"자네까지 나설 정도로 심각한일은 아니네"
+						"자네까지 나설 정도로 심각한 일은 아니네"
 					});
 				}
 				else if (moveX == 20 && moveY == 32 && (mParty.Etc[49] & (1 << 2)) == 0)
 				{
 					AppendText(new string[] {
-						$" 안녕하신가 ? {mPlayerList[0].Name}.",
+						$" 안녕하신가? {mPlayerList[0].Name}.",
 						" 설마 날 잊었다고는 하지 않겠지." +
-						"  지금은 사건이 없어서  한가하게 이런 일을 하고 있지만 간혹 여기를 들리는 사람중에는 이 타이탄님을 기억하는 사람이 있다네." +
-						"  요새는 세상이 너무 조용해서 이런일은 나하고는 정말 안 어울린다네.  자네 모습을 보니 모험을 떠나려는 것 같은데 나도 끼이면 안 되겠나 ?"
+						" 지금은 사건이 없어서 한가하게 이런 일을 하고 있지만 간혹 여기를 들리는 사람 중에는 이 타이탄님을 기억하는 사람이 있다네." +
+						" 요새는 세상이 너무 조용해서 이런 일은 나하고는 정말 안 어울린다네. 자네 모습을 보니 모험을 떠나려는 것 같은데 나도 끼이면 안 되겠나?"
 					});
 
 					ShowMenu(MenuMode.JoinTitan, new string[] {
 						"물론 나는 환영하지",
-						"별일 아니라서 자네는 재미 없을 걸세"
+						"별일 아니라서 자네는 재미없을 걸세"
 					});
 				}
 				else if (moveX == 8 && moveY == 63 && (mParty.Etc[49] & (1 << 1)) == 0)
 				{
 					AppendText(new string[] {
-						$" 오래간 만이군 {mPlayerList[0].Name}.",
-						" 2-3 년전에 자네와 함께  모험을 떠났던 것이 엊그제 같은데 벌써 세월은 이렇게 지났군. 그간 생활이 어떠했나 ?" +
-						" 그건 그렇고, 또 이 곳에 무슨일이 생겼다지 ? 이번에도 자네에게 나의 마법의 힘을 빌려 주고 싶은데 자네는 어떻게 생각하나 ?"
+						$" 오래간만이군 {mPlayerList[0].Name}.",
+						" 2-3년 전에 자네와 함께 모험을 떠났던 것이 엊그제 같은데 벌써 세월은 이렇게 지났군. 그간 생활이 어떠했나?" +
+						" 그건 그렇고, 또 이곳에 무슨 일이 생겼다지? 이번에도 자네에게 나의 마법의 힘을 빌려주고 싶은데 자네는 어떻게 생각하나?"
 					});
 
 					ShowMenu(MenuMode.JoinMerlin, new string[] {
@@ -12678,9 +12663,9 @@ namespace DarkUWP
 				{
 					AppendText(new string[] {
 						$" 요새는 좀처럼 볼 기회가 없군요. {mPlayerList[0].Name}.",
-						" 나는 네크로만서와의 결전이 끝난후에 컨져러의 수업을 쌓고 있었죠. 지금은 초보적인 수준밖에는 안되지만." +
-						" 당신이 또 새로운 임무를 받았다고들 하던데 사실인가요 ?  그렇다면 저도 그 임무에 빠질수가 없지요." +
-						"  몇년전 그때처럼 당신과 함께 싸우고 싶군요."
+						" 나는 네크로만서와의 결전이 끝난 후에 컨져러의 수업을 쌓고 있었죠. 지금은 초보적인 수준밖에는 안되지만." +
+						" 당신이 또 새로운 임무를 받았다고들 하던데 사실인가요? 그렇다면 저도 그 임무에 빠질 수가 없지요." +
+						" 몇 년 전 그때처럼 당신과 함께 싸우고 싶군요."
 					});
 
 					ShowMenu(MenuMode.JoinBetelgeuse, new string[] {
@@ -12704,18 +12689,18 @@ namespace DarkUWP
 				{
 					AppendText(new string[] {
 						$" 살려 주십시오. {mPlayerList[0].Name}님.",
-						" 아마 조금만 있으면 다크 메이지가 이곳을 폐허로 만들겁니다."
+						" 아마 조금만 있으면 다크 메이지가 이곳을 폐허로 만들 겁니다."
 					});
 				}
 				else if (moveX == 71 && moveY == 72)
-					AppendText(" 나는 어릴적에  할아버지로 부터 지하 세계의 사람들에 대해 들은 적이 있는데  지금은 기억이 잘 나지 않는군요.");
+					AppendText(" 나는 어릴 적에 할아버지로부터 지하 세계의 사람들에 대해 들은 적이 있는데 지금은 기억이 잘 나지 않는군요.");
 				else if (moveX == 50 && moveY == 13)
-					AppendText(" 당신이 이 세계를 네크로만서로 부터 구한 후에는 다른 대륙도 원래의 모습을 찾았습니다.");
+					AppendText(" 당신이 이 세계를 네크로만서로부터 구한 후에는 다른 대륙도 원래의 모습을 찾았습니다.");
 				else if (moveX == 89 && moveY == 58)
 				{
 					AppendText(new string[] {
 						$" {mPlayerList[0].Name}님.",
-						" 만나게 되어서 기쁩니다. 이번 모험을 하는데 약간의 도움이 되었으면 합니다. 이 밭에 있는 채소를 조금 드릴테니 식량으로 사용해 주십시오."
+						" 만나게 되어서 기쁩니다. 이번 모험을 하는데 약간의 도움이 되었으면 합니다. 이 밭에 있는 채소를 조금 드릴 테니 식량으로 사용해 주십시오."
 					});
 
 					if ((mParty.Etc[29] & (1 << 2)) == 0)
@@ -12734,20 +12719,20 @@ namespace DarkUWP
 					}
 				}
 				else if (moveX == 91 && moveY == 79)
-					AppendText(" 알비레오님의 예언서에 의하면 다크 메이지가 이 세계를 멸망 시킨다고 하던데 정말 큰 일이군요.");
+					AppendText(" 알비레오님의 예언서에 의하면 다크 메이지가 이 세계를 멸망 시킨다고 하던데 정말 큰일이군요.");
 				else if (moveX == 90 && moveY == 80)
 				{
 					AppendText(" 얼마 전에 옆집에 살던 분이 메너스 광산에서 일하던 중 의문의 살인을 당했어요." +
-					" 시체를 본 사람에 의하면  날카로운 독 화살에 맞아서 즉사했다고 하던데요.");
+					" 시체를 본 사람에 의하면 날카로운 독화살에 맞아서 즉사했다고 하던데요.");
 				}
 				else if (moveX == 57 && moveY == 73)
 					AppendText(" 이번에도 우리들은 당신만 믿고 있습니다.");
 				else if (moveX == 62 && moveY == 26)
-					AppendText(" 당신과 함께 싸웠던  전투승 레굴루스는 로어성을 떠나  대륙의 북동쪽 섬의 오두막에 산다고 합니다.");
+					AppendText(" 당신과 함께 싸웠던 전투승 레굴루스는 로어 성을 떠나 대륙의 북동쪽 섬의 오두막에 산다고 합니다.");
 				else if (moveX == 50 && moveY == 71)
-					AppendText(" 당신과 함께 싸웠던 폴라리스는 라스트디치성 군주의 수석 호위관이 되어 있더군요.");
+					AppendText(" 당신과 함께 싸웠던 폴라리스는 라스트디치 성 군주의 수석 호위관이 되어 있더군요.");
 				else if (moveX == 49 && moveY == 50)
-					AppendText(" 타이탄님은 당신과의 모험이 끝난후  로어 주점의 경비와 치안을 맡고 있더군요.");
+					AppendText(" 타이탄님은 당신과의 모험이 끝난 후 로어 주점의 경비와 치안을 맡고 있더군요.");
 				else if (moveX == 51 && moveY == 50)
 					AppendText(" 이번의 모험도 역시 성공하기를 빕니다.");
 				else if (46 <= moveX && moveX <= 54 && 29 <= moveY && moveY <= 37)
@@ -12763,19 +12748,19 @@ namespace DarkUWP
 					{
 						Talk(new string[] {
 							$" {mPlayerList[0].Name}.",
-							" 네크로만서를 물리친후 잘 쉬었는가 ?  또 자네를 부를일이 있다는 그 자체는 그 만큼 세상이 혼란스러워 졌다는 증거일세. 그럼 말을 계속 해 보도록 하겠네."
+							" 네크로만서를 물리친 후 잘 쉬었는가? 또 자네를 부를 일이 있다는 그 자체는 그 만큼 세상이 혼란스러워졌다는 증거일세. 그럼 말을 계속해 보도록 하겠네."
 						});
 
 						mSpecialEvent = SpecialEventType.MeetLordAhn;
 					}
 					else if (mParty.Etc[9] == 1)
-						AppendText(" 메너스에서 일어난  의문의 살인에 대한 원인과 다크 메이지의 정보도 알아오게. 자네만 믿겠네.");
+						AppendText(" 메너스에서 일어난 의문의 살인에 대한 원인과 다크 메이지의 정보도 알아오게. 자네만 믿겠네.");
 					else if (mParty.Etc[9] == 2)
 					{
 						AppendText(new string[] {
 							$" 돌아왔군, {mPlayerList[0].Name}.",
-							" 메너스에서 알아낸것이 없다고 ? 이거 큰일이네. 자네가 이곳으로 돌아오던 시간에 또 한명이 메너스에서 살해 당했다네." +
-							"  그리고 주민들의 여론은 더욱 악화 되었다는 것은 자명한 사실 이네. 자시 자네에게 부탁하겠네.  다시 그곳으로 가서 살인에 대한 단서를 찾아오게.",
+							" 메너스에서 알아낸 것이 없다고? 이거 큰일이네. 자네가 이곳으로 돌아오던 시간에 또 한 명이 메너스에서 살해당했다네." +
+							" 그리고 주민들의 여론은 더욱 악화되었다는 것은 자명한 사실이네. 자시 자네에게 부탁하겠네. 다시 그곳으로 가서 살인에 대한 단서를 찾아오게.",
 							" 꼭, 부탁하네."
 						});
 
@@ -12787,8 +12772,8 @@ namespace DarkUWP
 					{
 						Talk(new string[] {
 							$" 정말 잘해냈군 {mPlayerList[0].Name}.",
-							" 역시 과거의 영웅은 현재의 영웅이군. 미궁에 빠졌던  살인 사건의 원인을 알아내고  그들을 제거 해내다니. 당신에게 그 댓가로 약간의 상금을 주도록 하겠네.",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 5000 ][/color]"
+							" 역시 과거의 영웅은 현재의 영웅이군. 미궁에 빠졌던 살인 사건의 원인을 알아내고 그들을 제거 해내다니. 당신에게 그 대가로 약간의 상금을 주도록 하겠네.",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 5,000 ][/color]"
 						});
 
 						mParty.Gold += 5000;
@@ -12796,12 +12781,12 @@ namespace DarkUWP
 						mSpecialEvent = SpecialEventType.MeetLordAhn3;
 					}
 					else if (mParty.Etc[9] == 5)
-						AppendText(" 자네는 라스트 디치성에서의 일을  모두 끝내고 다시 돌아 오도록 하게.");
+						AppendText(" 자네는 라스트디치 성에서의 일을 모두 끝내고 다시 돌아오도록 하게.");
 					else if (mParty.Etc[9] == 6)
 					{
 						Talk(new string[] {
-							" 라스트 디치에서의 임무를  잘 수행했다고 들었네. 어디, 자네가 지금 들고 있는 석판을 좀 볼까 ? 음.......",
-							$" 그러면 [color={RGB.White}]흉성의 증거[/color]에서 가져온 것 부터 해독해 보도록하지."
+							" 라스트디치에서의 임무를 잘 수행했다고 들었네. 어디, 자네가 지금 들고 있는 석판을 좀 볼까? 음.......",
+							$" 그러면 [color={RGB.White}]흉성의 증거[/color]에서 가져온 것부터 해독해 보도록 하지."
 						});
 
 						mSpecialEvent = SpecialEventType.MeetLordAhn6;
@@ -12819,17 +12804,17 @@ namespace DarkUWP
 
 						AppendText(new string[] {
 							$" 어서오게, {mPlayerList[0].Name}.",
-							" 어제 해독하지 못 했던 석판에서 아주 중요한 것을 알아 내었다네. 에인션트 이블이 물론 해독해 주었다네.",
-							" 이 석판은 어제 해독한 실리안 카미너스란 존재가 나타나 있는 석판의 내용을  더욱 보강해 주더군. 그리고 새로운 사실을 알았다네." +
-							" 바로 지하 세계와 지상 세계가 연결되는 시기를  알려 주더군. 그것은 바로 월식이 일어나는 시기를 알면 된다네." +
+							" 어제 해독하지 못했던 석판에서 아주 중요한 것을 알아내었다네. 에인션트 이블이 물론 해독해 주었다네.",
+							" 이 석판은 어제 해독한 실리안 카미너스란 존재가 나타나 있는 석판의 내용을 더욱 보강해 주더군. 그리고 새로운 사실을 알았다네." +
+							" 바로 지하 세계와 지상 세계가 연결되는 시기를 알려 주더군. 그것은 바로 월식이 일어나는 시기를 알면 된다네." +
 							" 석판의 고대어에 의하면 월식이 일어난 후 위협의 동굴에 지하 세계와의 통로가 생기게 된다네." +
-							" 여기서 \"위협의 동굴\" 이란 바로 메너스(MENACE)를 뜻하는 말이된다네." +
-							$" 그리고, 점성가를 통해서  다음 월식이 일어날 때를 알아보니  바로 20일 후인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일이 될거라고 하더군. 그때 메너스에 가보게." +
-							" 그리고 조심하게. 아직 남은 20일 동안 체력도 보강 시키도록하게. 그럼 행운을 빌겠네.",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 100000 ][/color]"
+							" 여기서 \"위협의 동굴\" 이란 바로 메너스(MENACE)를 뜻하는 말이 된다네." +
+							$" 그리고, 점성가를 통해서 다음 월식이 일어날 때를 알아보니 바로 20일 후인 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일이 될 거라고 하더군. 그때 메너스에 가보게." +
+							" 그리고 조심하게. 아직 남은 20일 동안 체력도 보강시키도록 하게. 그럼 행운을 빌겠네.",
+							$"[color={RGB.LightCyan}] [[ 경험치 + 0 ] [[ 황금 + 100,000 ][/color]"
 						});
 
-						mParty.Gold += 100000;
+						mParty.Gold += 100_000;
 						mParty.Etc[36] = eclipseDay / 256;
 						mParty.Etc[35] = eclipseDay % 256;
 						mParty.Etc[38] = eclipseYear / 256;
@@ -12850,8 +12835,8 @@ namespace DarkUWP
 						else
 						{
 							AppendText(new string[] {
-								" 메너스에 지하 세계로의 통로가  열리게 되는 첫번째 월식때 까지 기다리게.",
-								$" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 그때를 위해 열심히 훈련하도록 하게나."
+								" 메너스에 지하 세계로의 통로가 열리게 되는 첫 번째 월식 때까지 기다리게.",
+								$" 날짜는 전에도 말했듯이 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 그때를 위해 열심히 훈련하도록 하게나."
 							});
 						}
 					}
@@ -12860,9 +12845,9 @@ namespace DarkUWP
 					else if (mParty.Etc[9] == 10)
 					{
 						Talk(new string[] {
-							" 자네 드디어 돌아왔군. 그래, 지하 세계에 대해서 좀 말 해주게나.",
+							" 자네 드디어 돌아왔군. 그래, 지하 세계에 대해서 좀 말해주게나.",
 							"",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 500000 ] [[ 황금 + 100000 ][/color]"
+							$"[color={RGB.LightCyan}] [[ 경험치 + 500,000 ] [[ 황금 + 100,000 ][/color]"
 						});
 
 						foreach (var player in mPlayerList)
@@ -12890,22 +12875,22 @@ namespace DarkUWP
 						else
 						{
 							AppendText(new string[] {
-								" 메너스에 지하 세계로의 통로가  열리게 되는 두번째 월식때 까지 기다리게.",
-								$" 날짜는 전에도 말했듯이  {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 이번에는 치열한 전투도 각오해야 할 걸세. 열심히 단련하게나."
+								" 메너스에 지하 세계로의 통로가 열리게 되는 두 번째 월식 때까지 기다리게.",
+								$" 날짜는 전에도 말했듯이 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤일세. 이번에는 치열한 전투도 각오해야 할 걸세. 열심히 단련하게나."
 							});
 						}
 					}
 					else if (mParty.Etc[9] == 12)
 					{
 						AppendText(" 드디어 우리가 기다리던 월식은 일어났네. 자네는 한시바삐 메너스를 통해 지하세계로 가도록 하게. 이제 이 세계의 운명은 자네의 두 손에 달려있다네." +
-						"  언제나 자네에게 이런일을 시켜서 미안하게 됐네. 자네 앞에 언제나 행운이 따르기를 빌어 주겠네.");
+						" 언제나 자네에게 이런 일을 시켜서 미안하게 됐네. 자네 앞에 언제나 행운이 따르기를 빌어 주겠네.");
 					}
 					else if (mParty.Etc[9] == 13)
 					{
 						Talk(new string[] {
-							" 돌아왔군. 정말 수고 했네. 그동안 있었던 일을 나에게 모두 이야기 해주게.",
+							" 돌아왔군. 정말 수고했네. 그동안 있었던 일을 나에게 모두 이야기해주게.",
 							"",
-							$"[color={RGB.LightCyan}] [ 경험치 + 1000000 ] [ 황금 + 500000 ][/color]"
+							$"[color={RGB.LightCyan}] [ 경험치 + 1,000,000 ] [ 황금 + 500,000 ][/color]"
 						});
 
 						foreach (var player in mPlayerList)
@@ -12933,7 +12918,7 @@ namespace DarkUWP
 						else
 						{
 							AppendText(new string[] {
-								$" 운명의 세번째 월식이  바로 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤에 일어나게 된다네." +
+								$" 운명의 세 번째 월식이 바로 {eclipseYear}년 {eclipseDay / 30 + 1}월 {eclipseDay % 30 + 1}일 밤에 일어나게 된다네." +
 								" 아마 자네의 마지막 결전이 될 걸세. 각오를 단단히 하게. 운명의 시간은 점점 우리에게 다가오고 있다네."
 							});
 
@@ -12943,8 +12928,8 @@ namespace DarkUWP
 					else if (mParty.Etc[9] == 15)
 					{
 						AppendText(new string[] {
-							" 드디어 우리가 기다리던  마지막 세번째 월식이 일어났네. 정말 이번에는 단단한 각오를 해야 할 걸세." +
-							"  월식이 일어나던 밤에 메너스 쪽에서 큰 지진이 있었다네.  아마 이건 다크 메이지가 부활이 거의 다 끝나간다는 것을  말해주고 있는 것 같네."
+							" 드디어 우리가 기다리던 마지막 세 번째 월식이 일어났네. 정말 이번에는 단단한 각오를 해야 할 걸세." +
+							" 월식이 일어나던 밤에 메너스 쪽에서 큰 지진이 있었다네. 아마 이건 다크 메이지가 부활이 거의 다 끝나간다는 것을 말해주고 있는 것 같네."
 						});
 					}
 				}
@@ -12966,65 +12951,65 @@ namespace DarkUWP
 				else if ((moveX == 57 && moveY == 21) || (moveX == 58 && moveY == 24))
 					ShowGroceryMenu();
 				else if (moveX == 36 && moveY == 40)
-					AppendText(" 제가 폴라리스님의 후임으로  이 성문을 지키고 있습니다.");
+					AppendText(" 제가 폴라리스님의 후임으로 이 성문을 지키고 있습니다.");
 				else if (moveX == 39 && moveY == 40)
 				{
 					AppendText(new string[] {
-						$" 아~~~ 당신이 바로 폴라리스님이 말씀 하시던 바로 그 {mPlayerList[0].Name}님이시군요.",
+						$" 아~~~ 당신이 바로 폴라리스님이 말씀하시던 바로 그 {mPlayerList[0].Name}님이시군요.",
 						" 폴라리스님께 말씀 많이 들었습니다."
 					});
 				}
 				else if (moveX == 35 && moveY == 18)
-					AppendText(" 이 성의 병원에는  희귀한 약초를  파는 곳이 있습니다. 체력이나 마법을 올려 주는 그런 약물이나 독을 해독하거나 심지어 죽은 사람마저도 살릴 수 있는 약초도 있더군요.");
+					AppendText(" 이 성의 병원에는 희귀한 약초를 파는 곳이 있습니다. 체력이나 마법을 올려 주는 그런 약물이나 독을 해독하거나 심지어 죽은 사람마저도 살릴 수 있는 약초도 있더군요.");
 				else if (moveX == 35 && moveY == 20)
-					AppendText(" 저는 직접  타임 워커 알비레오님을 보았는데 같은 마법사로서 존경하지 않을 수 없더군요. 그 분의 예언은 틀림없다고 확신 할 수 있습니다.");
+					AppendText(" 저는 직접 타임 워커 알비레오님을 보았는데 같은 마법사로서 존경하지 않을 수 없더군요. 그분의 예언은 틀림없다고 확신할 수 있습니다.");
 				else if (moveX == 40 && moveY == 19)
 					AppendText(" 내가 듣기로는 지하 세계를 발견하기 위해 알 수 없는 피라미드로 들어간 사람이 몇 명 있더군요.");
 				else if (moveX == 40 && moveY == 21)
-					AppendText(" 저는 당신의 능력을 믿습니다.  꼭 이 세계를 구해 주십시오.");
+					AppendText(" 저는 당신의 능력을 믿습니다. 꼭 이 세계를 구해 주십시오.");
 				else if (moveX == 40 && moveY == 17 && (mParty.Etc[49] & (1 << 7)) == 0)
 				{
 					AppendText(new string[] {
-						$" 오래간 만이군 !! 이 폴라리스의 이름을 걸고 {mPlayerList[0].Name} 자네를 환영하네.",
-						" 이번에는 내가 참여 할 만한 모험이 없나?",
-						" 분명히 있는 것 같은데  안 그런가?  이번의 일에도 나를 참가 시켜 주게.",
+						$" 오래간만이군!! 이 폴라리스의 이름을 걸고 {mPlayerList[0].Name} 자네를 환영하네.",
+						" 이번에는 내가 참여할 만한 모험이 없나?",
+						" 분명히 있는 것 같은데 안 그런가? 이번의 일에도 나를 참가 시켜 주게.",
 						" 꼭 부탁하네."
 					});
 
 					ShowMenu(MenuMode.JoinPolaris, new string[] {
 						"원한다면 허락하지",
-						"자네는 이 곳에서 더 할일이 많다네"
+						"자네는 이곳에서 더 할 일이 많다네"
 					});
 				}
 				else if (moveX == 20 && moveY == 60)
-					AppendText(" 저는 이 성의 남쪽에 있는 피라미드에 들어갔다가 상처를 입어서  여기서 치료를 받고 있습니다.  그곳에는 몇년 전에 없어진줄로만 알고있었던 괴물들이 득실 거리더군요.");
+					AppendText(" 저는 이 성의 남쪽에 있는 피라미드에 들어갔다가 상처를 입어서 여기서 치료를 받고 있습니다. 그곳에는 몇 년 전에 없어진 줄로만 알고 있었던 괴물들이 득실 거리더군요.");
 				else if (moveX == 55 && moveY == 58)
-					AppendText(" 저는 이 곳의 점성가인데  근래 들어 달의 운행이 점점 이상해지고 있습니다. 분명 큰 재앙이 닥칠 증거 같습니다.");
+					AppendText(" 저는 이곳의 점성가인데 근래 들어 달의 운행이 점점 이상해지고 있습니다. 분명 큰 재앙이 닥칠 증거 같습니다.");
 				else if (moveX == 55 && moveY == 58)
-					AppendText(" 이 위의 상인들은 로어성의 상인과는 달리 마법 물품들을 판매하고 있더군요.");
+					AppendText(" 이 위의 상인들은 로어 성의 상인과는 달리 마법 물품들을 판매하고 있더군요.");
 				else if (moveX == 60 && moveY == 45)
-					AppendText(" 알비레오의 예언은 정말일까요?  지금 이 대륙에는  그의 예언서가 안 알려진 곳이 없습니다. 때문에 민심도 많이 동요 되고 있습니다.");
+					AppendText(" 알비레오의 예언은 정말일까요? 지금 이 대륙에는 그의 예언서가 안 알려진 곳이 없습니다. 때문에 민심도 많이 동요되고 있습니다.");
 				else if (moveX == 46 && moveY == 35)
-					AppendText(" 만약 당신이 돈은 많은데  경험치가 모자란다면 서쪽에 있는 군사 훈련소의 어떤 자에게 부탁 하시오.  그는 금액 만큼의 전투 방법을 가르쳐서 경험치를 올려 준다더군요.");
+					AppendText(" 만약 당신이 돈은 많은데 경험치가 모자란다면 서쪽에 있는 군사 훈련소의 어떤 자에게 부탁하시오. 그는 금액만큼의 전투 방법을 가르쳐서 경험치를 올려 준다더군요.");
 				else if (moveX == 53 && moveY == 55 && (mParty.Etc[50] & 1) == 0)
 				{
 					if (mParty.Etc[4] == 0)
 					{
 						Talk(new string[] {
-							" 용하게도 나를 찾아 냈군. 내가 로어 성에 남긴 메모 쪽지를 보았겠지. 그것에 관한 이야긴데 말이야..." +
-							"  나는 몇 개월 전에 로어 헌터와 이 성의 남쪽에 있는 피라미드에 들어 갔었지. 우리가 그 곳에서 본 것은 복잡한 미로와 함께 두개의 동굴이었지." +
-							" 그 두개의 동굴은 모두 지하의 신세계와 이어져 있었고  그 지하 세계는 완전한 하나의 또 다른 세계를 이루고 있었지." +
-							$" 그 곳은 [color={RGB.LightCyan}]빛의 지붕[/color]이라고 불리는  마을도 있었고 동굴도 몇개가 있었다고 기억 된다네." +
-							" 하지만 우리가 갔을 때는 새로운 변화가 일어 나고 있었네.  그 곳은 네크로만서와는 다른 존재가 반란을 꾀하고 있었고  그와 그 일당들의 힘은 정말 대단하였지." +
-							" 그의 힘에 의해 지하 세계의 피라미드가 튕겨져 나왔다는  사실을 알았을때는 정말 놀랬다네." +
-							"  도저히 우리들의 힘으로는 그들을 당할 수가 없어서 쫓겨 다니던 중 다시 피라미드를 통해 나오게 되었던 것이네." +
+							" 용하게도 나를 찾아냈군. 내가 로어 성에 남긴 메모 쪽지를 보았겠지. 그것에 관한 이야긴데 말이야..." +
+							" 나는 몇 개월 전에 로어 헌터와 이 성의 남쪽에 있는 피라미드에 들어갔었지. 우리가 그곳에서 본 것은 복잡한 미로와 함께 두 개의 동굴이었지." +
+							" 그 두 개의 동굴은 모두 지하의 신세계와 이어져 있었고 그 지하 세계는 완전한 하나의 또 다른 세계를 이루고 있었지." +
+							$" 그곳은 [color={RGB.LightCyan}]빛의 지붕[/color]이라고 불리는 마을도 있었고 동굴도 몇 개가 있었다고 기억된다네." +
+							" 하지만 우리가 갔을 때는 새로운 변화가 일어나고 있었네. 그곳은 네크로만서와는 다른 존재가 반란을 꾀하고 있었고 그와 그 일당들의 힘은 정말 대단하였지." +
+							" 그의 힘에 의해 지하 세계의 피라미드가 튕겨져 나왔다는 사실을 알았을 때는 정말 놀랬다네." +
+							" 도저히 우리들의 힘으로는 그들을 당할 수가 없어서 쫓겨 다니던 중 다시 피라미드를 통해 나오게 되었던 것이네." +
 							$" 그 일당은 모두 4명의 보스로 구성되어 있었는데 모두 최강의 마법사들이었네." +
-							$"  우리가 [color={RGB.LightCyan}]흉성의 증거[/color]라는 동굴을 나올 때 그 중의 우두머리인 [color={RGB.LightCyan}]메피스토펠레스[/color]가" +
-							"  공기중의 수소를 이용한 행융합 마법을 사용하여  동굴 입구를 폭파 시켰다네.  정말 그 힘은 레드 안타레스의 마법을 능가하는 힘이 었다네." +
-							" 그 4 명의 보스의 이름도 참고로 알아 두게나. 그 일당의 일인자가 방금 말한 메피스토펠레스라고하고,  이인자가 아스모데우스이고, 그 다음이 몰록이며,  마지막이 베리알이라고 하더군." +
-							"  지금은 결국 그들을 모두 따돌렸지만  그들도 그들의 존재가  알려진 이상 가만히 있지 않을걸세." +
-							" 만약 자네가 지하세계를 탐험하려 한다면 어서 빨리 가보도록하게 분명 그들은 입구를 봉쇄하려 할 걸세.  아니면 벌써 입구를 막아 버렸는지도 모르겠지만." +
-							" 지금 지하 세계에서 일어나는 변화는 분명히 알비레오의 예언과 관련이 있다네.  아마 자가 해야할 일도 거기와 관련된 것일 걸세."
+							$" 우리가 [color={RGB.LightCyan}]흉성의 증거[/color]라는 동굴을 나올 때 그중의 우두머리인 [color={RGB.LightCyan}]메피스토펠레스[/color]가" +
+							" 공기 중의 수소를 이용한 핵융합 마법을 사용하여 동굴 입구를 폭파 시켰다네. 정말 그 힘은 레드 안타레스의 마법을 능가하는 힘이었다네." +
+							" 그 4명의 보스의 이름도 참고로 알아 두게나. 그 일당의 일인자가 방금 말한 메피스토펠레스라고 하고, 이인자가 아스모데우스이고, 그다음이 몰록이며, 마지막이 베리알이라고 하더군." +
+							" 지금은 결국 그들을 모두 따돌렸지만 그들도 그들의 존재가 알려진 이상 가만히 있지 않을 걸세." +
+							" 만약 자네가 지하세계를 탐험하려 한다면 어서 빨리 가보도록 하게 분명 그들은 입구를 봉쇄하려 할 걸세. 아니면 벌써 입구를 막아 버렸는지도 모르겠지만." +
+							" 지금 지하 세계에서 일어나는 변화는 분명히 알비레오의 예언과 관련이 있다네. 아마 자가 해야 할 일도 거기와 관련된 것일 걸세."
 						});
 
 						mSpecialEvent = SpecialEventType.MeetGeniusKie;
@@ -13032,8 +13017,8 @@ namespace DarkUWP
 					else
 					{
 						AppendText(new string[] {
-							" 다시 생각해 보니 나도 자네의 일행에 참가해야할 것같네." +
-							"  나는 얼마 전에 지하 세계에 다녀 왔기 때문에  전투 감각이 아직 살아았는데다가 전사라는 계급 때문에  자네에게 많은 도움이 될 걸세.",
+							" 다시 생각해 보니 나도 자네의 일행에 참가해야 할 것 같네." +
+							" 나는 얼마 전에 지하 세계에 다녀왔기 때문에 전투 감각이 아직 살아있는데다가 전사라는 계급 때문에 자네에게 많은 도움이 될 걸세.",
 							" 자네에게 한번 부탁하네."
 						});
 
@@ -13049,23 +13034,23 @@ namespace DarkUWP
 					{
 						Dialog(new string[] {
 							$" 잘왔소, {mPlayerList[0].Name}공.",
-							" 공만이 이 일을 해결할 수 있을것 같아서  한가지 부탁을 하겠소." +
-							" 벌써 발견했는 지는 모르겠지만 이 성의 남쪽에는 알 수 없는 피라미드가 땅속 깊은 곳으로 부터 솟아 올랐소." +
-							" 그 곳을 이미 로어 헌터가 지니어스 기란 용사와 같이 탐험을 했었소. 거기에서 로어 헌터는 지하세계를 발견하고는  구사일생으로 살아서 돌아왔다오." +
-							"  하지만 그는 지하 세계에 대한 더 자세한 정보를 얻기 위해  단신으로 다시 피라미드에 들어갔다오." +
-							" 지금 그의 생사는 도저히 알 수가 없어서 공에게 그를 도와 달라고 부탁 하는 것이오.  피라미드에는 괴물들이 많이 있으니 주의해야 할것이오. 꼭 그를 찾아내시오."
+							" 공만이 이 일을 해결할 수 있을 것 같아서 한 가지 부탁을 하겠소." +
+							" 벌써 발견했는지는 모르겠지만 이 성의 남쪽에는 알 수 없는 피라미드가 땅속 깊은 곳으로부터 솟아올랐소." +
+							" 그곳을 이미 로어 헌터가 지니어스 기란 용사와 같이 탐험을 했었소. 거기에서 로어 헌터는 지하세계를 발견하고는 구사일생으로 살아서 돌아왔다오." +
+							" 하지만 그는 지하 세계에 대한 더 자세한 정보를 얻기 위해 단신으로 다시 피라미드에 들어갔다오." +
+							" 지금 그의 생사는 도저히 알 수가 없어서 공에게 그를 도와 달라고 부탁하는 것이오. 피라미드에는 괴물들이 많이 있으니 주의해야 할 것이오. 꼭 그를 찾아내시오."
 						});
 						mParty.Etc[10]++;
 					}
 					else if (mParty.Etc[10] == 1)
-						AppendText(" 피라미드 속에서 소식이 끊어진  로어 헌터의 생사를 알아 주시오.");
+						AppendText(" 피라미드 속에서 소식이 끊어진 로어 헌터의 생사를 알아주시오.");
 					else if (mParty.Etc[10] == 2)
 					{
 						AppendText(new string[] {
 							" 로어 헌터가 살아 있었다니 정말 다행이군요.",
-							" 공에게 이 일을 맡기기를  정말 잘 선택한 것 같소.",
+							" 공에게 이 일을 맡기기를 정말 잘 선택한 것 같소.",
 							"",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 50000 ] [ 황금 + 10000 ][/color]"
+							$"[color={RGB.LightCyan}] [[ 경험치 + 50,000 ] [ 황금 + 10,000 ][/color]"
 						});
 
 						foreach (var player in mPlayerList)
@@ -13090,7 +13075,7 @@ namespace DarkUWP
 						else
 						{
 							AppendText(new string[] {
-								" 이번에 공이 할 일은  피라미드 속의 두 동굴을 탐험하고 지하 세계에 대한 정보를 알아 오는 일이오.",
+								" 이번에 공이 할 일은 피라미드 속의 두 동굴을 탐험하고 지하 세계에 대한 정보를 알아 오는 일이오.",
 								" 이번 일도 부탁하오."
 							});
 						}
@@ -13098,10 +13083,10 @@ namespace DarkUWP
 					else if (mParty.Etc[10] == 4)
 					{
 						AppendText(new string[] {
-							" 공이 피라미드 안의 두 동굴에서 발견한 것이 이 두개의 석판이오 ?  유감스럽게도 나에게는 이 고대어를 해석할 만한 능력이 없소." +
+							" 공이 피라미드 안의 두 동굴에서 발견한 것이 이 두 개의 석판이오? 유감스럽게도 나에게는 이 고대어를 해석할 만한 능력이 없소." +
 							" 분명히 로드 안이라면 해석할 수 있을 것이오.",
 							"",
-							$"[color={RGB.LightCyan}] [[ 경험치 + 100000 ] [ 황금 + 15000 ][/color]"
+							$"[color={RGB.LightCyan}] [[ 경험치 + 100,000 ] [ 황금 + 15,000 ][/color]"
 						});
 
 						foreach (var player in mPlayerList)
@@ -13117,7 +13102,7 @@ namespace DarkUWP
 					}
 					else
 					{
-						AppendText(" 이제 공이 이 곳에서 할 일은 다 끝났소");
+						AppendText(" 이제 공이 이곳에서 할 일은 다 끝났소");
 						if (mParty.Etc[9] == 5)
 							mParty.Etc[9]++;
 					}
@@ -13128,8 +13113,8 @@ namespace DarkUWP
 				if (moveX == 24 && moveY == 11)
 				{
 					Talk(new string[] {
-						" 이 시체는  어떤 힘에 의해 살점은 완전히 떨어져 나가고 뼈만이 남아 있었다. 그의 오른손 옆에는 두꺼운 납으로 만들어진 상자가 있었다." +
-						"  일행은 마법으로 잠긴 상자를 열고 그 안을 보니 파피루스로 만들어진 종이 조각이 있었고 거기에는 빽빽하게 무언가 쓰여져 있었다.",
+						" 이 시체는 어떤 힘에 의해 살점은 완전히 떨어져 나가고 뼈만이 남아 있었다. 그의 오른손 옆에는 두꺼운 납으로 만들어진 상자가 있었다." +
+						" 일행은 마법으로 잠긴 상자를 열고 그 안을 보니 파피루스로 만들어진 종이 조각이 있었고 거기에는 빽빽하게 무언가 쓰여 있었다.",
 						" 그 종이의 글을 읽어 보면 다음과 같다."
 					});
 
@@ -13139,27 +13124,27 @@ namespace DarkUWP
 				{
 					Dialog(new string[] {
 						" 이 시체는 어떤 강력한 힘을 정면으로 받아서 거의 형체를 알아볼 수 없었다." +
-						"  그 시체를 여러모로 살펴보니 이 곳의 장로임을 알았고, 그 시체에는 강한 방사능이 있어서  이 곳의 시체들의 사인이 핵무기에 의한 것임을 알았다.",
-						" 이 수법은 피라미드 속의  두 동굴을 함몰 시킨 것과 같은 방법이었다."
+						" 그 시체를 여러모로 살펴보니 이곳의 장로임을 알았고, 그 시체에는 강한 방사능이 있어서 이곳의 시체들의 사인이 핵무기에 의한 것임을 알았다.",
+						" 이 수법은 피라미드 속의 두 동굴을 함몰 시킨 것과 같은 방법이었다."
 					});
 				}
 				else if (moveX == 22 && moveY == 14)
 				{
 					Dialog(new string[] {
-						" 이 시체는 죽은지가 겨우 하루가 지난것 같았다." +
-						"  그 자는 무언가 메세지를 남기기 위해 바닥에 피로 무언가를 썼는데 그 것을 읽어 보면 다음과 같다.",
+						" 이 시체는 죽은 지가 겨우 하루가 지난 것 같았다." +
+						" 그 자는 무언가 메시지를 남기기 위해 바닥에 피로 무언가를 썼는데 그것을 읽어 보면 다음과 같다.",
 						"",
 						$"[color={RGB.LightRed}] 필멸의 생존 .. 33 .. 49 ..[/color]"
 					});
 				}
 				else if ((moveX == 37 && moveY == 39) || (moveX == 38 && moveY == 42))
-					Dialog(" 이 시체는 죽은 하루 밖에 안된것 같았다.");
+					Dialog(" 이 시체는 죽은 하루 밖에 안 된 것 같았다.");
 				else if (moveX == 24 && moveY == 60 && (mParty.Etc[39] & 1) == 0)
 				{
 					Dialog(new string[] {
 						" 으~~윽~~ 드디어 사람을 만났군요. 어제 어떤 자들에 의해서 마을이 완전히 전멸했다오." +
-						"  그들은 4 명의 마도사 였는데  그들은 엄청난 힘으로 마을을 폭파 시키고는 사라졌소." +
-						"  그들의 목적이 무엇인지 저는 알 수가 없었지만  그들은 이 마을의 동쪽에 있는 빛의 사원쪽으로 사라졌소. 그럼 뒷일을 부탁하오 ...",
+						" 그들은 4명의 마도사였는데 그들은 엄청난 힘으로 마을을 폭파 시키고는 사라졌소." +
+						" 그들의 목적이 무엇인지 저는 알 수가 없었지만 그들은 이 마을의 동쪽에 있는 빛의 사원 쪽으로 사라졌소. 그럼 뒷일을 부탁하오 ...",
 						"",
 						" 그는 말을 끝내고는 숨이 끊어졌다."
 					});
@@ -13174,24 +13159,24 @@ namespace DarkUWP
 				{
 					Talk(new string[] {
 						$" 아니! {mPlayerList[0].Name}.",
-						" 정말 오래간 만이군. 여기에는 무슨일인가 ?",
+						" 정말 오래간만이군. 여기에는 무슨 일인가?",
 						"",
-						$"[color={RGB.Cyan}] 나는 지니어스 기가 남긴 쪽지를 보고 당신을 찾아 왔다네. 그가 말하기로 자네가 그가 있는 위치를 안다고 해서 말일세.[/color]",
+						$"[color={RGB.Cyan}] 나는 지니어스 기가 남긴 쪽지를 보고 당신을 찾아왔다네. 그가 말하기로 자네가 그가 있는 위치를 안다고 해서 말일세.[/color]",
 						"",
-						" 지니어스 기가 있는 곳을 알고 싶다는 것이군. 내가 이번에 약초를 구해왔을때 잠시 라스트디치에 약초를 팔기 위해 들렸었지." +
-						" 그때 무기상점 근처에 있는 지니어스 기를 만났었다네.",
-						" 그는 얼마후에 긴 여행을 떠난다고 하던데 빨리 가보면 만날 수 있을 걸세."
+						" 지니어스 기가 있는 곳을 알고 싶다는 것이군. 내가 이번에 약초를 구해왔을 때 잠시 라스트디치에 약초를 팔기 위해 들렸었지." +
+						" 그때 무기 상점 근처에 있는 지니어스 기를 만났었다네.",
+						" 그는 얼마 후에 긴 여행을 떠난다고 하던데 빨리 가보면 만날 수 있을 걸세."
 					});
 
 					mSpecialEvent = SpecialEventType.MeetRegulus;
 				}
 				else if (mParty.Etc[4] == 0)
-					Dialog(" 자네가 약초를 더 원한다면 라스트 디치의 병원에 가보게. 그 곳에 내가 약초를 팔았다네.");
+					Dialog(" 자네가 약초를 더 원한다면 라스트디치의 병원에 가보게. 그곳에 내가 약초를 팔았다네.");
 				else
 				{
 					Ask(new string[] {
-						$" 잠깐 ! {mPlayerList[0].Name} !",
-						" 자네의 모습을 보니 갑자기 예전의 그 때처럼 정의를 위해 싸워보고 싶군. 사실 이런 약초나 캐러 다니는 일은 나에게 맞지 않다네. 이제는 이 일에도 지쳐 버렸고...",
+						$" 잠깐! {mPlayerList[0].Name}!",
+						" 자네의 모습을 보니 갑자기 예전의 그때처럼 정의를 위해 싸워보고 싶군. 사실 이런 약초나 캐러 다니는 일은 나에게 맞지 않다네. 이제는 이 일에도 지쳐 버렸고...",
 						"나를 모험에 참가 시켜주게."
 					}, MenuMode.JoinRegulus, new string[] {
 						"나 역시 자네의 도움이 필요했다네",
@@ -13253,18 +13238,19 @@ namespace DarkUWP
 						else if (i == 125)
 						{
 							mFace = 1;
-							Task.Delay(1000).Wait();
+							Task.Delay(1_000).Wait();
 						}
 						else if (i == 126)
 						{
 							mParty.Etc[0] = 0;
-							Task.Delay(1000).Wait();
+							Task.Delay(1_000).Wait();
 
 							break;
 						}
 					}
 				}
-				else if (mAnimationEvent == AnimationType.SleepLoreCastle2) {
+				else if (mAnimationEvent == AnimationType.SleepLoreCastle2)
+				{
 					if (mParty.Hour != 9)
 						Task.Delay(500).Wait();
 				}
@@ -13305,8 +13291,8 @@ namespace DarkUWP
 						Task.Delay(500).Wait();
 					}
 				}
-				else if (mAnimationEvent == AnimationType.StatueError || 
-					mAnimationEvent == AnimationType.StatueError2 || 
+				else if (mAnimationEvent == AnimationType.StatueError ||
+					mAnimationEvent == AnimationType.StatueError2 ||
 					mAnimationEvent == AnimationType.StatueError3 ||
 					mAnimationEvent == AnimationType.StatueError4)
 					Task.Delay(2000).Wait();
@@ -13322,30 +13308,35 @@ namespace DarkUWP
 				{
 					AnimateTransition();
 				}
-				else if (mAnimationEvent == AnimationType.RemoveIllusion) {
+				else if (mAnimationEvent == AnimationType.RemoveIllusion)
+				{
 					Task.Delay(2000).Wait();
 				}
-				else if (mAnimationEvent == AnimationType.EnterFortressOfMephistopheles) {
+				else if (mAnimationEvent == AnimationType.EnterFortressOfMephistopheles)
+				{
 					for (var i = 1; i <= 6; i++)
 					{
 						mAnimationFrame = i;
 
 						if (i < 6)
-							Task.Delay(1000).Wait();
+							Task.Delay(1_000).Wait();
 						else
 							Task.Delay(800).Wait();
 					}
 
-					for (var i = 1; i <= 2; i++) {
+					for (var i = 1; i <= 2; i++)
+					{
 						mParty.YAxis--;
 						Task.Delay(800).Wait();
 					}
 
-					for (var x = 23; x < 27; x++) {
+					for (var x = 23; x < 27; x++)
+					{
 						UpdateTileInfo(x, 43, 24);
 					}
 
-					for (var y = 44; y < 50; y++) {
+					for (var y = 44; y < 50; y++)
+					{
 						for (var x = 22; x < 28; x++)
 							UpdateTileInfo(x, y, 29);
 					}
@@ -13356,6 +13347,16 @@ namespace DarkUWP
 				{
 					AnimateTransition();
 				}
+				else if (mAnimationEvent == AnimationType.Cookie)
+				{
+					for (var i = 1; i <= 6; i++)
+					{
+						mAnimationFrame = i;
+
+						if (i < 6)
+							Task.Delay(1_000).Wait();
+					}
+				}
 			});
 
 			await animationTask;
@@ -13364,7 +13365,7 @@ namespace DarkUWP
 			{
 				Talk(new string[] {
 					$" 일어났군, {mPlayerList[0].Name}.",
-					" 자네 빨리 로드 안 님께 가보도록 하게. 급히 찾으시는 것 보니 아무래도 무슨 큰 일이 벌어진것 같네. 네크로만서 이후 몇년간 세상이 조용하더니만...",
+					" 자네 빨리 로드 안 님께 가보도록 하게. 급히 찾으시는 것 보니 아무래도 무슨 큰일이 벌어진 것 같네. 네크로만서 이후 몇 년간 세상이 조용하더니만...",
 					" 그건 그렇고 빨리 서두르게."
 				});
 
@@ -13473,7 +13474,7 @@ namespace DarkUWP
 				}
 
 				UpdateTileInfo(40, 78, 44);
-				AppendText(" 일행은 가장 기본적인 무기로  모두  무장을 하였다.");
+				AppendText(" 일행은 가장 기본적인 무기로 모두 무장을 하였다.");
 
 				foreach (var player in mPlayerList)
 				{
@@ -13494,14 +13495,14 @@ namespace DarkUWP
 				mParty.Etc[8] |= 1;
 
 				mFace = 4;
-				AppendText(" 한참 후에 당신은 정신이 들었고 여기가 지하세계임을 알아 차렸다.");
+				AppendText(" 한참 후에 당신은 정신이 들었고 여기가 지하세계임을 알아차렸다.");
 			}
 			else if (mAnimationEvent == AnimationType.GoInsideMenace)
 			{
 				mAnimationEvent = AnimationType.None;
 				mAnimationFrame = 0;
 
-				AppendText(" 당신이 조금 더 안쪽으로 들어 갔을때 누군가가 당신을 지켜 보고 있다는 느낌이 들었다.");
+				AppendText(" 당신이 조금 더 안쪽으로 들어갔을 때 누군가가 당신을 지켜보고 있다는 느낌이 들었다.");
 				InvokeAnimation(AnimationType.GoInsideMenace2);
 			}
 			else if (mAnimationEvent == AnimationType.GoInsideMenace2)
@@ -13528,7 +13529,7 @@ namespace DarkUWP
 				if (mAssistPlayer != null)
 					mAssistPlayer.Experience += mTrainTime * 10_000;
 
-				AppendText($"[color={RGB.White}] 일행은 훈련을 끝 마쳤다.[/color]", true);
+				AppendText($"[color={RGB.White}] 일행은 훈련을 끝마쳤다.[/color]", true);
 				ContinueText.Visibility = Visibility.Visible;
 			}
 			else if (mAnimationEvent == AnimationType.StatueError)
@@ -13549,9 +13550,9 @@ namespace DarkUWP
 			else if (mAnimationEvent == AnimationType.StatueError4)
 			{
 				Dialog(new string[] {
-					$"[color={RGB.White}] Program is Terminated !! ($F34DC1:$01BA8) [/color]",
+					$"[color={RGB.White}] Program is Terminated!! ($F34DC1:$01BA8) [/color]",
 					"",
-					" 하지만 석상은 심하게 손상 되어 있었고 제대로 작동하지 않았다."
+					" 하지만 석상은 심하게 손상되어 있었고 제대로 작동하지 않았다."
 				}, true);
 
 				mAnimationEvent = AnimationType.None;
@@ -13559,7 +13560,7 @@ namespace DarkUWP
 			else if (mAnimationEvent == AnimationType.LandUnderground)
 			{
 				mFace = 4;
-				Dialog(" 한참후에 일행이 깨어나서 본 것은 지상의 세계와  다름 없는 세상이었다.  다만 다른 것이 있다면  인공의 태양이 지상의 태양과 같이 나타났다가 사라졌다 하는 것 뿐이었다.");
+				Dialog(" 한참 후에 일행이 깨어나서 본 것은 지상의 세계와 다름없는 세상이었다. 다만 다른 것이 있다면 인공의 태양이 지상의 태양과 같이 나타났다가 사라졌다 하는 것뿐이었다.");
 
 				mParty.Etc[8] |= 1;
 
@@ -13568,7 +13569,7 @@ namespace DarkUWP
 			else if (mAnimationEvent == AnimationType.LandUnderground2)
 			{
 				mFace = 4;
-				Dialog(" 일행이 깨어나 보니 저번과는 조금 다른 곳으로 이동 되어졌음을 알 수 있었다.");
+				Dialog(" 일행이 깨어나 보니 저번과는 조금 다른 곳으로 이동됐음을 알 수 있었다.");
 
 				mParty.Etc[8] |= 1 << 4;
 
@@ -13581,7 +13582,7 @@ namespace DarkUWP
 
 				await RefreshGame();
 
-				Dialog(" 당신은 로어성 근처로 공간 이동 되어졌다.");
+				Dialog(" 당신은 로어 성 근처로 공간 이동됐다.");
 
 				mAnimationEvent = AnimationType.None;
 			}
@@ -13593,7 +13594,7 @@ namespace DarkUWP
 
 				await RefreshGame();
 
-				Dialog(" 일행은 다시 메너스로 돌아왔고  지하 세계로의 입구는 다시 봉쇄 되었다.");
+				Dialog(" 일행은 다시 메너스로 돌아왔고 지하 세계로의 입구는 다시 봉쇄되었다.");
 
 				mParty.Etc[8] = 0;
 				mParty.Etc[9]++;
@@ -13608,7 +13609,7 @@ namespace DarkUWP
 
 				await RefreshGame();
 
-				Dialog(" 일행은 다시 메너스로 돌아왔고  지하 세계로의 입구는 다시 봉쇄 되었다.");
+				Dialog(" 일행은 다시 메너스로 돌아왔고 지하 세계로의 입구는 다시 봉쇄되었다.");
 
 				mParty.Etc[8] = 0;
 				mParty.Etc[9]++;
@@ -13620,7 +13621,7 @@ namespace DarkUWP
 					"",
 					$"[color={RGB.Yellow}] 안 바스 쿠아스 ..[/color]",
 					"",
-					" 순식간에 환상은 걷혔고  몰록이 모습을 드러냈다."
+					" 순식간에 환상은 걷혔고 몰록이 모습을 드러냈다."
 				}, true);
 
 				mEncounterEnemyList.Clear();
@@ -13653,10 +13654,22 @@ namespace DarkUWP
 				mAnimationFrame = 0;
 			}
 			else if (mAnimationEvent == AnimationType.MeetNecromancer) {
-				Talk(" 일행은 자신들이 가지고 있는 모든 힘을 다해서  당신을 네크로만서가 있는 공간으로  차원이탈을 시켰다. 차원 이탈중 당신의 갑옷은 파괴되고 체력은 떨어졌다." +
-				" 그리고 당신의 의식이 돌아 왔을때  이미 네크로만서는 당신 앞에 서 있었다. 그는 말을 시작했다.");
+				Talk(" 일행은 자신들이 가지고 있는 모든 힘을 다해서 당신을 네크로만서가 있는 공간으로 차원 이탈을 시켰다. 차원 이탈 중 당신의 갑옷은 파괴되고 체력은 떨어졌다." +
+				" 그리고 당신의 의식이 돌아왔을 때 이미 네크로만서는 당신 앞에 서 있었다. 그는 말을 시작했다.");
 
 				mSpecialEvent = SpecialEventType.NecromancerMessage;
+			}
+			else if (mAnimationEvent == AnimationType.Cookie) {
+				Talk(new string[] {
+				$" {mPlayerList[0].Name}님은 지하 세계로 간 뒤 소식이 없다지? 그나저나 알비레오의 예언은 틀렸다고들 하던데." +
+				" 다크 메이지는 결국 나타나지 않았잖아. 그러면 세 번째, 네 번째, 다섯 번째 예언은 모두 틀렸군.",
+				$" 세 번째 예언은 네크로만서가 {mPlayerList[0].Name}님에게 패배했으니까 틀렸지.",
+				" 네 번째 예언은 다크 메이지가 나타나지 않았기 때문에 틀렸지.",
+				" 그리고 다섯 번째 예언은 틀린 예언이 한 가지가 아니라 세 가지라서 틀렸지.",
+				" 어때? 내 말이 맞지?"
+				});
+
+				mSpecialEvent = SpecialEventType.CookieEvent;
 			}
 			else
 			{
@@ -13683,8 +13696,8 @@ namespace DarkUWP
 				{
 					Talk(new string[] {
 						$" 드디어 만났군, {mPlayerList[0].Name}.",
-						" 나는 네크로만서님이 너에게 당한 후 그 복수를 하기 위해  몇년을 기다렸다.  그리고 나의 병사들도 가지게 되었지." +
-						" 나는 너를 이 곳으로 끌어 들이기 위해 계속 이 곳에서 살인을 저질렀지. 결국 걸려 들었군. 아~하~하~하~~~"
+						" 나는 네크로만서님이 너에게 당한 후 그 복수를 하기 위해 몇 년을 기다렸다. 그리고 나의 병사들도 가지게 되었지." +
+						" 나는 너를 이곳으로 끌어들이기 위해 계속 이곳에서 살인을 저질렀지. 결국 걸려들었군. 아~하~하~하~~~"
 					});
 
 					mParty.Etc[9]++;
@@ -13693,7 +13706,7 @@ namespace DarkUWP
 				}
 				else
 				{
-					Talk(" 그러나 나는 그렇게 쉽게 죽지는 않는다.  다시 나의 공격을 받아라 !");
+					Talk(" 그러나 나는 그렇게 쉽게 죽지는 않는다. 다시 나의 공격을 받아라!");
 
 					mSpecialEvent = SpecialEventType.BattleMenace;
 				}
@@ -13719,7 +13732,7 @@ namespace DarkUWP
 			AppendText(new string[] {
 				$"[color={RGB.White}]여기는 무기상점입니다.[/color]",
 				$"[color={RGB.White}]우리들은 무기, 방패, 갑옷을 팔고있습니다.[/color]",
-				$"[color={RGB.White}]어떤 종류를 원하십니까 ?[/color]",
+				$"[color={RGB.White}]어떤 종류를 원하십니까?[/color]",
 			});
 
 			ShowMenu(MenuMode.ChooseWeaponType, new string[] {
@@ -13735,7 +13748,7 @@ namespace DarkUWP
 		private void ShowExpStoreMenu()
 		{
 			AppendText(new string[] {
-					$"[color={RGB.White}] 여기에서는 황금의 양만큼  훈련을 시켜서 경험치를 올려 주는 곳입니다.[/color]",
+					$"[color={RGB.White}] 여기에서는 황금의 양만큼 훈련을 시켜서 경험치를 올려 주는 곳입니다.[/color]",
 					$"[color={RGB.LightCyan}] 원하시는 금액을 고르십시오.[/color]"
 				});
 
@@ -13846,7 +13859,7 @@ namespace DarkUWP
 					}
 				}
 
-				if (mCharacterTiles != null && mFace >= 0)
+				if (mCharacterTiles != null && mFace >= 0 && mAnimationEvent != AnimationType.Cookie)
 				{
 					if (mAnimationEvent == AnimationType.EnterFortressOfMephistopheles && mAnimationFrame <= 6)
 					{
@@ -13980,7 +13993,14 @@ namespace DarkUWP
 //#endif
 				}
 
-				if (mAnimationEvent == AnimationType.LordAhnCall) {
+				if (mAnimationEvent == AnimationType.Cookie) {
+					
+					if (column == playerX - 1 && row == playerY + (6 - mAnimationFrame))
+						mMapTiles.Draw(sb, 50 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+					else
+						mMapTiles.Draw(sb, tileIdx + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
+				}
+				else if (mAnimationEvent == AnimationType.LordAhnCall) {
 					if (row == 48 && 1 <= mAnimationFrame && mAnimationFrame <= 4) {
 						if (column == 23 - mAnimationFrame)
 							mMapTiles.Draw(sb, 53 + mapIdx, mMapTiles.SpriteSize * new Vector2(column, row), tint);
@@ -14387,13 +14407,13 @@ namespace DarkUWP
 				mParty.Etc[2]--;
 			else
 			{
-				AppendText(new string[] { $"[color={RGB.LightRed}]일행은 독이 있는 늪에 들어갔다 !!![/color]", "" });
+				AppendText(new string[] { $"[color={RGB.LightRed}]일행은 독이 있는 늪에 들어갔다!!![/color]", "" });
 
 				foreach (var player in mPlayerList)
 				{
 					if (mRand.Next(20) + 1 >= player.Luck)
 					{
-						AppendText($"[color={RGB.LightMagenta}]{player.NameSubjectJosa} 중독 되었다.[/color]", true);
+						AppendText($"[color={RGB.LightMagenta}]{player.NameSubjectJosa} 중독되었다.[/color]", true);
 						if (player.Poison == 0)
 							player.Poison = 1;
 					}
@@ -14402,7 +14422,7 @@ namespace DarkUWP
 				if (mAssistPlayer != null) {
 					if (mRand.Next(20) + 1 >= mAssistPlayer.Luck)
 					{
-						AppendText($"[color={RGB.LightMagenta}]{mAssistPlayer.NameSubjectJosa} 중독 되었다.[/color]", true);
+						AppendText($"[color={RGB.LightMagenta}]{mAssistPlayer.NameSubjectJosa} 중독되었다.[/color]", true);
 						if (mAssistPlayer.Poison == 0)
 							mAssistPlayer.Poison = 1;
 					}
@@ -14632,7 +14652,7 @@ namespace DarkUWP
 			avgAgility /= mEncounterEnemyList.Count;
 
 			AppendText(new string[] {
-				$"[color={RGB.LightMagenta}]적이 출현했다 !!![/color]", "",
+				$"[color={RGB.LightMagenta}]적이 출현했다!!![/color]", "",
 				$"[color={RGB.LightCyan}]적의 평균 민첩성 : {avgAgility}[/color]"
 			});
 
@@ -14654,9 +14674,9 @@ namespace DarkUWP
 				return GetColor(RGB.Red);
 			else if (500 <= enemy.HP && enemy.HP <= 999)
 				return GetColor(RGB.Brown);
-			else if (1000 <= enemy.HP && enemy.HP <= 1999)
+			else if (1_000 <= enemy.HP && enemy.HP <= 1_999)
 				return GetColor(RGB.Yellow);
-			else if (2000 <= enemy.HP && enemy.HP <= 3999)
+			else if (2_000 <= enemy.HP && enemy.HP <= 3_999)
 				return GetColor(RGB.Green);
 			else
 				return GetColor(RGB.LightGreen);
@@ -14731,12 +14751,12 @@ namespace DarkUWP
 			if (mParty.Map == 2)
 			{
 				if (x == 81 && y == 100)
-					AppendText($"[color={RGB.White}]피라미드의 암흑이 호수 위를 비출때,  고대 해왔던 잊혀진 유적은 당신 앞에서  그 진가를 발하며 불멸의 생명을 안겨 줄것이다[/color]", true);
+					AppendText($"[color={RGB.White}]피라미드의 암흑이 호수 위를 비출 때, 고대 해왔던 잊힌 유적은 당신 앞에서 그 진가를 발하며 불멸의 생명을 안겨 줄 것이다[/color]", true);
 				else if (x == 142 && y == 115)
-					AppendText($"[color={RGB.White}]어서오게, 친구여.  자네가 여기에 있는 6 가지의 시험을 통과한다면 영원 불멸의 생명을 영위하게 될 걸세.[/color]", true);
+					AppendText($"[color={RGB.White}]어서 오게, 친구여. 자네가 여기에 있는 6가지의 시험을 통과한다면 영원불멸의 생명을 영위하게 될 걸세.[/color]", true);
 				else if (x == 29 && y == 99)
 				{
-					AppendText($"[color={RGB.White}]오!! 현명한자여. 당신은 영원한 생명을 얻을 자격이 있소.  이제 잊혀진 유적은 당신의 의지에 순응할 것이오.[/color]", true);
+					AppendText($"[color={RGB.White}]오!! 현명한 자여. 당신은 영원한 생명을 얻을 자격이 있소. 이제 잊힌 유적은 당신의 의지에 순응할 것이오.[/color]", true);
 					mParty.Etc[43] |= 1;
 				}
 			}
@@ -14778,12 +14798,12 @@ namespace DarkUWP
 				if (x == 38 && y == 67)
 				{
 					AppendText(new string[] {
-						$"[color={RGB.White}]       여기는[/color] [color={RGB.LightCyan}]라스트디치성[/color][color={RGB.White}]입니다[/color]",
+						$"[color={RGB.White}]       여기는[/color] [color={RGB.LightCyan}]라스트디치 성[/color][color={RGB.White}]입니다[/color]",
 						$"[color={RGB.White}]          여러분을 환영합니다[/color]"
 					}, true);
 				}
 				else if (x == 38 && y == 7)
-					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드 의 입구[/color]", true);
+					AppendText($"[color={RGB.LightRed}]        여기는 옛 피라미드의 입구[/color]", true);
 				else if (x == 53 && y == 8)
 					AppendText($"[color={RGB.LightGreen}]       여기는 그라운드 게이트의 입구[/color]", true);
 			}
@@ -14802,12 +14822,12 @@ namespace DarkUWP
 						"",
 						"",
 						"",
-						$"[color={RGB.Yellow}]      로드 안과 에인션트 이블로 부터[/color]"
+						$"[color={RGB.Yellow}]      로드 안과 에인션트 이블로부터[/color]"
 					});
 				}
 				else if (x == 26 && y == 39) {
 					Dialog(new string[] {
-						$"[color={RGB.LightGreen}]   역시 나의 게임은 훌륭하지 않소 ?[/color]",
+						$"[color={RGB.LightGreen}]   역시 나의 게임은 훌륭하지 않소?[/color]",
 						$"[color={RGB.LightGreen}]   이제 나의 16 번째 자작 게임의 결말이 다가오고 있소. 거의 한달 가까이 만들었었는데...[/color]",
 						"",
 						"   제작 기간 :  93/12/08 - 94/01/04",
@@ -15174,7 +15194,8 @@ namespace DarkUWP
 			RemoveIllusion,
 			EnterFortressOfMephistopheles,
 			ReturnToGround,
-			MeetNecromancer
+			MeetNecromancer,
+			Cookie
 		}
 
 		private enum SpecialEventType
