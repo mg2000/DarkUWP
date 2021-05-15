@@ -58,7 +58,7 @@ namespace DarkUWP
 				mClassAvailableList.Add(false);
 
 			TypedEventHandler<CoreWindow, KeyEventArgs> chooseClassPageKeyEvent = null;
-			chooseClassPageKeyEvent = async (sender, args) =>
+			chooseClassPageKeyEvent = (sender, args) =>
 			{
 				if (mFocusItem == FocusItem.SetSkill)
 				{

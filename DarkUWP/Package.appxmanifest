@@ -7,15 +7,15 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="b31f4945-b556-4d1a-9a18-ce2a02783ff1"
-    Publisher="CN=mg200"
+    Name="3765mg2000.373091EA81A4F"
+    Publisher="CN=12E3275F-582E-483B-9C22-EF47E03481D6"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="b31f4945-b556-4d1a-9a18-ce2a02783ff1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="f1995348-88c1-49da-b5d6-587d1d417da9" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>DarkUWP</DisplayName>
-    <PublisherDisplayName>mg200</PublisherDisplayName>
+    <DisplayName>다크 메이지 실리안 카미너스</DisplayName>
+    <PublisherDisplayName>mg2000</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -38,7 +38,7 @@
         Description="DarkUWP"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png"  BackgroundColor="#097d18"/>
       </uap:VisualElements>
     </Application>
   </Applications>

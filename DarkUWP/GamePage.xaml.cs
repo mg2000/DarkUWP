@@ -6,10 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
+using Windows.Gaming.XboxLive.Storage;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -3334,20 +3337,12 @@ namespace DarkUWP
 								var offset = 0;
 
 								const int BLACK = 0;
-								const int BLUE = 1;
-								const int GREEN = 2;
 								const int CYAN = 3;
-								const int RED = 4;
-								const int MAGENTA = 5;
-								const int BROWN = 6;
-								const int LIGHTGRAY = 7;
-								const int DARKGRAY = 8;
 								const int LIGHTBLUE = 9;
 								const int LIGHTGREEN = 10;
 								const int LIGHTCYAN = 11;
 								const int LIGHTRED = 12;
 								const int LIGHTMAGENTA = 13;
-								const int YELLOW = 14;
 								const int WHITE = 15;
 
 								for (var y = yInit; y < yInit + height; y++) {
@@ -3550,6 +3545,7 @@ namespace DarkUWP
 						}
 
 						var menuMode = HideMenu();
+						ClearDialog();
 
 						if (menuMode == MenuMode.EnemySelectMode)
 						{
@@ -6134,108 +6130,61 @@ namespace DarkUWP
 							var saveFile = await storageFolder.CreateFileAsync($"darkSave{idStr}.dat", CreationCollisionOption.ReplaceExisting);
 							await FileIO.WriteTextAsync(saveFile, saveJSON);
 
-							AppendText($"[color={RGB.LightRed}]현재의 게임을 저장합니다.[/color]");
+							var users = await User.FindAllAsync();
+							var gameSaveTask = await GameSaveProvider.GetForUserAsync(users[0], "00000000-0000-0000-0000-00007ede8c1b");
 
-							//var users = await User.FindAllAsync();
-							//var gameSaveTask = await GameSaveProvider.GetForUserAsync(users[0], "00000000-0000-0000-0000-000063336555");
+							if (gameSaveTask.Status == GameSaveErrorStatus.Ok)
+							{
+								var gameSaveProvider = gameSaveTask.Value;
 
-							//if (gameSaveTask.Status == GameSaveErrorStatus.Ok)
-							//{
-							//	var gameSaveProvider = gameSaveTask.Value;
+								var gameSaveContainer = gameSaveProvider.CreateContainer("DarkSaveContainer");
 
-							//	var gameSaveContainer = gameSaveProvider.CreateContainer("LoreSaveContainer");
+								var buffer = Encoding.UTF8.GetBytes(saveJSON);
 
-							//	var buffer = Encoding.UTF8.GetBytes(saveJSON);
+								var writer = new DataWriter();
+								writer.WriteUInt32((uint)buffer.Length);
+								writer.WriteBytes(buffer);
+								var dataBuffer = writer.DetachBuffer();
 
-							//	var writer = new DataWriter();
-							//	writer.WriteUInt32((uint)buffer.Length);
-							//	writer.WriteBytes(buffer);
-							//	var dataBuffer = writer.DetachBuffer();
+								var blobsToWrite = new Dictionary<string, IBuffer>();
+								blobsToWrite.Add($"darkSave{idStr}", dataBuffer);
 
-							//	var blobsToWrite = new Dictionary<string, IBuffer>();
-							//	blobsToWrite.Add($"loreSave{idStr}", dataBuffer);
-
-							//	var gameSaveOperationResult = await gameSaveContainer.SubmitUpdatesAsync(blobsToWrite, null, "LoreSave");
-							//	if (gameSaveOperationResult.Status == GameSaveErrorStatus.Ok)
-							//		AppendText(new string[] { $"[color={RGB.LightRed}]현재의 게임을 저장합니다.[/color]" });
-							//	else
-							//		AppendText(new string[] {
-							//								$"[color={RGB.LightRed}]현재의 게임을 기기에 저장했지만, 클라우드에 저장하지 못했습니다.[/color]",
-							//								$"[color={RGB.LightRed}]에러 코드: {gameSaveOperationResult.Status}[/color]"
-							//							});
-							//}
-							//else
-							//{
-							//	AppendText(new string[] {
-							//								$"[color={RGB.LightRed}]현재의 게임을 기기에 저장했지만, 클라우드에 연결할 수 없습니다.[/color]",
-							//								$"[color={RGB.LightRed}]에러 코드: {gameSaveTask.Status}[/color]"
-							//							});
-							//}
+								var gameSaveOperationResult = await gameSaveContainer.SubmitUpdatesAsync(blobsToWrite, null, "DarkSave");
+								if (gameSaveOperationResult.Status == GameSaveErrorStatus.Ok)
+									AppendText(new string[] { $"[color={RGB.LightRed}]현재의 게임을 저장합니다.[/color]" });
+								else
+									AppendText(new string[] {
+										$"[color={RGB.LightRed}]현재의 게임을 기기에 저장했지만, 클라우드에 저장하지 못했습니다.[/color]",
+										$"[color={RGB.LightRed}]에러 코드: {gameSaveOperationResult.Status}[/color]"
+									});
+							}
+							else
+							{
+								AppendText(new string[] {
+									$"[color={RGB.LightRed}]현재의 게임을 기기에 저장했지만, 클라우드에 연결할 수 없습니다.[/color]",
+									$"[color={RGB.LightRed}]에러 코드: {gameSaveTask.Status}[/color]"
+								});
+							}
 						}
 						else if (menuMode == MenuMode.JoinMadJoe)
 						{
-							Lore madJoe = new Lore() {
-								Name = "미친 조",
-								Gender = GenderType.Male,
-								Class = 0,
-								ClassType = ClassCategory.Unknown,
-								Level = 2,
-								Strength = 10,
-								Mentality = 5,
-								Concentration = 6,
-								Endurance = 9,
-								Resistance = 5,
-								Agility = 7,
-								Accuracy = 5,
-								Luck = 20,
-								Poison = 0,
-								Unconscious = 0,
-								Dead = 0,
-								SP = 0,
-								Experience = 0,
-								Weapon = 0,
-								Shield = 0,
-								Armor = 0,
-								PotentialAC = 1,
-								SwordSkill = 5,
-								AxeSkill = 5,
-								SpearSkill = 0,
-								BowSkill = 0,
-								ShieldSkill = 0,
-								FistSkill = 0
-							};
-
-							madJoe.HP = madJoe.Endurance * madJoe.Level * 10;
-							madJoe.UpdatePotentialExperience();
-							UpdateItem(madJoe);
-
-							mAssistPlayer = madJoe;
-
-							UpdateTileInfo(39, 14, 47);
-
-							mParty.Etc[49] |= 1 << 4;
-
-							DisplayPlayerInfo();
-							AppendText("");
-						}
-						else if (menuMode == MenuMode.JoinMercury) {
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore mercury = new Lore()
+								Lore madJoe = new Lore()
 								{
-									Name = "머큐리",
+									Name = "미친 조",
 									Gender = GenderType.Male,
-									Class = 6,
-									ClassType = ClassCategory.Sword,
+									Class = 0,
+									ClassType = ClassCategory.Unknown,
 									Level = 2,
-									Strength = 12,
+									Strength = 10,
 									Mentality = 5,
 									Concentration = 6,
-									Endurance = 11,
-									Resistance = 18,
-									Agility = 19,
-									Accuracy = 16,
-									Luck = 19,
+									Endurance = 9,
+									Resistance = 5,
+									Agility = 7,
+									Accuracy = 5,
+									Luck = 20,
 									Poison = 0,
 									Unconscious = 0,
 									Dead = 0,
@@ -6244,335 +6193,406 @@ namespace DarkUWP
 									Weapon = 0,
 									Shield = 0,
 									Armor = 0,
-									PotentialAC = 2,
-									SwordSkill = 10,
-									AxeSkill = 0,
+									PotentialAC = 1,
+									SwordSkill = 5,
+									AxeSkill = 5,
 									SpearSkill = 0,
-									BowSkill = 20,
+									BowSkill = 0,
 									ShieldSkill = 0,
-									FistSkill = 20
+									FistSkill = 0
 								};
 
-								mercury.HP = mercury.Endurance * mercury.Level * 10;
-								mercury.UpdatePotentialExperience();
-								UpdateItem(mercury);
+								madJoe.HP = madJoe.Endurance * madJoe.Level * 10;
+								madJoe.UpdatePotentialExperience();
+								UpdateItem(madJoe);
 
-								mPlayerList.Add(mercury);
-								UpdateTileInfo(62, 9, 47);
+								mAssistPlayer = madJoe;
 
-								mParty.Etc[49] |= 1 << 5;
+								UpdateTileInfo(39, 14, 47);
+
+								mParty.Etc[49] |= 1 << 4;
 
 								DisplayPlayerInfo();
-
-								AppendText(" 고맙소. 그리고 병사들에게 들키지 않게 여기를 나가야 된다는 것 정도는 알고 있겠지요.");
+								AppendText("");
 							}
-							else {
-								AppendText(" 벌써 사람이 모두 채워져 있군요. 다음 기회를 기다리지요.");
+						}
+						else if (menuMode == MenuMode.JoinMercury) {
+							if (mMenuFocusID == 0)
+							{
+								if (mPlayerList.Count < 5)
+								{
+									Lore mercury = new Lore()
+									{
+										Name = "머큐리",
+										Gender = GenderType.Male,
+										Class = 6,
+										ClassType = ClassCategory.Sword,
+										Level = 2,
+										Strength = 12,
+										Mentality = 5,
+										Concentration = 6,
+										Endurance = 11,
+										Resistance = 18,
+										Agility = 19,
+										Accuracy = 16,
+										Luck = 19,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										SP = 0,
+										Experience = 0,
+										Weapon = 0,
+										Shield = 0,
+										Armor = 0,
+										PotentialAC = 2,
+										SwordSkill = 10,
+										AxeSkill = 0,
+										SpearSkill = 0,
+										BowSkill = 20,
+										ShieldSkill = 0,
+										FistSkill = 20
+									};
+
+									mercury.HP = mercury.Endurance * mercury.Level * 10;
+									mercury.UpdatePotentialExperience();
+									UpdateItem(mercury);
+
+									mPlayerList.Add(mercury);
+									UpdateTileInfo(62, 9, 47);
+
+									mParty.Etc[49] |= 1 << 5;
+
+									DisplayPlayerInfo();
+
+									AppendText(" 고맙소. 그리고 병사들에게 들키지 않게 여기를 나가야 된다는 것 정도는 알고 있겠지요.");
+								}
+								else
+								{
+									AppendText(" 벌써 사람이 모두 채워져 있군요. 다음 기회를 기다리지요.");
+								}
 							}
 						}
 						else if (menuMode == MenuMode.JoinHercules)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore hercules = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "헤라클레스",
-									Gender = GenderType.Male,
-									Class = 2,
-									ClassType = ClassCategory.Sword,
-									Level = 2,
-									Strength = 18,
-									Mentality = 5,
-									Concentration = 6,
-									Endurance = 15,
-									Resistance = 12,
-									Agility = 14,
-									Accuracy = 14,
-									Luck = 12,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									SP = 0,
-									Experience = 0,
-									Weapon = 3,
-									Shield = 1,
-									Armor = 1,
-									PotentialAC = 2,
-									SwordSkill = 10,
-									AxeSkill = 10,
-									SpearSkill = 5,
-									BowSkill = 0,
-									ShieldSkill = 20,
-									FistSkill = 5
-								};
+									Lore hercules = new Lore()
+									{
+										Name = "헤라클레스",
+										Gender = GenderType.Male,
+										Class = 2,
+										ClassType = ClassCategory.Sword,
+										Level = 2,
+										Strength = 18,
+										Mentality = 5,
+										Concentration = 6,
+										Endurance = 15,
+										Resistance = 12,
+										Agility = 14,
+										Accuracy = 14,
+										Luck = 12,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										SP = 0,
+										Experience = 0,
+										Weapon = 3,
+										Shield = 1,
+										Armor = 1,
+										PotentialAC = 2,
+										SwordSkill = 10,
+										AxeSkill = 10,
+										SpearSkill = 5,
+										BowSkill = 0,
+										ShieldSkill = 20,
+										FistSkill = 5
+									};
 
-								hercules.HP = hercules.Endurance * hercules.Level * 10;
-								hercules.UpdatePotentialExperience();
-								UpdateItem(hercules);
+									hercules.HP = hercules.Endurance * hercules.Level * 10;
+									hercules.UpdatePotentialExperience();
+									UpdateItem(hercules);
 
-								mPlayerList.Add(hercules);
-								UpdateTileInfo(88, 22, 44);
+									mPlayerList.Add(hercules);
+									UpdateTileInfo(88, 22, 44);
 
-								mParty.Etc[49] |= 1;
+									mParty.Etc[49] |= 1;
 
-								DisplayPlayerInfo();
-								AppendText("");
+									DisplayPlayerInfo();
+									AppendText("");
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.JoinTitan)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore titan = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "타이탄",
-									Gender = GenderType.Male,
-									Class = 1,
-									ClassType = ClassCategory.Sword,
-									Level = 2,
-									Strength = 19,
-									Mentality = 3,
-									Concentration = 4,
-									Endurance = 17,
-									Resistance = 10,
-									Agility = 13,
-									Accuracy = 11,
-									Luck = 14,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									SP = 0,
-									Experience = 0,
-									Weapon = 2,
-									Shield = 0,
-									Armor = 2,
-									PotentialAC = 2,
-									SwordSkill = 10,
-									AxeSkill = 10,
-									SpearSkill = 10,
-									BowSkill = 10,
-									ShieldSkill = 10,
-									FistSkill = 10
-								};
+									Lore titan = new Lore()
+									{
+										Name = "타이탄",
+										Gender = GenderType.Male,
+										Class = 1,
+										ClassType = ClassCategory.Sword,
+										Level = 2,
+										Strength = 19,
+										Mentality = 3,
+										Concentration = 4,
+										Endurance = 17,
+										Resistance = 10,
+										Agility = 13,
+										Accuracy = 11,
+										Luck = 14,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										SP = 0,
+										Experience = 0,
+										Weapon = 2,
+										Shield = 0,
+										Armor = 2,
+										PotentialAC = 2,
+										SwordSkill = 10,
+										AxeSkill = 10,
+										SpearSkill = 10,
+										BowSkill = 10,
+										ShieldSkill = 10,
+										FistSkill = 10
+									};
 
-								titan.HP = titan.Endurance * titan.Level * 10;
-								titan.UpdatePotentialExperience();
-								UpdateItem(titan);
+									titan.HP = titan.Endurance * titan.Level * 10;
+									titan.UpdatePotentialExperience();
+									UpdateItem(titan);
 
-								mPlayerList.Add(titan);
-								UpdateTileInfo(20, 32, 44);
+									mPlayerList.Add(titan);
+									UpdateTileInfo(20, 32, 44);
 
-								mParty.Etc[49] |= 1 << 2;
+									mParty.Etc[49] |= 1 << 2;
 
-								DisplayPlayerInfo();
-								AppendText("");
+									DisplayPlayerInfo();
+									AppendText("");
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.JoinMerlin)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore merlin = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "머린",
-									Gender = GenderType.Male,
-									Class = 1,
-									ClassType = ClassCategory.Magic,
-									Level = 2,
-									Strength = 5,
-									Mentality = 15,
-									Concentration = 16,
-									Endurance = 10,
-									Resistance = 14,
-									Agility = 8,
-									Accuracy = 13,
-									Luck = 17,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									Experience = 0,
-									Weapon = 0,
-									Shield = 0,
-									Armor = 1,
-									PotentialAC = 0,
-									AttackMagic = 20,
-									PhenoMagic = 10,
-									CureMagic = 10,
-									SpecialMagic = 0,
-									ESPMagic = 10,
-									SummonMagic = 0
-								};
+									Lore merlin = new Lore()
+									{
+										Name = "머린",
+										Gender = GenderType.Male,
+										Class = 1,
+										ClassType = ClassCategory.Magic,
+										Level = 2,
+										Strength = 5,
+										Mentality = 15,
+										Concentration = 16,
+										Endurance = 10,
+										Resistance = 14,
+										Agility = 8,
+										Accuracy = 13,
+										Luck = 17,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										Experience = 0,
+										Weapon = 0,
+										Shield = 0,
+										Armor = 1,
+										PotentialAC = 0,
+										AttackMagic = 20,
+										PhenoMagic = 10,
+										CureMagic = 10,
+										SpecialMagic = 0,
+										ESPMagic = 10,
+										SummonMagic = 0
+									};
 
-								merlin.HP = merlin.Endurance * merlin.Level * 10;
-								merlin.SP = merlin.Mentality * merlin.Level * 10;
-								merlin.UpdatePotentialExperience();
-								UpdateItem(merlin);
+									merlin.HP = merlin.Endurance * merlin.Level * 10;
+									merlin.SP = merlin.Mentality * merlin.Level * 10;
+									merlin.UpdatePotentialExperience();
+									UpdateItem(merlin);
 
-								mPlayerList.Add(merlin);
-								UpdateTileInfo(8, 63, 44);
+									mPlayerList.Add(merlin);
+									UpdateTileInfo(8, 63, 44);
 
-								mParty.Etc[49] |= 1 << 1;
+									mParty.Etc[49] |= 1 << 1;
 
-								DisplayPlayerInfo();
-								AppendText("");
+									DisplayPlayerInfo();
+									AppendText("");
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.JoinBetelgeuse)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore betelgeuse = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "베텔규스",
-									Gender = GenderType.Male,
-									Class = 2,
-									ClassType = ClassCategory.Magic,
-									Level = 2,
-									Strength = 7,
-									Mentality = 17,
-									Concentration = 15,
-									Endurance = 8,
-									Resistance = 12,
-									Agility = 10,
-									Accuracy = 15,
-									Luck = 10,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									Experience = 0,
-									Weapon = 0,
-									Shield = 0,
-									Armor = 1,
-									PotentialAC = 0,
-									AttackMagic = 10,
-									PhenoMagic = 20,
-									CureMagic = 10,
-									SpecialMagic = 0,
-									ESPMagic = 0,
-									SummonMagic = 10
-								};
+									Lore betelgeuse = new Lore()
+									{
+										Name = "베텔규스",
+										Gender = GenderType.Male,
+										Class = 2,
+										ClassType = ClassCategory.Magic,
+										Level = 2,
+										Strength = 7,
+										Mentality = 17,
+										Concentration = 15,
+										Endurance = 8,
+										Resistance = 12,
+										Agility = 10,
+										Accuracy = 15,
+										Luck = 10,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										Experience = 0,
+										Weapon = 0,
+										Shield = 0,
+										Armor = 1,
+										PotentialAC = 0,
+										AttackMagic = 10,
+										PhenoMagic = 20,
+										CureMagic = 10,
+										SpecialMagic = 0,
+										ESPMagic = 0,
+										SummonMagic = 10
+									};
 
-								betelgeuse.HP = betelgeuse.Endurance * betelgeuse.Level * 10;
-								betelgeuse.SP = betelgeuse.Mentality * betelgeuse.Level * 10;
-								betelgeuse.UpdatePotentialExperience();
-								UpdateItem(betelgeuse);
+									betelgeuse.HP = betelgeuse.Endurance * betelgeuse.Level * 10;
+									betelgeuse.SP = betelgeuse.Mentality * betelgeuse.Level * 10;
+									betelgeuse.UpdatePotentialExperience();
+									UpdateItem(betelgeuse);
 
-								mPlayerList.Add(betelgeuse);
-								UpdateTileInfo(87, 37, 44);
+									mPlayerList.Add(betelgeuse);
+									UpdateTileInfo(87, 37, 44);
 
-								mParty.Etc[49] |= 1 << 3;
+									mParty.Etc[49] |= 1 << 3;
 
-								DisplayPlayerInfo();
-								AppendText("");
+									DisplayPlayerInfo();
+									AppendText("");
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.JoinPolaris)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore polaris = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "폴라리스",
-									Gender = GenderType.Male,
-									Class = 7,
-									ClassType = ClassCategory.Sword,
-									Level = 4,
-									Strength = 18,
-									Mentality = 10,
-									Concentration = 6,
-									Endurance = 12,
-									Resistance = 16,
-									Agility = 14,
-									Accuracy = 17,
-									Luck = 12,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									SP = 0,
-									Experience = 0,
-									Weapon = 4,
-									Shield = 3,
-									Armor = 4,
-									PotentialAC = 2,
-									SwordSkill = 25,
-									AxeSkill = 10,
-									SpearSkill = 5,
-									BowSkill = 0,
-									ShieldSkill = 25,
-									FistSkill = 10
-								};
+									Lore polaris = new Lore()
+									{
+										Name = "폴라리스",
+										Gender = GenderType.Male,
+										Class = 7,
+										ClassType = ClassCategory.Sword,
+										Level = 4,
+										Strength = 18,
+										Mentality = 10,
+										Concentration = 6,
+										Endurance = 12,
+										Resistance = 16,
+										Agility = 14,
+										Accuracy = 17,
+										Luck = 12,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										SP = 0,
+										Experience = 0,
+										Weapon = 4,
+										Shield = 3,
+										Armor = 4,
+										PotentialAC = 2,
+										SwordSkill = 25,
+										AxeSkill = 10,
+										SpearSkill = 5,
+										BowSkill = 0,
+										ShieldSkill = 25,
+										FistSkill = 10
+									};
 
-								polaris.HP = polaris.Endurance * polaris.Level * 10;
-								polaris.UpdatePotentialExperience();
-								UpdateItem(polaris);
+									polaris.HP = polaris.Endurance * polaris.Level * 10;
+									polaris.UpdatePotentialExperience();
+									UpdateItem(polaris);
 
-								mPlayerList.Add(polaris);
-								UpdateTileInfo(40, 17, 44);
+									mPlayerList.Add(polaris);
+									UpdateTileInfo(40, 17, 44);
 
-								mParty.Etc[49] |= 1 << 7;
+									mParty.Etc[49] |= 1 << 7;
 
-								DisplayPlayerInfo();
+									DisplayPlayerInfo();
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.JoinGeniusKie)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore geniusKie = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "지니어스 기",
-									Gender = GenderType.Male,
-									Class = 7,
-									ClassType = ClassCategory.Sword,
-									Level = 10,
-									Strength = 19,
-									Mentality = 15,
-									Concentration = 10,
-									Endurance = 14,
-									Resistance = 18,
-									Agility = 16,
-									Accuracy = 18,
-									Luck = 17,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									Experience = 0,
-									Weapon = 19,
-									Shield = 4,
-									Armor = 6,
-									PotentialAC = 3,
-									SwordSkill = 25,
-									AxeSkill = 30,
-									SpearSkill = 30,
-									BowSkill = 10,
-									ShieldSkill = 40,
-									FistSkill = 15
-								};
+									Lore geniusKie = new Lore()
+									{
+										Name = "지니어스 기",
+										Gender = GenderType.Male,
+										Class = 7,
+										ClassType = ClassCategory.Sword,
+										Level = 10,
+										Strength = 19,
+										Mentality = 15,
+										Concentration = 10,
+										Endurance = 14,
+										Resistance = 18,
+										Agility = 16,
+										Accuracy = 18,
+										Luck = 17,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										Experience = 0,
+										Weapon = 19,
+										Shield = 4,
+										Armor = 6,
+										PotentialAC = 3,
+										SwordSkill = 25,
+										AxeSkill = 30,
+										SpearSkill = 30,
+										BowSkill = 10,
+										ShieldSkill = 40,
+										FistSkill = 15
+									};
 
-								geniusKie.HP = geniusKie.Endurance * geniusKie.Level * 10;
-								geniusKie.SP = geniusKie.Mentality * geniusKie.Level * 5;
-								geniusKie.UpdatePotentialExperience();
-								UpdateItem(geniusKie);
+									geniusKie.HP = geniusKie.Endurance * geniusKie.Level * 10;
+									geniusKie.SP = geniusKie.Mentality * geniusKie.Level * 5;
+									geniusKie.UpdatePotentialExperience();
+									UpdateItem(geniusKie);
 
-								mPlayerList.Add(geniusKie);
-								UpdateTileInfo(53, 55, 44);
+									mPlayerList.Add(geniusKie);
+									UpdateTileInfo(53, 55, 44);
 
-								mParty.Etc[50] |= 1;
+									mParty.Etc[50] |= 1;
 
-								DisplayPlayerInfo();
+									DisplayPlayerInfo();
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.BattleChooseItem || menuMode == MenuMode.ChooseItem) {
 							void ShowRemainItemCount() {
@@ -7260,53 +7280,56 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.JoinRegulus)
 						{
-							if (mPlayerList.Count < 5)
+							if (mMenuFocusID == 0)
 							{
-								Lore regulus = new Lore()
+								if (mPlayerList.Count < 5)
 								{
-									Name = "레굴루스",
-									Gender = GenderType.Male,
-									Class = 5,
-									ClassType = ClassCategory.Sword,
-									Level = 4,
-									Strength = 19,
-									Mentality = 5,
-									Concentration = 6,
-									Endurance = 15,
-									Resistance = 10,
-									Agility = 10,
-									Accuracy = 17,
-									Luck = 7,
-									Poison = 0,
-									Unconscious = 0,
-									Dead = 0,
-									SP = 0,
-									Experience = 0,
-									Weapon = 0,
-									Shield = 0,
-									Armor = 2,
-									PotentialAC = 2,
-									SwordSkill = 25,
-									AxeSkill = 0,
-									SpearSkill = 0,
-									BowSkill = 0,
-									ShieldSkill = 0,
-									FistSkill = 0
-								};
+									Lore regulus = new Lore()
+									{
+										Name = "레굴루스",
+										Gender = GenderType.Male,
+										Class = 5,
+										ClassType = ClassCategory.Sword,
+										Level = 4,
+										Strength = 19,
+										Mentality = 5,
+										Concentration = 6,
+										Endurance = 15,
+										Resistance = 10,
+										Agility = 10,
+										Accuracy = 17,
+										Luck = 7,
+										Poison = 0,
+										Unconscious = 0,
+										Dead = 0,
+										SP = 0,
+										Experience = 0,
+										Weapon = 0,
+										Shield = 0,
+										Armor = 2,
+										PotentialAC = 2,
+										SwordSkill = 25,
+										AxeSkill = 0,
+										SpearSkill = 0,
+										BowSkill = 0,
+										ShieldSkill = 0,
+										FistSkill = 0
+									};
 
-								regulus.HP = regulus.Endurance * regulus.Level * 10;
-								regulus.UpdatePotentialExperience();
-								UpdateItem(regulus);
+									regulus.HP = regulus.Endurance * regulus.Level * 10;
+									regulus.UpdatePotentialExperience();
+									UpdateItem(regulus);
 
-								mPlayerList.Add(regulus);
-								UpdateTileInfo(39, 12, 47);
+									mPlayerList.Add(regulus);
+									UpdateTileInfo(39, 12, 47);
 
-								mParty.Etc[49] |= 1 << 6;
+									mParty.Etc[49] |= 1 << 6;
 
-								DisplayPlayerInfo();
+									DisplayPlayerInfo();
+								}
+								else
+									AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 							}
-							else
-								AppendText(" 나도 당신의 일행에 참가하고 싶지만 벌써 사람이 모두 채워져 있군. 미안하게 됐네.");
 						}
 						else if (menuMode == MenuMode.MeetAhnYoungKi) {
 							if (mMenuFocusID == 0)
@@ -7425,6 +7448,8 @@ namespace DarkUWP
 		private async void InitialFirstPlay() {
 			await LoadMapData();
 			InitializeMap();
+
+			DisplayPlayerInfo();
 
 			mLoading = false;
 		}
@@ -14764,7 +14789,7 @@ namespace DarkUWP
 			{
 				if (x == 50 && y == 83)
 				{
-					AppendText(new string[] { $"       [color={RGB.White}]여기는[/color] [color={RGB.LightCyan}]로어 성[/color]입니다",
+					AppendText(new string[] { $"       [color={RGB.White}]여기는[/color] [color={RGB.LightCyan}]로어 성[/color][color={RGB.White}]입니다[/color]",
 								$"         [color={RGB.White}]여러분을 환영합니다[/color]",
 								"",
 								"",
