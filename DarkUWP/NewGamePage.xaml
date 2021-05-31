@@ -17,8 +17,8 @@
 			<RowDefinition Height="3*"/>
 			<RowDefinition Height="7*"/>
 		</Grid.RowDefinitions>
-		<TextBlock Grid.Row="0" Foreground="White" FontSize="30" HorizontalAlignment="Center">당신의 성별을 결정하십시오.</TextBlock>
-		<Grid Grid.Row="1">
+		<TextBlock Grid.Row="0" Foreground="White" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center">당신의 성별을 결정하십시오.</TextBlock>
+		<Grid Grid.Row="1"  VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition/>
@@ -27,8 +27,8 @@
 			<TextBlock Grid.Column="0" x:Name="GenderMale" Foreground="Yellow" FontSize="30" HorizontalAlignment="Right" Margin="0, 0, 10, 0">남성</TextBlock>
 			<TextBlock Grid.Column="1" x:Name="GenderFemale" Foreground="White" FontSize="30" HorizontalAlignment="Left" Margin="10, 0, 0, 0">여성</TextBlock>
 		</Grid>
-		<TextBlock x:Name="CategoryTitle" Grid.Row="2" Foreground="White" FontSize="30" HorizontalAlignment="Center" Visibility="Collapsed">당신의 계열을 선택하십시오.</TextBlock>
-		<Grid Grid.Row="3">
+		<TextBlock x:Name="CategoryTitle" Grid.Row="2" Foreground="White" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">당신의 계열을 선택하십시오.</TextBlock>
+		<Grid Grid.Row="3" VerticalAlignment="Center">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition/>
 				<ColumnDefinition/>
