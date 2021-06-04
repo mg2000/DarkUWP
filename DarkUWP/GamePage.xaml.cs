@@ -4856,7 +4856,7 @@ namespace DarkUWP
 								else
 								{
 									var payment = mCurePlayer.Endurance * mCurePlayer.Level * 10 - mCurePlayer.HP;
-									payment = payment * mCurePlayer.Level * 10 / 2 + 1;
+									payment = (int)Math.Round(payment * (double)mCurePlayer.Level / 10) + 1;
 
 									if (mParty.Gold < payment)
 										ShowNotEnoughMoney(mSpecialEvent = SpecialEventType.NotCured);
@@ -4867,7 +4867,7 @@ namespace DarkUWP
 
 										DisplayHP();
 
-										Talk($"[color={RGB.White}]{mCurePlayer.Name}의 모든 건강이 회복되었다[/color]");
+										Talk($"[color={RGB.White}]{mCurePlayer.GenderPronoun}의 모든 건강이 회복되었다[/color]");
 										mSpecialEvent = SpecialEventType.CureComplete;
 									}
 								}
@@ -5069,6 +5069,14 @@ namespace DarkUWP
 									break;
 							}
 
+							if (mTrainSkillList[mMenuFocusID].Item2 == 0)
+							{
+								Talk("당신의 계급과 맞지 않습니다");
+								mSpecialEvent = SpecialEventType.CantTrainMagic;
+
+								return;
+							}
+
 							if (skill >= mTrainSkillList[mMenuFocusID].Item2)
 							{
 								Talk("이 분야는 더 배울 것이 없습니다");
@@ -5200,7 +5208,12 @@ namespace DarkUWP
 									break;
 							}
 
-							if (skill >= mTrainSkillList[mMenuFocusID].Item2)
+							if (mTrainSkillList[mMenuFocusID].Item2 == 0)
+							{
+								Talk("당신의 계급과 맞지 않습니다");
+								mSpecialEvent = SpecialEventType.CantTrainMagic;
+							}
+							else if (skill >= mTrainSkillList[mMenuFocusID].Item2)
 							{
 								Talk("이 분야는 더 배울 것이 없습니다");
 								mSpecialEvent = SpecialEventType.CantTrainMagic;
