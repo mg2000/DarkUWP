@@ -14438,7 +14438,7 @@ namespace DarkUWP
 				Endurance = enemy.Endurance,
 				Resistance = enemy.Resistance / 2,
 				Agility = enemy.Agility,
-				Accuracy = enemy.Accuracy[1],
+				Accuracy = enemy.Accuracy[0],
 				Luck = 10,
 				Poison = 0,
 				Unconscious = 0,
