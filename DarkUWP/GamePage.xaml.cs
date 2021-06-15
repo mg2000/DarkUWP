@@ -552,8 +552,6 @@ namespace DarkUWP
 								MovePlayer(x, y);
 								if (await InvokeSpecialEvent(oriX, oriY))
 									mTriggeredDownEvent = true;
-
-								mTriggeredDownEvent = true;
 							}
 							else if ((1 <= GetTileInfo(x, y) && GetTileInfo(x, y) <= 39) || GetTileInfo(x, y) == 51)
 							{
