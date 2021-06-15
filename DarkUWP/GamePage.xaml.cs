@@ -7881,33 +7881,39 @@ namespace DarkUWP
 						return;
 					}
 
-					int power;
-					switch ((player.Weapon + 6) / 7) {
-						case 0:
-							power = player.FistSkill;
-							break;
-						case 1:
-							power = player.SwordSkill;
-							break;
-						case 2:
-							power = player.AxeSkill;
-							break;
-						case 3:
-							power = player.SpearSkill;
-							break;
-						case 4:
-							power = player.BowSkill;
-							break;
-						default:
-							power = player.Level * 5;
-							break;
-					}
-
 					int attackPoint;
-					if ((player.ClassType == ClassCategory.Sword) && (player.Class == 5 || player.Class == 6))
-						attackPoint = player.Strength * power * 5;
+					if (player == mAssistPlayer)
+						attackPoint = (int)Math.Round((double)player.Strength * player.WeaPower * player.Level / 2);
 					else
-						attackPoint = (int)(Math.Round((double)player.Strength * player.WeaPower * power / 10));
+					{
+						int power;
+						switch ((player.Weapon + 6) / 7)
+						{
+							case 0:
+								power = player.FistSkill;
+								break;
+							case 1:
+								power = player.SwordSkill;
+								break;
+							case 2:
+								power = player.AxeSkill;
+								break;
+							case 3:
+								power = player.SpearSkill;
+								break;
+							case 4:
+								power = player.BowSkill;
+								break;
+							default:
+								power = player.Level * 5;
+								break;
+						}
+
+						if ((player.ClassType == ClassCategory.Sword) && (player.Class == 5 || player.Class == 6))
+							attackPoint = player.Strength * power * 5;
+						else
+							attackPoint = (int)Math.Round((double)player.Strength * player.WeaPower * power / 10);
+					}
 
 					attackPoint -= attackPoint * mRand.Next(50) / 100;
 
@@ -8173,6 +8179,7 @@ namespace DarkUWP
 
 						enemy.Dead = true;
 						battleResult.Add($"[color={RGB.LightGreen}]{enemy.NameSubjectJosa} 겁을 먹고는 도망가 버렸다[/color]");
+						PlusExperience(enemy);
 					}
 					else if (battleCommand.Tool == 3) {
 						var enemy = GetDestEnemy();
@@ -8247,7 +8254,7 @@ namespace DarkUWP
 						if (enemy.Posion)
 						{
 							if (enemy.HP > 500)
-								enemy.HP -= 50;
+								enemy.HP -= 500;
 							else
 							{
 								enemy.HP = 0;
@@ -8949,122 +8956,7 @@ namespace DarkUWP
 								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
 								mAssistPlayer.Weapon = 33;
 								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
-								mAssistPlayer.PotentialAC = 2;
-								mAssistPlayer.AC = 3;
-								break;
-							case 1:
-								mAssistPlayer.Name = "캐리온 크롤러";
-								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 14 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 13 + GetBonusPoint(5);
-								mAssistPlayer.Weapon = 34;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
 								mAssistPlayer.PotentialAC = 3;
-								mAssistPlayer.AC = 3;
-								break;
-							case 2:
-								mAssistPlayer.Name = "켄타우루스";
-								mAssistPlayer.Endurance = 17 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 12 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 18 + GetBonusPoint(5);
-								mAssistPlayer.Weapon = 35;
-								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 1.5);
-								mAssistPlayer.PotentialAC = 2;
-								mAssistPlayer.AC = 2;
-								break;
-							case 3:
-								mAssistPlayer.Name = "데모고르곤";
-								mAssistPlayer.Endurance = 18 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 17 + GetBonusPoint(3);
-								mAssistPlayer.Weapon = 36;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
-								mAssistPlayer.PotentialAC = 4;
-								mAssistPlayer.AC = 4;
-								break;
-							case 4:
-								mAssistPlayer.Name = "듈라한";
-								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 20;
-								mAssistPlayer.Accuracy = 17;
-								mAssistPlayer.Weapon = 16;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic;
-								mAssistPlayer.PotentialAC = 3;
-								mAssistPlayer.AC = 3;
-								break;
-							case 5:
-								mAssistPlayer.Name = "에틴";
-								mAssistPlayer.Endurance = 10 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 10;
-								mAssistPlayer.Accuracy = 10 + GetBonusPoint(9);
-								mAssistPlayer.Weapon = 8;
-								mAssistPlayer.WeaPower = (int)Math.Round(battleCommand.Player.SummonMagic * 0.8);
-								mAssistPlayer.PotentialAC = 1;
-								mAssistPlayer.AC = 1;
-								break;
-							case 6:
-								mAssistPlayer.Name = "헬하운드";
-								mAssistPlayer.Endurance = 14 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 9 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 11 + GetBonusPoint(5);
-								mAssistPlayer.Weapon = 33;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
-								mAssistPlayer.PotentialAC = 2;
-								mAssistPlayer.AC = 2;
-								break;
-							case 7:
-								mAssistPlayer.Name = "미노타우루스";
-								mAssistPlayer.Endurance = 13 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 11 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 14 + GetBonusPoint(5);
-								mAssistPlayer.Weapon = 9;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
-								mAssistPlayer.PotentialAC = 2;
-								mAssistPlayer.AC = 2;
-								break;
-						}
-
-						mAssistPlayer.HP = mAssistPlayer.Endurance * mAssistPlayer.Level * 10;
-					}
-					else if (battleCommand.Tool == 6)
-					{
-						mAssistPlayer = new Lore()
-						{
-							Gender = GenderType.Male,
-							Class = 0,
-							ClassType = ClassCategory.Unknown,
-							Level = battleCommand.Player.SummonMagic / 5,
-							Strength = 10 + GetBonusPoint(5),
-							Mentality = 10 + GetBonusPoint(5),
-							Concentration = 10 + GetBonusPoint(5),
-							Agility = 0,
-							Luck = 10 + GetBonusPoint(5),
-							Poison = 0,
-							Unconscious = 0,
-							Dead = 0,
-							SP = 0,
-							Experience = 0,
-							PotentialExperience = 0,
-							Shield = 0,
-							ShiPower = 0,
-							Armor = 0,
-							SwordSkill = 0,
-							AxeSkill = 0,
-							SpearSkill = 0,
-							BowSkill = 0,
-							FistSkill = 0
-						};
-
-						switch (mRand.Next(8))
-						{
-							case 0:
-								mAssistPlayer.Name = "밴더스내치";
-								mAssistPlayer.Endurance = 15 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 8 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 12 + GetBonusPoint(5);
-								mAssistPlayer.Weapon = 33;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 3;
-								mAssistPlayer.PotentialAC = 2;
 								mAssistPlayer.AC = 3;
 								break;
 							case 1:
@@ -9318,9 +9210,10 @@ namespace DarkUWP
 							Endurance = 30 + GetBonusPoint(10),
 							Resistance = 10 + GetBonusPoint(10),
 							Accuracy = 15 + GetBonusPoint(5),
-							WeaPower = battleCommand.Player.SummonMagic * mRand.Next(5) + 1,
+							WeaPower = (int)Math.Round((double)battleCommand.Player.SummonMagic * (mRand.Next(5) + 1)),
 							PotentialAC = 3,
 							AC = 3,
+							Gender = GenderType.Neutral,
 							Class = 0,
 							ClassType = ClassCategory.Dragon,
 							Level = battleCommand.Player.SummonMagic / 5,
@@ -9427,33 +9320,6 @@ namespace DarkUWP
 							FistSkill = 0
 						};
 
-						mAssistPlayer = new Lore()
-						{
-							Gender = GenderType.Neutral,
-							Class = 0,
-							ClassType = ClassCategory.Golem,
-							Level = battleCommand.Player.SummonMagic / 5,
-							Strength = 10 + GetBonusPoint(5),
-							Mentality = 10 + GetBonusPoint(5),
-							Concentration = 10 + GetBonusPoint(5),
-							Agility = 0,
-							Luck = 10 + GetBonusPoint(5),
-							Poison = 0,
-							Unconscious = 0,
-							Dead = 0,
-							SP = 0,
-							Experience = 0,
-							PotentialExperience = 0,
-							Shield = 0,
-							ShiPower = 0,
-							Armor = 0,
-							SwordSkill = 0,
-							AxeSkill = 0,
-							SpearSkill = 0,
-							BowSkill = 0,
-							FistSkill = 0
-						};
-
 						switch (mRand.Next(2))
 						{
 							case 0:
@@ -9475,26 +9341,6 @@ namespace DarkUWP
 								mAssistPlayer.Accuracy = 19;
 								mAssistPlayer.Weapon = 6;
 								mAssistPlayer.WeaPower = (int)(Math.Round(battleCommand.Player.SummonMagic * 4.5));
-								mAssistPlayer.PotentialAC = 4;
-								mAssistPlayer.AC = 4;
-								break;
-							case 2:
-								mAssistPlayer.Name = "아이언 고렘";
-								mAssistPlayer.Endurance = 20 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 5 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 10 + GetBonusPoint(2);
-								mAssistPlayer.Weapon = 42;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 4;
-								mAssistPlayer.PotentialAC = 5;
-								mAssistPlayer.AC = 5;
-								break;
-							case 3:
-								mAssistPlayer.Name = "스톤 고렘";
-								mAssistPlayer.Endurance = 25 + GetBonusPoint(5);
-								mAssistPlayer.Resistance = 10 + GetBonusPoint(5);
-								mAssistPlayer.Accuracy = 13 + GetBonusPoint(3);
-								mAssistPlayer.Weapon = 0;
-								mAssistPlayer.WeaPower = battleCommand.Player.SummonMagic * 2;
 								mAssistPlayer.PotentialAC = 4;
 								mAssistPlayer.AC = 4;
 								break;
@@ -14590,7 +14436,7 @@ namespace DarkUWP
 				Endurance = enemy.Endurance,
 				Resistance = enemy.Resistance / 2,
 				Agility = enemy.Agility,
-				Accuracy = enemy.Accuracy[1],
+				Accuracy = enemy.Accuracy[0],
 				Luck = 10,
 				Poison = 0,
 				Unconscious = 0,
