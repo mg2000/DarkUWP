@@ -5410,6 +5410,12 @@ namespace DarkUWP
 						{
 							mTrainPlayer = mPlayerList[mMenuFocusID];
 
+							if (mTrainPlayer.ClassType != ClassCategory.Sword)
+							{
+								AppendText(" 당신은 전투사 계열이 아닙니다.");
+								return;
+							}
+
 							mChangableClassList.Clear();
 							mChangableClassIDList.Clear();
 
@@ -5478,6 +5484,12 @@ namespace DarkUWP
 						else if (menuMode == MenuMode.ChooseChangeMagicMember)
 						{
 							mTrainPlayer = mPlayerList[mMenuFocusID];
+
+							if (mTrainPlayer.ClassType != ClassCategory.Magic)
+							{
+								AppendText(" 당신은 마법사 계열이 아닙니다.");
+								return;
+							}
 
 							mChangableClassList.Clear();
 							mChangableClassIDList.Clear();
