@@ -1715,6 +1715,8 @@ namespace DarkUWP
 						{
 							if (BattlePanel.Visibility == Visibility.Collapsed)
 								DisplayEnemy();
+
+							mBattleCommandQueue.Clear();
 							BattleMode();
 						}
 						else if (specialEvent == SpecialEventType.HelpRedAntares)
@@ -2956,7 +2958,7 @@ namespace DarkUWP
 						{
 							Talk("당신은 치료 마법을 사용할 능력이 없습니다.");
 							if (menuMode == MenuMode.ChooseBattleCureSpell)
-								mSpecialEvent = SpecialEventType.BackToBattleMode;
+								mSpecialEvent = SpecialEventType.SkipTurn;
 							else
 								ContinueText.Visibility = Visibility.Visible;
 						}
@@ -3486,7 +3488,7 @@ namespace DarkUWP
 									if (applyCureMode == MenuMode.ApplyBattleCureSpell || applyAllCureMode == MenuMode.ApplyBattleCureAllSpell)
 									{
 										Talk(" 강한 치료 마법은 아직 불가능 합니다.");
-										mSpecialEvent = SpecialEventType.BackToBattleMode;
+										mSpecialEvent = SpecialEventType.SkipTurn;
 									}
 									else
 										Dialog(" 강한 치료 마법은 아직 불가능 합니다.");
@@ -3753,7 +3755,7 @@ namespace DarkUWP
 									Talk("강한 치료 마법은 아직 불가능 합니다.");
 
 									if (menuMode == MenuMode.ChooseBattleCureSpell)
-										mSpecialEvent = SpecialEventType.BackToBattleMode;
+										mSpecialEvent = SpecialEventType.SkipTurn;
 									else
 										ContinueText.Visibility = Visibility.Visible;
 									return;
@@ -4065,7 +4067,7 @@ namespace DarkUWP
 								AppendText($"[color={RGB.White}]지형 변화에 성공했습니다.[/color]");
 							}
 						}
-						else if (menuMode == MenuMode.TransformDirection)
+						else if (menuMode == MenuMode.BigTransformDirection)
 						{
 
 							mMenuMode = MenuMode.None;
@@ -4086,9 +4088,6 @@ namespace DarkUWP
 									xOffset = -1;
 									break;
 							}
-
-							var newX = mParty.XAxis + xOffset;
-							var newY = mParty.YAxis + yOffset;
 
 							var range = xOffset == 0 ? 5 : 4;
 
@@ -4124,7 +4123,7 @@ namespace DarkUWP
 								}
 								else
 								{
-									UpdateTileInfo(newX, newY, tile);
+									UpdateTileInfo(mParty.XAxis + xOffset * i, mParty.YAxis + yOffset * i, tile);
 								}
 							}
 
@@ -11836,6 +11835,9 @@ namespace DarkUWP
 			{
 				HealOne(player, whomPlayer, cureResult);
 			});
+
+			if (mAssistPlayer != null)
+				HealOne(player, mAssistPlayer, cureResult);
 		}
 
 		private void CureAll(Lore player, List<string> cureResult)
@@ -11844,6 +11846,9 @@ namespace DarkUWP
 			{
 				CureOne(player, whomPlayer, cureResult);
 			});
+
+			if (mAssistPlayer != null)
+				CureOne(player, mAssistPlayer, cureResult);
 		}
 
 		private void ConsciousAll(Lore player, List<string> cureResult)
@@ -11852,6 +11857,9 @@ namespace DarkUWP
 			{
 				ConsciousOne(player, whomPlayer, cureResult);
 			});
+
+			if (mAssistPlayer != null)
+				ConsciousOne(player, mAssistPlayer, cureResult);
 		}
 
 		private void RevitalizeAll(Lore player, List<string> cureResult)
@@ -11860,6 +11868,9 @@ namespace DarkUWP
 			{
 				RevitalizeOne(player, whomPlayer, cureResult);
 			});
+
+			if (mAssistPlayer != null)
+				RevitalizeOne(player, mAssistPlayer, cureResult);
 		}
 
 		private void ShowNotEnoughSP(List<string> result = null)
