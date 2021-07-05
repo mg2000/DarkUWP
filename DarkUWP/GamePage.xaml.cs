@@ -2516,16 +2516,12 @@ namespace DarkUWP
 					{
 						ClearDialog();
 
-						var remainDialog = new List<string>();
-						remainDialog.AddRange(mRemainDialog);
-						mRemainDialog.Clear();
-
 						var added = true;
-						while (added && remainDialog.Count > 0)
+						while (added && mRemainDialog.Count > 0)
 						{
-							added = AppendText(remainDialog[0], true);
+							added = AppendText(mRemainDialog[0], true);
 							if (added)
-								remainDialog.RemoveAt(0);
+								mRemainDialog.RemoveAt(0);
 						}
 
 						if (mRemainDialog.Count > 0 || mBattleTurn != BattleTurn.None)
