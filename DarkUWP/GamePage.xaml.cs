@@ -5733,16 +5733,16 @@ namespace DarkUWP
 								var player = mPlayerList[mBattlePlayerID];
 
 								var availCount = 0;
-								if (player.ESPMagic > 19)
-									availCount = 1;
-								else if (player.ESPMagic > 29)
-									availCount = 2;
-								else if (player.ESPMagic > 79)
-									availCount = 3;
+								if (player.ESPMagic > 99)
+									availCount = 5;
 								else if (player.ESPMagic > 89)
 									availCount = 4;
-								else if (player.ESPMagic > 99)
-									availCount = 5;
+								else if (player.ESPMagic > 79)
+									availCount = 3;
+								else if (player.ESPMagic > 29)
+									availCount = 2;
+								else if (player.ESPMagic > 19)
+									availCount = 1;
 
 								if (availCount == 0)
 									BattleMode();
