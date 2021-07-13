@@ -5723,7 +5723,7 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.CastESP)
 						{
-							if (mMenuFocusID == 0)
+							if (mMenuFocusID == 3)
 							{
 								mBattleToolID = mMenuFocusID;
 								SelectEnemy();
@@ -5760,15 +5760,15 @@ namespace DarkUWP
 							return;
 						}
 						else if (menuMode == MenuMode.ChooseESPMagic) {
-							mBattleToolID = mMenuFocusID + 1;
+							mBattleToolID = mMenuFocusID + 6;
 
-							AddBattleCommand();
-						}
-						else if (menuMode == MenuMode.CastESP) {
-							mBattleToolID = mMenuFocusID + 1;
-							mEnemyFocusID = -1;
-
-							AddBattleCommand();
+							if (mMenuFocusID > 0)
+								SelectEnemy();
+							else
+							{
+								mEnemyFocusID = -1;
+								AddBattleCommand();
+							}
 						}
 						else if (menuMode == MenuMode.CastSummon) {
 							mBattleToolID = mMenuFocusID + 1;
@@ -8033,7 +8033,7 @@ namespace DarkUWP
 				{
 					var player = battleCommand.Player;
 
-					if (battleCommand.Tool == 0)
+					if (battleCommand.Tool == 3)
 					{
 						var enemy = GetDestEnemy();
 						if (enemy == null)
@@ -8097,7 +8097,7 @@ namespace DarkUWP
 						enemy.HP = 0;
 						enemy.Level = 0;
 					}
-					else if (battleCommand.Tool == 1) {
+					else if (battleCommand.Tool == 6) {
 						GetBattleStatus(null);
 
 						if (player.ESPMagic < 20)
@@ -8141,7 +8141,7 @@ namespace DarkUWP
 							}
 						}
 					}
-					else if (battleCommand.Tool == 2) {
+					else if (battleCommand.Tool == 7) {
 						var enemy = GetDestEnemy();
 						if (enemy == null)
 							return;
@@ -8188,7 +8188,7 @@ namespace DarkUWP
 						battleResult.Add($"[color={RGB.LightGreen}]{enemy.NameSubjectJosa} 겁을 먹고는 도망가 버렸다[/color]");
 						PlusExperience(enemy);
 					}
-					else if (battleCommand.Tool == 3) {
+					else if (battleCommand.Tool == 8) {
 						var enemy = GetDestEnemy();
 						if (enemy == null)
 							return;
@@ -8230,7 +8230,7 @@ namespace DarkUWP
 							return;
 						}
 					}
-					else if (battleCommand.Tool == 4)
+					else if (battleCommand.Tool == 9)
 					{
 						var enemy = GetDestEnemy();
 						if (enemy == null)
@@ -8272,7 +8272,7 @@ namespace DarkUWP
 						else
 							enemy.Posion = true;
 					}
-					else if (battleCommand.Tool == 5) {
+					else if (battleCommand.Tool == 10) {
 						var enemy = GetDestEnemy();
 						if (enemy == null)
 							return;
