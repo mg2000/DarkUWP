@@ -4462,7 +4462,7 @@ namespace DarkUWP
 								AppendText(new string[] { $"[color={RGB.LightRed}]현재의 일원의 전투 순서를 정렬하십시오.[/color]",
 												"[color=e0ffff]순서를 바꿀 일원[/color]" });
 
-								ShowCharacterMenu(MenuMode.OrderFromCharacter, false);
+								ShowSubCharacterMenu(MenuMode.OrderFromCharacter);
 							}
 							else if (mMenuFocusID == 2)
 							{
@@ -4474,7 +4474,7 @@ namespace DarkUWP
 							{
 								AppendText($"[color={RGB.LightRed}]일행에서 제외하고 싶은 사람을 고르십시오.[/color]");
 
-								ShowCharacterMenu(MenuMode.DelistCharacter);
+								ShowSubCharacterMenu(MenuMode.DelistCharacter, true);
 							}
 							else if (mMenuFocusID == 4)
 							{
@@ -4537,13 +4537,13 @@ namespace DarkUWP
 
 							AppendText($"[color={RGB.LightCyan}]순서를 바꿀 대상 일원[/color]");
 
-							ShowCharacterMenu(MenuMode.OrderToCharacter, false);
+							ShowSubCharacterMenu(MenuMode.OrderToCharacter);
 						}
 						else if (menuMode == MenuMode.OrderToCharacter)
 						{
 							var tempPlayer = mPlayerList[mOrderFromPlayerID];
-							mPlayerList[mOrderFromPlayerID] = mPlayerList[mMenuFocusID];
-							mPlayerList[mMenuFocusID] = tempPlayer;
+							mPlayerList[mOrderFromPlayerID] = mPlayerList[mMenuFocusID + 1];
+							mPlayerList[mMenuFocusID + 1] = tempPlayer;
 
 							DisplayPlayerInfo();
 
@@ -4610,7 +4610,12 @@ namespace DarkUWP
 						}
 						else if (menuMode == MenuMode.DelistCharacter)
 						{
-							mPlayerList.RemoveAt(mMenuFocusID);
+							var totalSubPlayer = mPlayerList.Count - 1 + (mAssistPlayer != null ? 1 : 0);
+
+							if (mMenuFocusID == totalSubPlayer - 1 && mAssistPlayer != null)
+								mAssistPlayer = null;
+							else
+								mPlayerList.RemoveAt(mMenuFocusID + 1);
 
 							DisplayPlayerInfo();
 							AppendText("");
@@ -11928,6 +11933,20 @@ namespace DarkUWP
 			var menuStr = new string[mPlayerList.Count + (includeAssistPlayer && mAssistPlayer != null ? 1 : 0)];
 			for (var i = 0; i < mPlayerList.Count; i++)
 				menuStr[i] = mPlayerList[i].Name;
+
+			if (includeAssistPlayer && mAssistPlayer != null)
+				menuStr[menuStr.Length - 1] = mAssistPlayer.Name;
+
+			ShowMenu(menuMode, menuStr);
+		}
+
+		private void ShowSubCharacterMenu(MenuMode menuMode, bool includeAssistPlayer = false)
+		{
+			AppendText($"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]", true);
+
+			var menuStr = new string[mPlayerList.Count - 1 + (includeAssistPlayer && mAssistPlayer != null ? 1 : 0)];
+			for (var i = 1; i < mPlayerList.Count; i++)
+				menuStr[i - 1] = mPlayerList[i].Name;
 
 			if (includeAssistPlayer && mAssistPlayer != null)
 				menuStr[menuStr.Length - 1] = mAssistPlayer.Name;
