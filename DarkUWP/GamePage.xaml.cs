@@ -7421,31 +7421,29 @@ namespace DarkUWP
 							}
 						}
 					}
-					//				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
-					//				{
-					//					ShowPartyStatus();
-					//				}
+					
 					//				else if (args.VirtualKey == VirtualKey.V || args.VirtualKey == VirtualKey.GamepadLeftTrigger)
 					//				{
 					//					AppendText(new string[] { "능력을 보고 싶은 인물을 선택하시오" });
 					//					ShowCharacterMenu(MenuMode.ViewCharacter);
 					//				}
-					//				else if (args.VirtualKey == VirtualKey.C || args.VirtualKey == VirtualKey.GamepadRightShoulder)
-					//				{
-					//					AppendText(new string[] { $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]" }, true);
-					//					ShowCharacterMenu(MenuMode.CastSpell);
-					//				}
-					//				else if (args.VirtualKey == VirtualKey.E || args.VirtualKey == VirtualKey.GamepadRightShoulder)
-					//				{
-					//					AppendText(new string[] { $"[color={RGB.LightGreen}]한명을 고르시오 ---[/color]" }, true);
-					//					ShowCharacterMenu(MenuMode.Extrasense);
-					//				}
-
 				}
 				else if (args.VirtualKey == VirtualKey.R || args.VirtualKey == VirtualKey.GamepadLeftShoulder)
 				{
 					// 휴식 단축키
 					Rest();
+				}
+				else if (args.VirtualKey == VirtualKey.P || args.VirtualKey == VirtualKey.GamepadView)
+				{
+					ShowPartyStatus();
+				}
+				else if (args.VirtualKey == VirtualKey.C || args.VirtualKey == VirtualKey.GamepadX)
+				{
+					ShowCharacterMenu(MenuMode.CastSpell);
+				}
+				else if (args.VirtualKey == VirtualKey.E || args.VirtualKey == VirtualKey.GamepadY)
+				{
+					ShowCharacterMenu(MenuMode.Extrasense);
 				}
 			};
 
